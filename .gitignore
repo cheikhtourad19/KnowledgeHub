@@ -1,0 +1,3 @@
+# Project exclude paths
+/api-gateway/target/
+/auth-service/target/

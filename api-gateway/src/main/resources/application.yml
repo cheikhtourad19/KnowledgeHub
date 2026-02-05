@@ -1,0 +1,72 @@
+server:
+  port: 8080
+
+spring:
+  application:
+    name: api-gateway
+  cloud:
+    gateway:
+      routes:
+        - id: auth-service
+          uri: http://localhost:8081
+          predicates:
+            - Path=/auth-service/**
+          filters:
+            - RewritePath=/auth-service/(?<segment>.*), /$\{segment}
+            - name: JwtAuthenticationFilter
+
+        - id: user-service
+          uri: http://localhost:8082
+          predicates:
+            - Path=/user-service/**
+          filters:
+            - RewritePath=/user-service/(?<segment>.*), /$\{segment}
+            - name: JwtAuthenticationFilter
+
+        - id: resource-service
+          uri: http://localhost:8083
+          predicates:
+            - Path=/resource-service/**
+          filters:
+            - RewritePath=/ressource-service/(?<segment>.*), /$\{segment}
+            - name: JwtAuthenticationFilter
+
+        - id: notification-service
+          uri: http://localhost:8084
+          predicates:
+            - Path=/notification-service/**
+          filters:
+            - RewritePath=/notification-service/(?<segment>.*), /$\{segment}
+            - name: JwtAuthenticationFilter
+
+        - id: ai-search-service
+          uri: http://localhost:8000
+          predicates:
+            - Path=/ai-service/**
+          filters:
+            - RewritePath=/ai-service/(?<segment>.*), /$\{segment}
+            - name: JwtAuthenticationFilter
+jwt:
+  secret: PzwO3GB4uHSLcSFKFrU3aL70Uy0k9HNpqjLrcc4hVXq
+management:
+  endpoints:
+    web:
+      exposure:
+        include: health,info,metrics
+  endpoint:
+    health:
+      show-details: always
+
+logging:
+  level:
+    org.springframework.cloud.gateway: DEBUG
+    reactor.netty: DEBUG
+
+
+
+springdoc:
+  api-docs:
+    enabled: true
+  swagger-ui:
+    enabled: true
+    path: /swagger-ui.html
