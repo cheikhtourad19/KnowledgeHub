@@ -9,7 +9,7 @@ import lombok.NoArgsConstructor;
 @Builder
 @AllArgsConstructor
 @NoArgsConstructor
-public class UserServiceStudentRequest {
+public class UserServiceRequest {
     private String authId;
     private String prenom;
     private String nom;

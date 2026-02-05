@@ -9,7 +9,7 @@ import org.springframework.http.MediaType;
 import org.springframework.http.ResponseEntity;
 import org.springframework.stereotype.Component;
 import org.springframework.web.client.RestTemplate;
-import tn.esprim.knowledgehub.auth.dto.UserServiceStudentRequest;
+import tn.esprim.knowledgehub.auth.dto.UserServiceRequest;
 
 @Component
 @RequiredArgsConstructor
@@ -21,14 +21,32 @@ public class UserServiceClient {
     @Value("${user-service.url:http://localhost:8082}")
     private String userServiceUrl;
 
-    public void createStudent(UserServiceStudentRequest request) {
+    public void createStudent(UserServiceRequest request) {
         try {
             String url = userServiceUrl + "/api/students/create";
 
             HttpHeaders headers = new HttpHeaders();
             headers.setContentType(MediaType.APPLICATION_JSON);
 
-            HttpEntity<UserServiceStudentRequest> entity = new HttpEntity<>(request, headers);
+            HttpEntity<UserServiceRequest> entity = new HttpEntity<>(request, headers);
+
+            ResponseEntity<String> response = restTemplate.postForEntity(url, entity, String.class);
+
+            log.info("Student created in user-service: {}", response.getBody());
+        } catch (Exception e) {
+            log.error("Error creating student in user-service: {}", e.getMessage(), e);
+            throw new RuntimeException("Failed to create student in user-service: " + e.getMessage());
+        }
+    }
+
+    public void createTeacher(UserServiceRequest request) {
+        try {
+            String url = userServiceUrl + "/api/teachers/create";
+
+            HttpHeaders headers = new HttpHeaders();
+            headers.setContentType(MediaType.APPLICATION_JSON);
+
+            HttpEntity<UserServiceRequest> entity = new HttpEntity<>(request, headers);
 
             ResponseEntity<String> response = restTemplate.postForEntity(url, entity, String.class);
 

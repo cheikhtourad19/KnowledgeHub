@@ -7,17 +7,20 @@ import tn.esprim.knowledgehub.user.entity.Student;
 import tn.esprim.knowledgehub.user.repository.ClasseRepository;
 import tn.esprim.knowledgehub.user.repository.StudentRepository;
 
+import java.util.List;
+
 @Service
 public class StudentService {
 
     @Autowired
     private StudentRepository  studentRepository;
-    @Autowired
-    private ClasseRepository classeRepository;
 
-    public Student saveStudent(Student student,Long classeId){
+
+    public Student saveStudent(Student student){
         return studentRepository.save(student);
     }
-
+    public List<Student> getAllStudents(){
+        return studentRepository.findAll();
+    }
 
 }

@@ -90,21 +90,37 @@ public class AuthService {
         authUser = authUserRepository.save(authUser);
         log.info("Auth user created successfully with ID: {}", authUser.getId());
 
-        // Call user-service to create user profile
-        try {
-            UserServiceStudentRequest userServiceStudentRequest = UserServiceStudentRequest.builder()
-                    .authId(authUser.getId().toString())
-                    .prenom(request.getPrenom())
-                    .nom(request.getNom())
+        if (request.getRole() == AuthUser.Role.STUDENT) {
+            try {
+                UserServiceRequest userServiceRequest = UserServiceRequest.builder()
+                        .authId(authUser.getId().toString())
+                        .prenom(request.getPrenom())
+                        .nom(request.getNom())
 
-                    .build();
+                        .build();
 
-            userServiceClient.createStudent(userServiceStudentRequest);
-            log.info("User profile created successfully in user-service");
-        } catch (Exception e) {
-            throw new RuntimeException("Failed to create user profile in user-service: " + e.getMessage());
+                userServiceClient.createStudent(userServiceRequest);
+                log.info("User profile created successfully in user-service");
+            } catch (Exception e) {
+                throw new RuntimeException("Failed to create user profile in user-service: " + e.getMessage());
+            }
+
         }
+        if (request.getRole() == AuthUser.Role.TEACHER) {
+            try {
+                UserServiceRequest userServiceRequest = UserServiceRequest.builder()
+                        .authId(authUser.getId().toString())
+                        .prenom(request.getPrenom())
+                        .nom(request.getNom())
 
+                        .build();
+
+                userServiceClient.createTeacher(userServiceRequest);
+                log.info("User profile created successfully in user-service");
+            } catch (Exception e) {
+                throw new RuntimeException("Failed to create user profile in user-service: " + e.getMessage());
+            }
+        }
         return AuthResponse.success(authUser, "User registered successfully");
     }
 

@@ -29,7 +29,7 @@ public class StudentController {
                 .prenom(request.getPrenom())
                 .build();
 
-        Student saved = studentService.saveStudent(student, Long.valueOf(request.getAuthId()));
+        Student saved = studentService.saveStudent(student);
         return ResponseEntity.ok(
                 ApiResponse.builder().success(true)
                         .message("Student created successfully")
@@ -37,4 +37,6 @@ public class StudentController {
                         .build()
         );
     }
+
+
 }
