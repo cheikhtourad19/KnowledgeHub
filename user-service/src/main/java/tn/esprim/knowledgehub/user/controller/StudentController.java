@@ -11,6 +11,9 @@ import tn.esprim.knowledgehub.user.entity.Classe;
 import tn.esprim.knowledgehub.user.entity.Student;
 import tn.esprim.knowledgehub.user.service.StudentService;
 
+import java.util.ArrayList;
+import java.util.List;
+
 @RestController
 @RequestMapping("/api/students")
 public class StudentController {
@@ -37,6 +40,37 @@ public class StudentController {
                         .build()
         );
     }
+
+    @PostMapping("/create-multiple")
+    public ResponseEntity<ApiResponse> createMultipleStudent(@RequestBody  List<CreateStudentRequest> request
+
+    ){
+
+
+
+        List<Student> students = new ArrayList<>();
+
+        for (CreateStudentRequest studentRequest : request) {
+
+            students.add(
+                    Student.builder()
+                            .nom(studentRequest.getNom())
+                            .authId(studentRequest.getAuthId())
+                            .prenom(studentRequest.getPrenom())
+                            .build()
+            );
+        }
+
+
+        List<Student> saved = studentService.saveStudents(students);
+        return ResponseEntity.ok(
+                ApiResponse.builder().success(true)
+                        .message("Student created successfully")
+                        .data(saved)
+                        .build()
+        );
+    }
+
 
 
 }

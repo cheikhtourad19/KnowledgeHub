@@ -13,5 +13,4 @@ public class UserServiceRequest {
     private String authId;
     private String prenom;
     private String nom;
-    private String classeId;
 }

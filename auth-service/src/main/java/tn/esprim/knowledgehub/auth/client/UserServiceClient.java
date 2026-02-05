@@ -11,6 +11,8 @@ import org.springframework.stereotype.Component;
 import org.springframework.web.client.RestTemplate;
 import tn.esprim.knowledgehub.auth.dto.UserServiceRequest;
 
+import java.util.List;
+
 @Component
 @RequiredArgsConstructor
 @Slf4j
@@ -56,4 +58,50 @@ public class UserServiceClient {
             throw new RuntimeException("Failed to create student in user-service: " + e.getMessage());
         }
     }
+    public void createStudents(List<UserServiceRequest> requests) {
+        if (requests == null || requests.isEmpty()) {
+            log.warn("Empty or null list provided for creating students");
+            return;
+        }
+
+        try {
+            String url = userServiceUrl + "/api/students/create-multiple";
+
+            HttpHeaders headers = new HttpHeaders();
+            headers.setContentType(MediaType.APPLICATION_JSON);
+
+            HttpEntity<List<UserServiceRequest>> entity = new HttpEntity<>(requests, headers);
+
+            ResponseEntity<String> response = restTemplate.postForEntity(url, entity, String.class);
+
+            log.info("Students created in user-service: {}", response.getBody());
+        } catch (Exception e) {
+            log.error("Error creating students in user-service: {}", e.getMessage(), e);
+            throw new RuntimeException("Failed to create students in user-service: " + e.getMessage());
+        }
+    }
+
+    public void createTeachers(List<UserServiceRequest> requests) {
+        if (requests == null || requests.isEmpty()) {
+            log.warn("Empty or null list provided for creating teachers");
+            return;
+        }
+
+        try {
+            String url = userServiceUrl + "/api/teachers/create-multiple";
+
+            HttpHeaders headers = new HttpHeaders();
+            headers.setContentType(MediaType.APPLICATION_JSON);
+
+            HttpEntity<List<UserServiceRequest>> entity = new HttpEntity<>(requests, headers);
+
+            ResponseEntity<String> response = restTemplate.postForEntity(url, entity, String.class);
+
+            log.info("Teachers created in user-service: {}", response.getBody());
+        } catch (Exception e) {
+            log.error("Error creating teachers in user-service: {}", e.getMessage(), e);
+            throw new RuntimeException("Failed to create teachers in user-service: " + e.getMessage());
+        }
+    }
+
 }
