@@ -4,20 +4,25 @@ package tn.esprim.knowledgehub.auth.controller;
 import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.Parameter;
 import io.swagger.v3.oas.annotations.enums.ParameterIn;
+import io.swagger.v3.oas.annotations.headers.Header;
 import io.swagger.v3.oas.annotations.media.Content;
 import io.swagger.v3.oas.annotations.media.Schema;
 import io.swagger.v3.oas.annotations.responses.ApiResponses;
 import io.swagger.v3.oas.annotations.tags.Tag;
 import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
+import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 import tn.esprim.knowledgehub.auth.dto.AuthRequest;
 import tn.esprim.knowledgehub.auth.dto.AuthResponse;
 import tn.esprim.knowledgehub.auth.dto.LoginRequest;
+import tn.esprim.knowledgehub.auth.dto.RegisterRequest;
 import tn.esprim.knowledgehub.auth.dto.TokenValidationResponse;
 import tn.esprim.knowledgehub.auth.entity.AuthUser;
 import tn.esprim.knowledgehub.auth.service.AuthService;
+
+import java.util.Objects;
 
 @RestController
 @RequestMapping("/api")
@@ -66,6 +71,50 @@ public class AuthController {
         AuthResponse response = authService.login(request);
         return ResponseEntity.status(response.getStatus()).body(response);
     }
+
+    @Operation(
+            summary = "Register a new user",
+            description = "Creates a new user in both auth service and user service.",
+            requestBody = @io.swagger.v3.oas.annotations.parameters.RequestBody(
+                    description = "User registration details",
+                    required = true,
+                    content = @Content(
+                            mediaType = "application/json",
+                            schema = @Schema(implementation = RegisterRequest.class)
+                    )
+            )
+    )
+    @ApiResponses({
+            @io.swagger.v3.oas.annotations.responses.ApiResponse(
+                    responseCode = "200",
+                    description = "User registered successfully",
+                    content = @Content(
+                            mediaType = "application/json",
+                            schema = @Schema(implementation = AuthResponse.class)
+                    )
+            ),
+            @io.swagger.v3.oas.annotations.responses.ApiResponse(
+                    responseCode = "409",
+                    description = "User already exists",
+                    content = @Content(
+                            mediaType = "application/json",
+                            schema = @Schema(implementation = AuthResponse.class)
+                    )
+            )
+    })
+    @PostMapping("/register")
+    public ResponseEntity<AuthResponse> register(
+            @Valid @RequestBody RegisterRequest request,
+            @RequestHeader(value = "X-User-Role", required = false) String role) {
+
+        if (!Objects.equals(role, "ADMIN")) {
+            return ResponseEntity.status(HttpStatus.FORBIDDEN).body(AuthResponse.error("Only admins can register users", HttpStatus.FORBIDDEN));
+        }
+        AuthResponse response = authService.registerUser(request);
+        return ResponseEntity.status(response.getStatus()).body(response);
+    }
+
+
 
 
 

@@ -8,10 +8,8 @@ import org.springframework.http.HttpStatus;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
-import tn.esprim.knowledgehub.auth.dto.AuthRequest;
-import tn.esprim.knowledgehub.auth.dto.AuthResponse;
-import tn.esprim.knowledgehub.auth.dto.LoginRequest;
-import tn.esprim.knowledgehub.auth.dto.TokenValidationResponse;
+import tn.esprim.knowledgehub.auth.client.UserServiceClient;
+import tn.esprim.knowledgehub.auth.dto.*;
 import tn.esprim.knowledgehub.auth.entity.AuthUser;
 import tn.esprim.knowledgehub.auth.exception.AuthenticationException;
 import tn.esprim.knowledgehub.auth.exception.InvalidTokenException;
@@ -19,7 +17,6 @@ import tn.esprim.knowledgehub.auth.repository.AuthUserRepository;
 import tn.esprim.knowledgehub.auth.util.JwtUtil;
 
 import java.time.LocalDateTime;
-import java.util.UUID;
 
 @Service
 @RequiredArgsConstructor
@@ -27,9 +24,9 @@ import java.util.UUID;
 public class AuthService {
 
     private final AuthUserRepository authUserRepository;
-
     private final PasswordEncoder passwordEncoder;
     private final JwtUtil jwtUtil;
+    private final UserServiceClient userServiceClient;
 
 
 
@@ -67,6 +64,48 @@ public class AuthService {
         );
 
         return AuthResponse.authSuccess(token, authUser.getUsername(), authUser.getEmail(), authUser.getRole(), authUser.getId());
+    }
+
+    @Transactional
+    public AuthResponse<AuthUser> registerUser(RegisterRequest request) {
+        log.info("Attempting to register user: {}", request.getEmail());
+
+        // Check if user already exists
+        if (authUserRepository.findByEmail(request.getEmail()).isPresent()) {
+            return AuthResponse.error("User with this email already exists", HttpStatus.CONFLICT);
+        }
+
+        // Create auth user
+        AuthUser authUser = AuthUser.builder()
+                .email(request.getEmail())
+                .password(passwordEncoder.encode(request.getPassword()))
+                .role(request.getRole() != null ? request.getRole() : AuthUser.Role.STUDENT)
+                .enabled(true)
+                .accountNonLocked(true)
+                .failedLoginAttempts(0)
+                .createdAt(LocalDateTime.now())
+                .updatedAt(LocalDateTime.now())
+                .build();
+
+        authUser = authUserRepository.save(authUser);
+        log.info("Auth user created successfully with ID: {}", authUser.getId());
+
+        // Call user-service to create user profile
+        try {
+            UserServiceStudentRequest userServiceStudentRequest = UserServiceStudentRequest.builder()
+                    .authId(authUser.getId().toString())
+                    .prenom(request.getPrenom())
+                    .nom(request.getNom())
+
+                    .build();
+
+            userServiceClient.createStudent(userServiceStudentRequest);
+            log.info("User profile created successfully in user-service");
+        } catch (Exception e) {
+            throw new RuntimeException("Failed to create user profile in user-service: " + e.getMessage());
+        }
+
+        return AuthResponse.success(authUser, "User registered successfully");
     }
 
 
