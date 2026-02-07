@@ -31,6 +31,9 @@ public class TeacherService {
         Teacher teacher = teacherRepository.findById(teacherId).orElseThrow(
                 ()->new RuntimeException("Teacher not found with id: "+teacherId)
         );
+        if(student.getEncandrants().contains(teacher)){
+            return student;
+        }
         student.getEncandrants().add(teacher);
         return studentRepository.save(student);
     }
