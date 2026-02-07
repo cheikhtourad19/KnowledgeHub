@@ -24,12 +24,12 @@ public class TeacherController {
 
     @Autowired
     private TeacherService teacherService;
-@Autowired
-private StudentService studentService;
+    @Autowired
+    private StudentService studentService;
 
     @PostMapping("/assignTome/{id}")
     public ResponseEntity<ApiResponse> assignStudent(@RequestHeader(value = "X-User-Role", required = false) String role,
-                                                     @RequestHeader(value = "X-User-Id") Long teacherId,@PathVariable Long id){
+                                                     @RequestHeader(value = "X-User-Id") Long teacherId, @PathVariable Long id) {
         if (!role.equals("TEACHER")) {
             return ResponseEntity.status(403).body(
                     ApiResponse.builder().success(false)
@@ -39,17 +39,17 @@ private StudentService studentService;
         }
         Long id_teacher = teacherService.getTeacherByAuthId(teacherId).getTeacherId();
 
-        try{
+        try {
 
-            Student student = teacherService.assignTeacherToStudent(id_teacher, id);
-            log.info("Teacher {} assigning student {}",teacherId,id);
+            Student student = studentService.assignTeacherToStudent(id_teacher, id);
+            log.info("Teacher {} assigning student {}", teacherId, id);
             return ResponseEntity.ok(
                     ApiResponse.builder().success(true)
                             .message("Student assigned successfully")
                             .data(student)
                             .build()
             );
-        }catch (Exception e){
+        } catch (Exception e) {
             return ResponseEntity.status(400).body(
                     ApiResponse.builder().success(false)
                             .message(e.getMessage())
@@ -58,10 +58,11 @@ private StudentService studentService;
         }
 
     }
+
     @PostMapping("/create")
     public ResponseEntity<ApiResponse> createTeacher(@RequestBody @Valid CreateStudentRequest request
 
-    ){
+    ) {
 
         Teacher student = Teacher.builder()
                 .nom(request.getNom())
@@ -77,12 +78,13 @@ private StudentService studentService;
                         .build()
         );
     }
-    @PostMapping("/create-multiple")
-    public ResponseEntity<ApiResponse> createMultipleTeacher(@RequestBody  List<CreateStudentRequest> request
 
-    ){
+    @PostMapping("/create-multiple")
+    public ResponseEntity<ApiResponse> createMultipleTeacher(@RequestBody List<CreateStudentRequest> request
+
+    ) {
         List<Teacher> teachers = new ArrayList<>();
-        for(CreateStudentRequest teacherRequest : request){
+        for (CreateStudentRequest teacherRequest : request) {
             teachers.add(
                     Teacher.builder()
                             .nom(teacherRequest.getNom())
@@ -100,6 +102,15 @@ private StudentService studentService;
         );
     }
 
+    @GetMapping("/all")
+    public ResponseEntity<ApiResponse> getAllTeachers() {
+        return ResponseEntity.ok(
+                ApiResponse.builder().success(true)
+                        .message("All students retrieved successfully")
+                        .data(teacherService.getAllTeachers())
+                        .build()
+        );
+    }
 
 
 }

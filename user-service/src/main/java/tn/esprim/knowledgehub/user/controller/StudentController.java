@@ -71,6 +71,16 @@ public class StudentController {
         );
     }
 
+    @GetMapping("/all")
+    public ResponseEntity<ApiResponse> getAllStudents(){
+        return ResponseEntity.ok(
+                ApiResponse.builder().success(true)
+                        .message("All students retrieved successfully")
+                        .data(studentService.getAllStudents())
+                        .build()
+        );
+    }
+
 
 
 }
