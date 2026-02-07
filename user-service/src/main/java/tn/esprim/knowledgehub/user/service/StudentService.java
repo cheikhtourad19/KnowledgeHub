@@ -9,6 +9,7 @@ import tn.esprim.knowledgehub.user.repository.ClasseRepository;
 import tn.esprim.knowledgehub.user.repository.StudentRepository;
 import tn.esprim.knowledgehub.user.repository.TeacherRepository;
 
+import java.util.ArrayList;
 import java.util.List;
 
 @Service
@@ -51,6 +52,9 @@ public class StudentService {
         Teacher teacher = teacherRepository.findById(teacherId).orElseThrow(
                 ()->new RuntimeException("Teacher not found with id: "+teacherId)
         );
+        if (student.getEncandrants()==null){
+            student.setEncandrants(new ArrayList<>());
+        }
         if(student.getEncandrants().contains(teacher)){
             return student;
         }
