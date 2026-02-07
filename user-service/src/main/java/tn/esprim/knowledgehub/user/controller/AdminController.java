@@ -14,6 +14,7 @@ import tn.esprim.knowledgehub.user.service.TeacherService;
 @RequestMapping("/api/admin")
 public class AdminController {
 
+
     @Autowired
     private TeacherService teacherService;
     @Autowired
