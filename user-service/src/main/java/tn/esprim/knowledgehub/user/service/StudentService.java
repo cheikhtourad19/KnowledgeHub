@@ -39,6 +39,7 @@ public class StudentService {
         Teacher teacher = teacherRepository.findById(teacherId).orElseThrow(
                 ()->new RuntimeException("Teacher not found with id: "+teacherId)
         );
+
         if(!student.getEncandrants().contains(teacher)){
             return student;
         }
@@ -52,9 +53,7 @@ public class StudentService {
         Teacher teacher = teacherRepository.findById(teacherId).orElseThrow(
                 ()->new RuntimeException("Teacher not found with id: "+teacherId)
         );
-        if (student.getEncandrants()==null){
-            student.setEncandrants(new ArrayList<>());
-        }
+
         if(student.getEncandrants().contains(teacher)){
             return student;
         }
