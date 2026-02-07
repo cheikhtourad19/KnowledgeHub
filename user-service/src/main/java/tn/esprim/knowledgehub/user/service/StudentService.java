@@ -4,6 +4,7 @@ package tn.esprim.knowledgehub.user.service;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 import tn.esprim.knowledgehub.user.entity.Student;
+import tn.esprim.knowledgehub.user.entity.Teacher;
 import tn.esprim.knowledgehub.user.repository.ClasseRepository;
 import tn.esprim.knowledgehub.user.repository.StudentRepository;
 
@@ -16,6 +17,7 @@ public class StudentService {
     private StudentRepository  studentRepository;
 
 
+
     public Student saveStudent(Student student){
         return studentRepository.save(student);
     }
@@ -25,6 +27,7 @@ public class StudentService {
     public List<Student> getAllStudents(){
         return studentRepository.findAll();
     }
+
 
 
 
