@@ -1,4 +1,5 @@
 package tn.esprim.knowledgehub.notification.entity;
+
 import lombok.AllArgsConstructor;
 import lombok.Builder;
 import lombok.Data;
@@ -8,36 +9,30 @@ import org.springframework.data.mongodb.core.mapping.Document;
 
 import java.time.LocalDateTime;
 
+@Document(collection = "notifications")
 @Data
-@Builder
 @NoArgsConstructor
 @AllArgsConstructor
-@Document(collection = "notifications")
+@Builder
 public class Notification {
-
     @Id
     private String id;
 
     private String userId;
-
     private String content;
-
     private NotificationType type;
 
+    private String subject;
+    private String recipientEmail;
+    private String deviceToken;
     private boolean delivered;
-
-    private boolean read; // Only applicable for push notifications
-
+    private boolean read;
     private LocalDateTime createdAt;
-
     private LocalDateTime deliveredAt;
-
     private LocalDateTime readAt;
 
-    // Additional metadata
-    private String subject; // For email notifications
 
-    private String recipientEmail; // For email notifications
-
-    private String deviceToken; // For push notifications
+    private boolean emailSent;
+    private int retryCount;
+    private LocalDateTime lastRetryAt;
 }

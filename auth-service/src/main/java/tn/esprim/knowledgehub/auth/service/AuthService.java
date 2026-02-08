@@ -8,7 +8,6 @@ import org.springframework.http.HttpStatus;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
-import tn.esprim.knowledgehub.auth.client.UserServiceClient;
 import tn.esprim.knowledgehub.auth.dto.*;
 import tn.esprim.knowledgehub.auth.entity.AuthUser;
 import tn.esprim.knowledgehub.auth.exception.AuthenticationException;
@@ -26,7 +25,7 @@ public class AuthService {
     private final AuthUserRepository authUserRepository;
     private final PasswordEncoder passwordEncoder;
     private final JwtUtil jwtUtil;
-    private final UserServiceClient userServiceClient;
+    private final UserProfileService userProfileService;
 
 
 
@@ -90,37 +89,23 @@ public class AuthService {
         authUser = authUserRepository.save(authUser);
         log.info("Auth user created successfully with ID: {}", authUser.getId());
 
+        // Create user profile asynchronously - don't wait for completion
         if (request.getRole() == AuthUser.Role.STUDENT) {
-            try {
-                UserServiceRequest userServiceRequest = UserServiceRequest.builder()
-                        .authId(authUser.getId().toString())
-                        .prenom(request.getPrenom())
-                        .nom(request.getNom())
-
-                        .build();
-
-                userServiceClient.createStudent(userServiceRequest);
-                log.info("User profile created successfully in user-service");
-            } catch (Exception e) {
-                throw new RuntimeException("Failed to create user profile in user-service: " + e.getMessage());
-            }
-
+            userProfileService.createStudentProfileAsync(
+                    authUser.getId().toString(),
+                    request.getPrenom(),
+                    request.getNom()
+            );
+            log.info("Student profile creation queued for authId: {}", authUser.getId());
+        } else if (request.getRole() == AuthUser.Role.TEACHER) {
+            userProfileService.createTeacherProfileAsync(
+                    authUser.getId().toString(),
+                    request.getPrenom(),
+                    request.getNom()
+            );
+            log.info("Teacher profile creation queued for authId: {}", authUser.getId());
         }
-        if (request.getRole() == AuthUser.Role.TEACHER) {
-            try {
-                UserServiceRequest userServiceRequest = UserServiceRequest.builder()
-                        .authId(authUser.getId().toString())
-                        .prenom(request.getPrenom())
-                        .nom(request.getNom())
 
-                        .build();
-
-                userServiceClient.createTeacher(userServiceRequest);
-                log.info("User profile created successfully in user-service");
-            } catch (Exception e) {
-                throw new RuntimeException("Failed to create user profile in user-service: " + e.getMessage());
-            }
-        }
         return AuthResponse.success(authUser, "User registered successfully");
     }
 

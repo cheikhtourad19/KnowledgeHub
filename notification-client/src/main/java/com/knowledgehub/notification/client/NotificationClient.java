@@ -9,6 +9,7 @@ import org.springframework.http.HttpEntity;
 import org.springframework.http.HttpHeaders;
 import org.springframework.http.MediaType;
 import org.springframework.http.ResponseEntity;
+import org.springframework.scheduling.annotation.Async;
 import org.springframework.stereotype.Component;
 import org.springframework.web.client.RestTemplate;
 import java.util.Arrays;
@@ -29,6 +30,9 @@ public class NotificationClient {
     private static final String USER_NOTIFICATIONS_ENDPOINT = "/api/notifications/user/{userId}";
     private static final String UNREAD_NOTIFICATIONS_ENDPOINT = "/api/notifications/user/{userId}/unread";
 
+    /**
+     ma na7ithach 5ayef la tkoun used
+     */
     public NotificationResponse sendNotification(NotificationRequest request) {
         try {
             String url = notificationServiceUrl + SEND_ENDPOINT;
@@ -44,6 +48,25 @@ public class NotificationClient {
         } catch (Exception e) {
             log.error("Failed to send notification", e);
             throw new RuntimeException("Failed to send notification", e);
+        }
+    }
+
+    /**
+     ha4i 5er asynchrone
+     */
+    @Async("notificationClientExecutor")
+    public void sendNotificationAsync(NotificationRequest request) {
+        try {
+            String url = notificationServiceUrl + SEND_ENDPOINT;
+            HttpHeaders headers = new HttpHeaders();
+            headers.setContentType(MediaType.APPLICATION_JSON);
+            HttpEntity<NotificationRequest> entity = new HttpEntity<>(request, headers);
+
+            notificationRestTemplate.postForEntity(url, entity, NotificationResponse.class);
+            log.info("Notification queued successfully for user: {}", request.getUserId());
+        } catch (Exception e) {
+            log.error("Failed to queue notification for user: {}", request.getUserId(), e);
+            // bach n'implement retry ba3deyn
         }
     }
 

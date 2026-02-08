@@ -1,5 +1,6 @@
 package tn.esprim.knowledgehub.notification.service;
 
+import org.springframework.scheduling.annotation.Async;
 import tn.esprim.knowledgehub.notification.dto.request.NotificationRequest;
 import tn.esprim.knowledgehub.notification.dto.response.NotificationResponse;
 import tn.esprim.knowledgehub.notification.entity.Notification;
@@ -19,6 +20,7 @@ import java.util.stream.Collectors;
 public class NotificationService {
 
     private final NotificationRepository notificationRepository;
+    private final EmailService emailService;
 
     public NotificationResponse sendNotification(NotificationRequest request) {
         log.info("Sending notification to user: {}", request.getUserId());
@@ -32,47 +34,124 @@ public class NotificationService {
                 .deviceToken(request.getDeviceToken())
                 .delivered(false)
                 .read(false)
+                .emailSent(false)
+                .retryCount(0)
                 .createdAt(LocalDateTime.now())
                 .build();
 
 
-        boolean sent = sendActualNotification(notification);
-
-        if (sent) {
-            notification.setDelivered(true);
-            notification.setDeliveredAt(LocalDateTime.now());
-        }
-
         Notification saved = notificationRepository.save(notification);
 
+        // Send asynchronously - don't wait for result
+        if (saved.getType() == NotificationType.EMAIL) {
+            sendEmailNotificationAsync(saved.getId());
+        } else if (saved.getType() == NotificationType.PUSH) {
+            sendPushNotification(saved);
+        }
+
+        // Return immediately
         return mapToResponse(saved);
     }
 
-    private boolean sendActualNotification(Notification notification) {
-        /**
-         * houn bach n integri system de notfication (email, push, etc.) w n handle les erreurs li ymkn t9a3 f had l process
-         */
+    @Async("emailTaskExecutor")
+    public void sendEmailNotificationAsync(String notificationId) {
+        try {
+            Notification notification = notificationRepository.findById(notificationId)
+                    .orElseThrow(() -> new RuntimeException("Notification not found: " + notificationId));
 
-        if (notification.getType() == NotificationType.EMAIL) {
-            log.info("Sending email to: {}", notification.getRecipientEmail());
-            // Email sending logic here
-            return true;
-        } else {
+            log.info("Async sending email to: {}", notification.getRecipientEmail());
+
+            if (notification.getRecipientEmail() == null || notification.getRecipientEmail().isBlank()) {
+                log.error("Recipient email is null or empty for notification: {}", notificationId);
+                return;
+            }
+
+            if (notification.getSubject() == null || notification.getSubject().isBlank()) {
+                notification.setSubject("KnowledgeHub Notification");
+            }
+
+            String htmlContent = emailService.buildHtmlTemplate(
+                    formatEmailContent(notification.getContent()),
+                    notification.getSubject()
+            );
+
+            emailService.sendHtmlEmail(
+                    notification.getRecipientEmail(),
+                    notification.getSubject(),
+                    htmlContent
+            );
+
+            notification.setEmailSent(true);
+            notification.setDelivered(true);
+            notification.setDeliveredAt(LocalDateTime.now());
+            notificationRepository.save(notification);
+
+            log.info("Async email sent successfully to: {}", notification.getRecipientEmail());
+
+        } catch (Exception e) {
+            log.error("Async email sending failed for notification: {}", notificationId, e);
+
+            // Update retry count
+            notificationRepository.findById(notificationId).ifPresent(n -> {
+                n.setRetryCount(n.getRetryCount() + 1);
+                n.setLastRetryAt(LocalDateTime.now());
+                notificationRepository.save(n);
+            });
+        }
+    }
+
+    /**
+     * Format email content with proper HTML paragraphs
+     */
+    private String formatEmailContent(String content) {
+        if (content == null) {
+            return "";
+        }
+
+        // Convert line breaks to HTML paragraphs
+        String[] paragraphs = content.split("\n");
+        StringBuilder html = new StringBuilder();
+
+        for (String paragraph : paragraphs) {
+            if (!paragraph.trim().isEmpty()) {
+                html.append("<p>").append(paragraph.trim()).append("</p>");
+            }
+        }
+
+        return html.toString();
+    }
+
+    /**
+     * l hna bach nchouf 7al l notification mta3 l mobile
+     */
+    private void sendPushNotification(Notification notification) {
+        try {
             log.info("Sending push notification to device: {}", notification.getDeviceToken());
-            // Push notification logic here
-            return true;
+
+            // Validate device token
+            if (notification.getDeviceToken() == null || notification.getDeviceToken().isBlank()) {
+                log.error("Device token is null or empty");
+                return;
+            }
+
+            // TODO: bach nchoufou m3a firebase wala provider a5ar
+
+            log.info("Push notification would be sent: {}", notification.getContent());
+
+
+        } catch (Exception e) {
+            log.error("Failed to send push notification", e);
         }
     }
 
     public NotificationResponse markAsRead(String notificationId) {
         Notification notification = notificationRepository.findById(notificationId)
-                .orElseThrow(() -> new RuntimeException("Notification not found"));
+                .orElseThrow(() -> new RuntimeException("Notification not found with id: " + notificationId));
 
         notification.setRead(true);
         notification.setReadAt(LocalDateTime.now());
 
         Notification updated = notificationRepository.save(notification);
-
         return mapToResponse(updated);
     }
 
