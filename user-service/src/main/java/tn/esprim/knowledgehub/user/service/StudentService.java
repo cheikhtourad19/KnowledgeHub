@@ -1,15 +1,12 @@
 package tn.esprim.knowledgehub.user.service;
 
-
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 import tn.esprim.knowledgehub.user.entity.Student;
 import tn.esprim.knowledgehub.user.entity.Teacher;
-import tn.esprim.knowledgehub.user.repository.ClasseRepository;
 import tn.esprim.knowledgehub.user.repository.StudentRepository;
 import tn.esprim.knowledgehub.user.repository.TeacherRepository;
 
-import java.util.ArrayList;
 import java.util.List;
 
 @Service

@@ -46,6 +46,13 @@
             <version>0.12.3</version>
             <scope>runtime</scope>
         </dependency>
+
+        <dependency>
+            <groupId>tn.esprim</groupId>
+            <artifactId>notification-client</artifactId>
+            <version>1.0.0</version>
+        </dependency>
+
         <dependency>
             <groupId>io.jsonwebtoken</groupId>
             <artifactId>jjwt-jackson</artifactId>

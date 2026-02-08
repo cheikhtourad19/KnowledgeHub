@@ -13,6 +13,7 @@
         </processorPath>
         <module name="api-gateway" />
         <module name="resource-service" />
+        <module name="notification-client" />
         <module name="auth-service" />
         <module name="user-service" />
         <module name="notification-service" />
@@ -23,6 +24,7 @@
     <option name="ADDITIONAL_OPTIONS_OVERRIDE">
       <module name="api-gateway" options="-parameters" />
       <module name="auth-service" options="-parameters" />
+      <module name="notification-client" options="-parameters" />
       <module name="notification-service" options="-parameters" />
       <module name="resource-service" options="-parameters" />
       <module name="user-service" options="-parameters" />

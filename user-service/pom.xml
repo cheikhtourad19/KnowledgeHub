@@ -28,6 +28,13 @@
             <artifactId>spring-boot-starter-data-jpa</artifactId>
         </dependency>
 
+        <dependency>
+            <groupId>tn.esprim</groupId>
+            <artifactId>notification-client</artifactId>
+            <version>1.0.0</version>
+        </dependency>
+
+
         <!-- Database -->
 
 

@@ -4,19 +4,23 @@ server:
 spring:
   application:
     name: notification-service
-  datasource:
-    url: jdbc:h2:mem:notificationdb
-    driver-class-name: org.h2.Driver
-    username: sa
-    password:
-  jpa:
-    hibernate:
-      ddl-auto: update
-    show-sql: true
-  h2:
-    console:
-      enabled: true
+  data:
+    mongodb:
+      uri: mongodb://localhost:27017/notification_db
+      # MongoDB doesn't use JPA/Hibernate - remove JPA config
+  # Remove these JPA settings - they're for SQL databases only
+  # jpa:
+  #   hibernate:
+  #     ddl-auto: update
+  #   show-sql: true
 
+# Optional: Add logging for debugging
+logging:
+  level:
+    com.example.notification: DEBUG
+    org.springframework.data.mongodb: DEBUG
+
+# Swagger/OpenAPI configuration
 springdoc:
   api-docs:
     path: /api-docs

@@ -21,6 +21,12 @@
             <groupId>org.springframework.boot</groupId>
             <artifactId>spring-boot-starter-web</artifactId>
         </dependency>
+        <dependency>
+            <groupId>tn.esprim</groupId>
+            <artifactId>notification-client</artifactId>
+            <version>1.0.0</version>
+        </dependency>
+
 
         <!-- Spring Data JPA -->
         <dependency>
