@@ -16,4 +16,6 @@ public interface ResetRepository extends JpaRepository<Reset,Long> {
 
     List<Reset> findByExpiresAtAfter(LocalDateTime now);
 
+    List<Reset> findByExpiresAtBefore(LocalDateTime now);
+
 }
