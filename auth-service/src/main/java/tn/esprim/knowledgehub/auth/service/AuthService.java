@@ -1,6 +1,9 @@
 package tn.esprim.knowledgehub.auth.service;
 
 
+import com.knowledgehub.notification.client.NotificationClient;
+import com.knowledgehub.notification.client.dto.NotificationRequest;
+import com.knowledgehub.notification.client.dto.NotificationType;
 import io.jsonwebtoken.Claims;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
@@ -10,12 +13,17 @@ import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 import tn.esprim.knowledgehub.auth.dto.*;
 import tn.esprim.knowledgehub.auth.entity.AuthUser;
+import tn.esprim.knowledgehub.auth.entity.Reset;
 import tn.esprim.knowledgehub.auth.exception.AuthenticationException;
 import tn.esprim.knowledgehub.auth.exception.InvalidTokenException;
 import tn.esprim.knowledgehub.auth.repository.AuthUserRepository;
+import tn.esprim.knowledgehub.auth.repository.ResetRepository;
 import tn.esprim.knowledgehub.auth.util.JwtUtil;
+import tn.esprim.knowledgehub.auth.util.PasswordGenerator;
 
 import java.time.LocalDateTime;
+import java.util.List;
+import java.util.UUID;
 
 @Service
 @RequiredArgsConstructor
@@ -26,7 +34,8 @@ public class AuthService {
     private final PasswordEncoder passwordEncoder;
     private final JwtUtil jwtUtil;
     private final UserProfileService userProfileService;
-
+    private final NotificationClient notificationClient;
+    private final ResetRepository resetRepository;
 
 
     @Transactional
@@ -116,6 +125,64 @@ public class AuthService {
         authUser.setPassword(passwordEncoder.encode(password));
         return authUserRepository.save(authUser);
     }
+
+    @Transactional
+    public void createResetToken(String email) {
+        authUserRepository.findByEmail(email).ifPresent(authUser -> {
+
+            resetRepository.deleteByAuthUser(authUser);
+
+            String token = UUID.randomUUID().toString();
+
+            Reset reset = Reset.builder()
+                    .authUser(authUser)
+                    .code(passwordEncoder.encode(token))
+                    .expiresAt(LocalDateTime.now().plusMinutes(15))
+                    .build();
+
+            resetRepository.save(reset);
+
+            notificationClient.sendNotification(
+                    NotificationRequest.builder()
+                            .userId(authUser.getId().toString())
+                            .recipientEmail(email)
+                            .type(NotificationType.EMAIL)
+                            .subject("Reset password")
+                            .content("Your reset code is: " + token)
+                            .build()
+            );
+        });
+    }
+
+
+    @Transactional
+    public AuthUser resetPassword(String token, String newPassword) {
+
+        List<Reset> validResets =
+                resetRepository.findByExpiresAtAfter(LocalDateTime.now());
+
+        Reset reset = validResets.stream()
+                .filter(r -> passwordEncoder.matches(token, r.getCode()))
+                .findFirst()
+                .orElseThrow(() -> new RuntimeException("Invalid or expired token"));
+
+        AuthUser user = reset.getAuthUser();
+        user.setPassword(passwordEncoder.encode(newPassword));
+
+        resetRepository.delete(reset);
+        notificationClient.sendNotification(
+                NotificationRequest.builder()
+                        .userId(user.getId().toString())
+                        .recipientEmail(user.getEmail())
+                        .type(NotificationType.EMAIL)
+                        .subject("Password reset successful")
+                        .content("Your password has been reset successfully if you did not initiate this change, please contact administration ASAP")
+                        .build()
+        );
+        return authUserRepository.save(user);
+    }
+
+
 
 
     public TokenValidationResponse validateToken(String token) {

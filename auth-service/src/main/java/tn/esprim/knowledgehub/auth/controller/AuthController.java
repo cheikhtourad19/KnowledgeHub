@@ -4,21 +4,17 @@ package tn.esprim.knowledgehub.auth.controller;
 import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.Parameter;
 import io.swagger.v3.oas.annotations.enums.ParameterIn;
-import io.swagger.v3.oas.annotations.headers.Header;
 import io.swagger.v3.oas.annotations.media.Content;
 import io.swagger.v3.oas.annotations.media.Schema;
 import io.swagger.v3.oas.annotations.responses.ApiResponses;
 import io.swagger.v3.oas.annotations.tags.Tag;
 import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
+import lombok.extern.slf4j.Slf4j;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
-import tn.esprim.knowledgehub.auth.dto.AuthRequest;
-import tn.esprim.knowledgehub.auth.dto.AuthResponse;
-import tn.esprim.knowledgehub.auth.dto.LoginRequest;
-import tn.esprim.knowledgehub.auth.dto.RegisterRequest;
-import tn.esprim.knowledgehub.auth.dto.TokenValidationResponse;
+import tn.esprim.knowledgehub.auth.dto.*;
 import tn.esprim.knowledgehub.auth.entity.AuthUser;
 import tn.esprim.knowledgehub.auth.service.AuthService;
 
@@ -27,6 +23,7 @@ import java.util.Objects;
 @RestController
 @RequestMapping("/api")
 @RequiredArgsConstructor
+@Slf4j
 @Tag(name = "Authentication", description = "APIs for user authentication, registration, and token management")
 public class AuthController {
 
@@ -196,6 +193,35 @@ public class AuthController {
                     )
             )
     })
+    @PostMapping("/public/reset-password")
+    public ResponseEntity<AuthResponse> requestReset(
+            @RequestBody CreateResetRequest request
+    ) {
+        authService.createResetToken(request.getEmail());
+
+        return ResponseEntity.ok(
+                AuthResponse.success(
+                        null,
+                        "If the email exists, a reset link has been sent"
+                )
+        );
+    }
+    @PostMapping("/public/reset-password/{token}")
+    public ResponseEntity<AuthResponse> resetPassword(
+            @PathVariable String token,
+            @RequestBody ResetRequest request
+    ) {
+        if (!request.getNewPassword().equals(request.getConfirmPassword())) {
+            throw new RuntimeException("Passwords do not match");
+        }
+
+        authService.resetPassword(token, request.getNewPassword());
+
+        return ResponseEntity.ok(
+                AuthResponse.success(null,"Password reset successfully")
+        );
+    }
+
     @PostMapping("/validate")
     public ResponseEntity<TokenValidationResponse> validateToken(
             @RequestHeader("Authorization") String authHeader) {
