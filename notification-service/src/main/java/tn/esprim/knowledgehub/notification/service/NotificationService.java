@@ -75,18 +75,20 @@ public class NotificationService {
                     notification.getSubject()
             );
 
+            // Send email - this will throw exception if it fails
             emailService.sendHtmlEmail(
                     notification.getRecipientEmail(),
                     notification.getSubject(),
                     htmlContent
             );
 
+            // ✅ ONLY mark as sent/delivered if sendHtmlEmail() succeeded (no exception)
             notification.setEmailSent(true);
             notification.setDelivered(true);
             notification.setDeliveredAt(LocalDateTime.now());
             notificationRepository.save(notification);
 
-            log.info("Async email sent successfully to: {}", notification.getRecipientEmail());
+            log.info("✅ Email sent and delivered successfully to: {}", notification.getRecipientEmail());
 
         } catch (Exception e) {
             log.error("Async email sending failed for notification: {}", notificationId, e);

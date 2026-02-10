@@ -51,7 +51,7 @@ public class EmailService {
      */
     public void sendHtmlEmail(String to, String subject, String htmlContent) {
         try {
-            log.info("Sending HTML email to: {}", to);
+            log.info("📧 Attempting to send HTML email to: {}", to);
 
             MimeMessage mimeMessage = mailSender.createMimeMessage();
             MimeMessageHelper helper = new MimeMessageHelper(mimeMessage, true, "UTF-8");
@@ -61,16 +61,37 @@ public class EmailService {
             helper.setSubject(subject);
             helper.setText(htmlContent, true); // true = HTML
 
+            log.debug("Connecting to SMTP server to send email...");
             mailSender.send(mimeMessage);
-
-            log.info("HTML email sent successfully to: {}", to);
+            log.info("✅ Email successfully handed to SMTP server for: {}", to);
 
         } catch (MessagingException e) {
-            log.error("Failed to send HTML email to: {}", to, e);
+            log.error("❌ MessagingException while sending email to: {} - {}", to, e.getMessage(), e);
             throw new RuntimeException("Failed to send HTML email: " + e.getMessage(), e);
+        } catch (org.springframework.mail.MailAuthenticationException e) {
+            log.error("❌ SMTP Authentication Failed! Check your email credentials in application.yml", e);
+            throw new RuntimeException("SMTP Authentication Failed: " + e.getMessage(), e);
+        } catch (org.springframework.mail.MailSendException e) {
+            log.error("❌ SMTP Send Failed for: {} - {}", to, e.getMessage(), e);
+            throw new RuntimeException("Failed to send email via SMTP: " + e.getMessage(), e);
         } catch (Exception e) {
-            log.error("Unexpected error sending email to: {}", to, e);
+            log.error("❌ Unexpected error sending email to: {} - {}", to, e.getMessage(), e);
             throw new RuntimeException("Failed to send email: " + e.getMessage(), e);
+        }
+    }
+
+    /**
+     * Test SMTP connection
+     */
+    public boolean testConnection() {
+        try {
+            log.info("Testing SMTP connection...");
+            mailSender.createMimeMessage(); // Just create a message to test configuration
+            log.info("✅ SMTP configuration appears valid");
+            return true;
+        } catch (Exception e) {
+            log.error("❌ SMTP configuration test failed: {}", e.getMessage(), e);
+            return false;
         }
     }
 

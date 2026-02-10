@@ -29,6 +29,7 @@ public class EmailRetryScheduler {
     @EventListener(ApplicationReadyEvent.class)
     public void sendUnsentEmailsOnStartup() {
         log.info("Application started - checking for unsent emails...");
+        deleteUnsentEmails();
         retryUnsentEmails();
     }
 
@@ -40,6 +41,26 @@ public class EmailRetryScheduler {
      public void scheduledEmailRetryCron() {
          log.info("Scheduled task triggered - checking for unsent emails...");
          retryUnsentEmails();
+     }
+
+    @Scheduled(cron = "0 0 * * * *")
+    public void scheduledEmailDeleteCron() {
+        log.info("Scheduled task triggered - checking for unsent emails...");
+            deleteUnsentEmails();
+    }
+     private void deleteUnsentEmails() {
+         try {
+             List<Notification> sentEmails = notificationRepository
+                     .findByTypeAndEmailSent(
+                             NotificationType.EMAIL, true);
+             if (sentEmails.isEmpty()) {
+                 return;
+             }
+             notificationRepository.deleteAll(sentEmails);
+
+         }catch (Exception e) {
+             log.error("Error during email retry task", e);
+         }
      }
 
     private void retryUnsentEmails() {

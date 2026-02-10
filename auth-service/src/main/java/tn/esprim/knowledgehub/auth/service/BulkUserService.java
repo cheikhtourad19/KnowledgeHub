@@ -2,7 +2,6 @@ package tn.esprim.knowledgehub.auth.service;
 
 import com.knowledgehub.notification.client.NotificationClient;
 import com.knowledgehub.notification.client.dto.NotificationRequest;
-import com.knowledgehub.notification.client.dto.NotificationResponse;
 import com.knowledgehub.notification.client.dto.NotificationType;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
@@ -43,8 +42,9 @@ public class BulkUserService {
         }
 
         List<StudentData> validStudents = new ArrayList<>();
+        List<String> allEmails = new ArrayList<>();
 
-        // STEP 1: Parse CSV ONCE and validate all data
+        // STEP 1: Parse CSV ONCE and collect all emails first
         try (BufferedReader reader = new BufferedReader(
                 new InputStreamReader(file.getInputStream(), StandardCharsets.UTF_8))) {
 
@@ -75,19 +75,15 @@ public class BulkUserService {
                 String nom = fields[1].trim();
                 String prenom = fields[2].trim();
 
-                // Validate email
+                // Validate email format
                 if (!email.contains("@")) {
                     log.warn("Skipping line {} - invalid email: {}", lineNumber, email);
                     continue;
                 }
 
-                // Check if email already exists
-                if (authUserRepository.existsByEmail(email)) {
-                    log.warn("Skipping line {} - email already exists: {}", lineNumber, email);
-                    continue;
-                }
+                allEmails.add(email);
 
-                // Store valid student data
+                // Store valid student data (will filter duplicates later)
                 StudentData data = new StudentData();
                 data.email = email;
                 data.nom = nom;
@@ -99,6 +95,16 @@ public class BulkUserService {
         } catch (Exception e) {
             throw e;
         }
+
+        // STEP 1.5: Batch check for existing emails (ONE query instead of N queries)
+        List<String> existingEmails = authUserRepository.findEmailsByEmailIn(allEmails);
+        validStudents.removeIf(data -> {
+            if (existingEmails.contains(data.email)) {
+                log.warn("Skipping email already exists: {}", data.email);
+                return true;
+            }
+            return false;
+        });
 
         if (validStudents.isEmpty()) {
             log.warn("No valid students found in CSV file");
@@ -122,7 +128,7 @@ public class BulkUserService {
         List<AuthUser> savedAuthUsers = authUserRepository.saveAll(authUsers);
         log.info("Saved {} students in auth-service", savedAuthUsers.size());
 
-        // STEP 3: Prepare UserServiceRequests and NotificationRequests
+        // STEP 3: Prepare UserServiceRequests and send notifications ASYNCHRONOUSLY
         List<UserServiceRequest> userServiceRequests = new ArrayList<>();
         List<BulkUserCreationResult> results = new ArrayList<>();
 
@@ -138,7 +144,7 @@ public class BulkUserService {
                     .build();
             userServiceRequests.add(userRequest);
 
-
+            // Send notification ASYNCHRONOUSLY (fire and forget - no waiting!)
             NotificationRequest notificationRequest = NotificationRequest.builder()
                     .userId(String.valueOf(savedAuthUser.getId()))
                     .subject("Bienvenue sur KnowledgeHub")
@@ -147,19 +153,22 @@ public class BulkUserService {
                     .recipientEmail(data.email)
                     .build();
 
-            NotificationResponse notificationResponse = null;
+            // Use ASYNC method - doesn't block!
+            boolean notified = false;
             try {
-                notificationResponse = notificationClient.sendNotification(notificationRequest);
-                log.info("Notification sent for student: {}", data.email);
+                notificationClient.sendNotificationAsync(notificationRequest);
+                notified = true;
+                log.debug("Notification queued for student: {}", data.email);
             } catch (Exception e) {
-                log.error("Failed to send notification for student: {} - {}", data.email, e.getMessage());
-                // Continue with user creation even if notification fails
+                log.error("Failed to queue notification for student: {}", data.email, e);
             }
 
-            // Create result object with user and notification (notification may be null if failed)
+            // Create simplified result object
             BulkUserCreationResult result = BulkUserCreationResult.builder()
-                    .user(savedAuthUser)
-                    .notification(notificationResponse)
+                    .email(data.email)
+                    .nom(data.nom)
+                    .prenom(data.prenom)
+                    .notified(notified)
                     .build();
             results.add(result);
         }
@@ -182,8 +191,9 @@ public class BulkUserService {
         }
 
         List<TeacherData> validTeachers = new ArrayList<>();
+        List<String> allEmails = new ArrayList<>();
 
-        // STEP 1: Parse CSV ONCE and validate all data
+        // STEP 1: Parse CSV ONCE and collect all emails first
         try (BufferedReader reader = new BufferedReader(
                 new InputStreamReader(file.getInputStream(), StandardCharsets.UTF_8))) {
 
@@ -214,19 +224,15 @@ public class BulkUserService {
                 String nom = fields[1].trim();
                 String prenom = fields[2].trim();
 
-                // Validate email
+                // Validate email format
                 if (!email.contains("@")) {
                     log.warn("Skipping line {} - invalid email: {}", lineNumber, email);
                     continue;
                 }
 
-                // Check if email already exists
-                if (authUserRepository.existsByEmail(email)) {
-                    log.warn("Skipping line {} - email already exists: {}", lineNumber, email);
-                    continue;
-                }
+                allEmails.add(email);
 
-                // Store valid teacher data
+                // Store valid teacher data (will filter duplicates later)
                 TeacherData data = new TeacherData();
                 data.email = email;
                 data.nom = nom;
@@ -236,6 +242,16 @@ public class BulkUserService {
                 validTeachers.add(data);
             }
         }
+
+        // STEP 1.5: Batch check for existing emails (ONE query instead of N queries)
+        List<String> existingEmails = authUserRepository.findEmailsByEmailIn(allEmails);
+        validTeachers.removeIf(data -> {
+            if (existingEmails.contains(data.email)) {
+                log.warn("Skipping email already exists: {}", data.email);
+                return true;
+            }
+            return false;
+        });
 
         if (validTeachers.isEmpty()) {
             log.warn("No valid teachers found in CSV file");
@@ -259,7 +275,7 @@ public class BulkUserService {
         List<AuthUser> savedAuthUsers = authUserRepository.saveAll(authUsers);
         log.info("Saved {} teachers in auth-service", savedAuthUsers.size());
 
-        // STEP 3: Prepare UserServiceRequests and NotificationRequests
+        // STEP 3: Prepare UserServiceRequests and send notifications ASYNCHRONOUSLY
         List<UserServiceRequest> userServiceRequests = new ArrayList<>();
         List<BulkUserCreationResult> results = new ArrayList<>();
 
@@ -275,7 +291,7 @@ public class BulkUserService {
                     .build();
             userServiceRequests.add(userRequest);
 
-            // Send welcome email and capture response
+            // Send notification ASYNCHRONOUSLY (fire and forget - no waiting!)
             NotificationRequest notificationRequest = NotificationRequest.builder()
                     .userId(String.valueOf(savedAuthUser.getId()))
                     .subject("Bienvenue sur KnowledgeHub")
@@ -284,19 +300,22 @@ public class BulkUserService {
                     .recipientEmail(data.email)
                     .build();
 
-            NotificationResponse notificationResponse = null;
+            // Use ASYNC method - doesn't block!
+            boolean notified = false;
             try {
-                notificationResponse = notificationClient.sendNotification(notificationRequest);
-                log.info("Notification sent for teacher: {}", data.email);
+                notificationClient.sendNotificationAsync(notificationRequest);
+                notified = true;
+                log.debug("Notification queued for teacher: {}", data.email);
             } catch (Exception e) {
-                log.error("Failed to send notification for teacher: {} - {}", data.email, e.getMessage());
-                // Continue with user creation even if notification fails
+                log.error("Failed to queue notification for teacher: {}", data.email, e);
             }
 
-            // Create result object with user and notification (notification may be null if failed)
+            // Create simplified result object
             BulkUserCreationResult result = BulkUserCreationResult.builder()
-                    .user(savedAuthUser)
-                    .notification(notificationResponse)
+                    .email(data.email)
+                    .nom(data.nom)
+                    .prenom(data.prenom)
+                    .notified(notified)
                     .build();
             results.add(result);
         }
