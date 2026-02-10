@@ -8,6 +8,7 @@ import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 import org.springframework.web.multipart.MultipartFile;
 import tn.esprim.knowledgehub.auth.dto.AuthResponse;
+import tn.esprim.knowledgehub.auth.dto.BulkUserCreationResult;
 import tn.esprim.knowledgehub.auth.entity.AuthUser;
 import tn.esprim.knowledgehub.auth.service.BulkUserService;
 
@@ -38,8 +39,8 @@ public class BulkUserController {
         }
 
         try {
-            List<AuthUser> count = bulkUserService.processStudentsCsv(file);
-            return ResponseEntity.ok(AuthResponse.success(count,"users saved"));
+            List<BulkUserCreationResult> results = bulkUserService.processStudentsCsv(file);
+            return ResponseEntity.ok(AuthResponse.success(results,"Users created and notifications sent successfully"));
         } catch (Exception e) {
             log.error("Error processing students CSV: {}", e.getMessage(), e);
             return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR)
@@ -62,9 +63,9 @@ public class BulkUserController {
         }
 
         try {
-            List<AuthUser> auth = bulkUserService.processTeachersCsv(file);
+            List<BulkUserCreationResult> results = bulkUserService.processTeachersCsv(file);
             return ResponseEntity.ok(
-                    AuthResponse.success(auth,"users created")
+                    AuthResponse.success(results,"Users created and notifications sent successfully")
             );
         } catch (Exception e) {
             log.error("Error processing teachers CSV: {}", e.getMessage(), e);

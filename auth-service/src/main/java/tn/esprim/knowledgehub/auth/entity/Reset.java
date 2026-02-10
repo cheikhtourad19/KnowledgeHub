@@ -22,6 +22,5 @@ public class Reset {
     @OneToOne
     private AuthUser authUser;
     private LocalDateTime expiresAt;
-
     private String code;
 }

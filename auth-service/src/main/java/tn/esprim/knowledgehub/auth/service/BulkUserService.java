@@ -2,6 +2,7 @@ package tn.esprim.knowledgehub.auth.service;
 
 import com.knowledgehub.notification.client.NotificationClient;
 import com.knowledgehub.notification.client.dto.NotificationRequest;
+import com.knowledgehub.notification.client.dto.NotificationResponse;
 import com.knowledgehub.notification.client.dto.NotificationType;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
@@ -9,6 +10,7 @@ import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 import org.springframework.web.multipart.MultipartFile;
+import tn.esprim.knowledgehub.auth.dto.BulkUserCreationResult;
 import tn.esprim.knowledgehub.auth.dto.UserServiceRequest;
 import tn.esprim.knowledgehub.auth.entity.AuthUser;
 import tn.esprim.knowledgehub.auth.repository.AuthUserRepository;
@@ -31,7 +33,7 @@ public class BulkUserService {
     private final NotificationClient notificationClient;
 
     @Transactional
-    public List<AuthUser> processStudentsCsv(MultipartFile file) throws Exception {
+    public List<BulkUserCreationResult> processStudentsCsv(MultipartFile file) throws Exception {
         // Temporary class to hold all parsed data together
         class StudentData {
             String email;
@@ -122,6 +124,7 @@ public class BulkUserService {
 
         // STEP 3: Prepare UserServiceRequests and NotificationRequests
         List<UserServiceRequest> userServiceRequests = new ArrayList<>();
+        List<BulkUserCreationResult> results = new ArrayList<>();
 
         for (int i = 0; i < savedAuthUsers.size(); i++) {
             AuthUser savedAuthUser = savedAuthUsers.get(i);
@@ -143,18 +146,33 @@ public class BulkUserService {
                     .type(NotificationType.EMAIL)
                     .recipientEmail(data.email)
                     .build();
-            notificationClient.sendNotificationAsync(notificationRequest);
+
+            NotificationResponse notificationResponse = null;
+            try {
+                notificationResponse = notificationClient.sendNotification(notificationRequest);
+                log.info("Notification sent for student: {}", data.email);
+            } catch (Exception e) {
+                log.error("Failed to send notification for student: {} - {}", data.email, e.getMessage());
+                // Continue with user creation even if notification fails
+            }
+
+            // Create result object with user and notification (notification may be null if failed)
+            BulkUserCreationResult result = BulkUserCreationResult.builder()
+                    .user(savedAuthUser)
+                    .notification(notificationResponse)
+                    .build();
+            results.add(result);
         }
 
         // STEP 4: Call user-service asynchronously to create all profiles in one batch
         userProfileService.createStudentProfilesAsync(userServiceRequests);
         log.info("Queued {} student profiles for creation", userServiceRequests.size());
 
-        return savedAuthUsers;
+        return results;
     }
 
     @Transactional
-    public List<AuthUser> processTeachersCsv(MultipartFile file) throws Exception {
+    public List<BulkUserCreationResult> processTeachersCsv(MultipartFile file) throws Exception {
         // Temporary class to hold all parsed data together
         class TeacherData {
             String email;
@@ -243,6 +261,7 @@ public class BulkUserService {
 
         // STEP 3: Prepare UserServiceRequests and NotificationRequests
         List<UserServiceRequest> userServiceRequests = new ArrayList<>();
+        List<BulkUserCreationResult> results = new ArrayList<>();
 
         for (int i = 0; i < savedAuthUsers.size(); i++) {
             AuthUser savedAuthUser = savedAuthUsers.get(i);
@@ -256,7 +275,7 @@ public class BulkUserService {
                     .build();
             userServiceRequests.add(userRequest);
 
-            // Send welcome email asynchronously (fire and forget)
+            // Send welcome email and capture response
             NotificationRequest notificationRequest = NotificationRequest.builder()
                     .userId(String.valueOf(savedAuthUser.getId()))
                     .subject("Bienvenue sur KnowledgeHub")
@@ -264,13 +283,28 @@ public class BulkUserService {
                     .type(NotificationType.EMAIL)
                     .recipientEmail(data.email)
                     .build();
-            notificationClient.sendNotificationAsync(notificationRequest);
+
+            NotificationResponse notificationResponse = null;
+            try {
+                notificationResponse = notificationClient.sendNotification(notificationRequest);
+                log.info("Notification sent for teacher: {}", data.email);
+            } catch (Exception e) {
+                log.error("Failed to send notification for teacher: {} - {}", data.email, e.getMessage());
+                // Continue with user creation even if notification fails
+            }
+
+            // Create result object with user and notification (notification may be null if failed)
+            BulkUserCreationResult result = BulkUserCreationResult.builder()
+                    .user(savedAuthUser)
+                    .notification(notificationResponse)
+                    .build();
+            results.add(result);
         }
 
         // STEP 4: Call user-service asynchronously to create all profiles in one batch
         userProfileService.createTeacherProfilesAsync(userServiceRequests);
         log.info("Queued {} teacher profiles for creation", userServiceRequests.size());
 
-        return savedAuthUsers;
+        return results;
     }
 }
