@@ -65,13 +65,7 @@ public class PFA {
     @Column(nullable = false)
     private Boolean isPublished = false;
 
-    @Column(nullable = false)
-    @Builder.Default
-    private Integer viewCount = 0;
 
-    @Column(nullable = false)
-    @Builder.Default
-    private Integer downloadCount = 0;
 
     @CreationTimestamp
     @Temporal(TemporalType.TIMESTAMP)

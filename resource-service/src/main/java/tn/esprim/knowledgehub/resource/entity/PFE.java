@@ -75,25 +75,16 @@ public class PFE {
     @Temporal(TemporalType.TIMESTAMP)
     private Date reviewDate;
 
-    @Temporal(TemporalType.DATE)
-    private Date defenseDate;
-
     @Lob
     private String supervisorFeedback;
 
-    @Column(precision = 5, scale = 2)
+
     private Float plagiarismScore;
 
     @Column(nullable = false)
     private Boolean isPublished = false;
 
-    @Column(nullable = false)
-    @Builder.Default
-    private Integer viewCount = 0;
 
-    @Column(nullable = false)
-    @Builder.Default
-    private Integer downloadCount = 0;
 
     @CreationTimestamp
     @Temporal(TemporalType.TIMESTAMP)

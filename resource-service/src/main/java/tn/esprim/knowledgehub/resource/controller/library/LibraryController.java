@@ -1,4 +1,4 @@
-package tn.esprim.knowledgehub.resource.controller.public_;
+package tn.esprim.knowledgehub.resource.controller.library;
 
 import lombok.RequiredArgsConstructor;
 import org.springframework.web.bind.annotation.*;
@@ -11,5 +11,5 @@ public class LibraryController {
 
     private final LibraryService libraryService;
 
-    // TODO: Implement library endpoints
+
 }

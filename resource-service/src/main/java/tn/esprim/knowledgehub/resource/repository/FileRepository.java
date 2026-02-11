@@ -11,7 +11,7 @@ public interface FileRepository extends JpaRepository<File, Long> {
 
     Optional<File> findByFileName(String fileName);
 
-    Optional<File> findByChecksum(String checksum);
+    Optional<File> findByUploadedByUserId(Long userId);
 
-    boolean existsByChecksum(String checksum);
+
 }
