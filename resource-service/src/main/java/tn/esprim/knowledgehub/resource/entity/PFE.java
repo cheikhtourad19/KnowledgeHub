@@ -24,10 +24,7 @@ public class PFE {
     @Column(nullable = false)
     private String title;
 
-    @Lob
-    private String description;
 
-    private String subject;
 
     private Integer year;
 
@@ -35,7 +32,7 @@ public class PFE {
     @Column(nullable = false)
     private SubmissionStatus status;
 
-    // User Service references
+
     @Column(nullable = false)
     private Long studentId;
 
@@ -72,18 +69,11 @@ public class PFE {
     @Temporal(TemporalType.TIMESTAMP)
     private Date submissionDate;
 
-    @Temporal(TemporalType.TIMESTAMP)
-    private Date reviewDate;
-
     @Lob
     private String supervisorFeedback;
 
 
     private Float plagiarismScore;
-
-    @Column(nullable = false)
-    private Boolean isPublished = false;
-
 
 
     @CreationTimestamp
@@ -91,7 +81,5 @@ public class PFE {
     @Column(nullable = false, updatable = false)
     private Date createdDate;
 
-    @UpdateTimestamp
-    @Temporal(TemporalType.TIMESTAMP)
-    private Date lastModifiedDate;
+
 }

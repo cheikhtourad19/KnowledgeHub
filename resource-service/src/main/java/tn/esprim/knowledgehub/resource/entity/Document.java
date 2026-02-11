@@ -35,7 +35,6 @@ public class Document {
 
     private String subject;
 
-    private String targetAudience;
 
     // Teacher reference
     @Column(nullable = false)
@@ -45,46 +44,29 @@ public class Document {
 
     private String teacherEmail;
 
-    private String teacherDepartment;
+
 
     // File relationship
     @ManyToOne(fetch = FetchType.LAZY)
     @JoinColumn(name = "file_id", nullable = false)
     private File file;
 
-    @ElementCollection
-    @CollectionTable(name = "document_tags", joinColumns = @JoinColumn(name = "document_id"))
-    @Column(name = "tag")
+    @Column(name = "keywords")
     @Builder.Default
-    private List<String> tags = new ArrayList<>();
+    private List<String> keywords = new ArrayList<>();
 
     @Column(nullable = false)
     @Builder.Default
     private Boolean isPublished = true;
 
-    @Column(nullable = false)
-    @Builder.Default
-    private Boolean isFeatured = false;
 
-    @Column(nullable = false)
-    @Builder.Default
-    private Integer viewCount = 0;
 
-    @Column(nullable = false)
-    @Builder.Default
-    private Integer downloadCount = 0;
+
 
     @CreationTimestamp
     @Temporal(TemporalType.TIMESTAMP)
     @Column(nullable = false, updatable = false)
     private Date publishedDate;
 
-    @UpdateTimestamp
-    @Temporal(TemporalType.TIMESTAMP)
-    private Date lastModifiedDate;
 
-    private Long featuredByAdminId;
-
-    @Temporal(TemporalType.TIMESTAMP)
-    private Date featuredDate;
 }

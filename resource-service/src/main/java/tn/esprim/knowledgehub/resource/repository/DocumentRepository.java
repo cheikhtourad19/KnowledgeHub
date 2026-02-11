@@ -14,11 +14,8 @@ public interface DocumentRepository extends JpaRepository<Document, Long> {
 
     List<Document> findByCategory(DocumentCategory category);
 
-    List<Document> findByIsPublishedTrue();
 
-    List<Document> findByIsFeaturedTrue();
 
     List<Document> findBySubject(String subject);
 
-    List<Document> findByTeacherIdAndIsPublishedTrue(Long teacherId, Boolean isPublished);
 }

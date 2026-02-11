@@ -18,7 +18,6 @@ public interface PFARepository extends JpaRepository<PFA, Long> {
 
     List<PFA> findBySupervisorIdAndStatus(Long supervisorId, SubmissionStatus status);
 
-    List<PFA> findByIsPublishedTrue();
 
     List<PFA> findByYear(Integer year);
 }

@@ -26,20 +26,12 @@ public class Stage {
 
     private String companyName;
 
-    @Lob
-    private String description;
-
-    private String subject;
 
     private Integer year;
 
     private Integer durationMonths;
 
-    @Enumerated(EnumType.STRING)
-    @Column(nullable = false)
-    private SubmissionStatus status;
 
-    // User Service references
     @Column(nullable = false)
     private Long studentId;
 
@@ -65,32 +57,13 @@ public class Stage {
     @JoinColumn(name = "attestation_file_id", nullable = false)
     private File attestationFile;
 
-    @Temporal(TemporalType.TIMESTAMP)
-    private Date submissionDate;
-
-    @Temporal(TemporalType.TIMESTAMP)
-    private Date reviewDate;
-
     @Lob
     private String supervisorFeedback;
 
-    @Column(nullable = false)
-    private Boolean isPublished = false;
-
-    @Column(nullable = false)
-    @Builder.Default
-    private Integer viewCount = 0;
-
-    @Column(nullable = false)
-    @Builder.Default
-    private Integer downloadCount = 0;
 
     @CreationTimestamp
     @Temporal(TemporalType.TIMESTAMP)
     @Column(nullable = false, updatable = false)
     private Date createdDate;
 
-    @UpdateTimestamp
-    @Temporal(TemporalType.TIMESTAMP)
-    private Date lastModifiedDate;
 }

@@ -28,6 +28,8 @@ public class File {
     @Column(nullable = false)
     private String originalFileName;
 
+    @Column(nullable = false)
+    private Boolean isPublished = false;
 
     @Column(nullable = false)
     private Long fileSize;
@@ -61,11 +63,5 @@ public class File {
     private Boolean isScanned = false;
 
 
-    @Column(nullable = false)
-    private Boolean isDeleted = false;
 
-    @Temporal(TemporalType.TIMESTAMP)
-    private Date deletedDate;
-
-    private Long deletedByUserId;
 }

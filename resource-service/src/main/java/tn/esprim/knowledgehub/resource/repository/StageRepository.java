@@ -14,11 +14,8 @@ public interface StageRepository extends JpaRepository<Stage, Long> {
 
     List<Stage> findBySupervisorId(Long supervisorId);
 
-    List<Stage> findByStatus(SubmissionStatus status);
 
-    List<Stage> findBySupervisorIdAndStatus(Long supervisorId, SubmissionStatus status);
 
-    List<Stage> findByIsPublishedTrue();
 
     List<Stage> findByYear(Integer year);
 

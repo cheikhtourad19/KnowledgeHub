@@ -8,8 +8,7 @@ public enum FileType {
 
     // Teacher publication files
     EDUCATIONAL_MATERIAL,
-    PRESENTATION,
-    EXERCISE_SHEET,
+
 
     // Other
     SUPPLEMENTARY

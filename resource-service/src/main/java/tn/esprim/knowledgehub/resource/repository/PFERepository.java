@@ -18,7 +18,6 @@ public interface PFERepository extends JpaRepository<PFE, Long> {
 
     List<PFE> findBySupervisorIdAndStatus(Long supervisorId, SubmissionStatus status);
 
-    List<PFE> findByIsPublishedTrue();
 
     List<PFE> findByYear(Integer year);
 }

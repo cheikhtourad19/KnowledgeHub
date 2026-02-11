@@ -24,10 +24,6 @@ public class PFA {
     @Column(nullable = false)
     private String title;
 
-    @Lob
-    private String description;
-
-    private String subject;
 
     private Integer year;
 
@@ -56,16 +52,10 @@ public class PFA {
     @Temporal(TemporalType.TIMESTAMP)
     private Date submissionDate;
 
-    @Temporal(TemporalType.TIMESTAMP)
-    private Date reviewDate;
+
 
     @Lob
     private String supervisorFeedback;
-
-    @Column(nullable = false)
-    private Boolean isPublished = false;
-
-
 
     @CreationTimestamp
     @Temporal(TemporalType.TIMESTAMP)
