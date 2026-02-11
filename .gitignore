@@ -1,3 +1,14 @@
 # Project exclude paths
 /api-gateway/target/
 /auth-service/target/
+# IDE specific files
+.idea/
+*.iml
+# Logs and temporary fileslogs/
+*.log
+*.tmp
+# OS generated files.DS_Store
+Thumbs.db
+# Maven wrapper filesmvnw
+mvnw.cmd
+target/
