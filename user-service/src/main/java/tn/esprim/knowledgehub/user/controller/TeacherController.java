@@ -27,38 +27,6 @@ public class TeacherController {
     @Autowired
     private StudentService studentService;
 
-    @PostMapping("/assignTome/{id}")
-    public ResponseEntity<ApiResponse> assignStudent(@RequestHeader(value = "X-User-Role", required = false) String role,
-                                                     @RequestHeader(value = "X-User-Id") Long teacherId, @PathVariable Long id) {
-        if (!role.equals("TEACHER")) {
-            return ResponseEntity.status(403).body(
-                    ApiResponse.builder().success(false)
-                            .message("Only teachers can assign students to themselves")
-                            .build()
-            );
-        }
-        Long id_teacher = teacherService.getTeacherByAuthId(teacherId).getTeacherId();
-
-        try {
-
-            Student student = studentService.assignTeacherToStudent(id_teacher, id);
-            log.info("Teacher {} assigning student {}", teacherId, id);
-            return ResponseEntity.ok(
-                    ApiResponse.builder().success(true)
-                            .message("Student assigned successfully")
-                            .data(student)
-                            .build()
-            );
-        } catch (Exception e) {
-            return ResponseEntity.status(400).body(
-                    ApiResponse.builder().success(false)
-                            .message(e.getMessage())
-                            .build()
-            );
-        }
-
-    }
-
     @PostMapping("/create")
     public ResponseEntity<ApiResponse> createTeacher(@RequestBody @Valid CreateStudentRequest request
 

@@ -1,11 +1,11 @@
 package tn.esprim.knowledgehub.user.entity;
 
 
-import jakarta.persistence.Entity;
-import jakarta.persistence.GeneratedValue;
-import jakarta.persistence.GenerationType;
-import jakarta.persistence.Id;
+import com.fasterxml.jackson.annotation.JsonManagedReference;
+import jakarta.persistence.*;
 import lombok.*;
+
+import java.util.List;
 
 @AllArgsConstructor
 @NoArgsConstructor
@@ -19,4 +19,7 @@ public class Classe {
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     private Long classeId;
     private String classeName;
+    @OneToMany(mappedBy = "classe", fetch = FetchType.LAZY)
+    @JsonManagedReference
+    private List<Student> students;
 }

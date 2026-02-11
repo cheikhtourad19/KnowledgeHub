@@ -1,33 +1,28 @@
 package tn.esprim.knowledgehub.user.entity;
 
 
+import com.fasterxml.jackson.annotation.JsonBackReference;
 import jakarta.persistence.*;
 import lombok.*;
+import lombok.experimental.SuperBuilder;
 
 import java.util.ArrayList;
 import java.util.List;
-@Builder
+@Entity
 @Getter
-@AllArgsConstructor
 @Setter
 @NoArgsConstructor
-@Entity
-public class Student {
+@AllArgsConstructor
+@SuperBuilder
+public class Student extends UserBase {
 
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     private Long studentId;
 
-    @NonNull
-    private String authId;
-
-    @NonNull
-    private String nom;
-
-    @NonNull
-    private String prenom;
-
-    @Builder.Default
-    @ManyToMany(fetch = FetchType.EAGER)
-    private List<Teacher> encandrants = new ArrayList<>();
+    @ManyToOne
+    @JoinColumn(name = "classe_id")
+    @JsonBackReference
+    private Classe classe;
 }
+

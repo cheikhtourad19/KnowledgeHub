@@ -29,42 +29,7 @@ public class StudentService {
     public List<Student> getAllStudents(){
         return studentRepository.findAll();
     }
-    public Student deAssignTeacherFromStudent(Long teacherId, Long studentId){
-        Student student = studentRepository.findById(studentId).orElseThrow(
-                ()->new RuntimeException("Student not found with id: "+studentId)
-        );
-        Teacher teacher = teacherRepository.findById(teacherId).orElseThrow(
-                ()->new RuntimeException("Teacher not found with id: "+teacherId)
-        );
 
-        if(!student.getEncandrants().contains(teacher)){
-            return student;
-        }
-        student.getEncandrants().remove(teacher);
-        return studentRepository.save(student);
-    }
-    public Student assignTeacherToStudent(Long teacherId, Long studentId){
-        Student student = studentRepository.findById(studentId).orElseThrow(
-                ()->new RuntimeException("Student not found with id: "+studentId)
-        );
-        Teacher teacher = teacherRepository.findById(teacherId).orElseThrow(
-                ()->new RuntimeException("Teacher not found with id: "+teacherId)
-        );
-
-        if(student.getEncandrants().contains(teacher)){
-            return student;
-        }
-        student.getEncandrants().add(teacher);
-        return studentRepository.save(student);
-    }
-
-    public Student dessignAllTeacherFromStudent(Long studentId){
-        Student student = studentRepository.findById(studentId).orElseThrow(
-                ()->new RuntimeException("Student not found with id: "+studentId)
-        );
-        student.getEncandrants().clear();
-        return studentRepository.save(student);
-    }
 
 
 

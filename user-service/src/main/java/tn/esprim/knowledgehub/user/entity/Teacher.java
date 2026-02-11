@@ -6,19 +6,19 @@ import jakarta.persistence.GeneratedValue;
 import jakarta.persistence.GenerationType;
 import jakarta.persistence.Id;
 import lombok.*;
+import lombok.experimental.SuperBuilder;
 
 @Entity
-@Builder
 @Getter
-@AllArgsConstructor
 @Setter
 @NoArgsConstructor
-public class Teacher {
+@AllArgsConstructor
+@SuperBuilder
+public class Teacher extends UserBase {
 
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     private Long teacherId;
-    private String authId;
-    private String prenom;
-    private String nom;
 }
+
+
