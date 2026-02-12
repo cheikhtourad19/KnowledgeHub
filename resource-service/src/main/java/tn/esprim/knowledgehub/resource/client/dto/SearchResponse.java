@@ -17,5 +17,5 @@ public class SearchResponse {
 
     private List<SearchMatch> matches;
 
-    private Integer totalResults;
+    private Integer total_results;
 }

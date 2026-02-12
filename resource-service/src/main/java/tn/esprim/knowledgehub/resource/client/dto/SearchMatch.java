@@ -11,7 +11,7 @@ import lombok.NoArgsConstructor;
 @NoArgsConstructor
 public class SearchMatch {
 
-    private Integer fileId;
+    private Integer file_id;
 
     private Double score;
 }

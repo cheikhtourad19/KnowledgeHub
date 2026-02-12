@@ -41,12 +41,12 @@ public class AIandSearchService {
                 .query(query)
                 .build();
         SearchResponse response = aiClient.semanticSearch(request);
-        if (response.getTotalResults()==0){
+        if (response.getTotal_results()==0){
             throw new RuntimeException("No result found");
         }
         List<Long> extracted_ids= new ArrayList<>();
         for (SearchMatch searchMatch : response.getMatches()) {
-            extracted_ids.add(Long.valueOf(searchMatch.getFileId()));
+            extracted_ids.add(Long.valueOf(searchMatch.getFile_id()));
         }
         return fileRepository.findAllById(extracted_ids);
     }
