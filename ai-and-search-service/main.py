@@ -1,28 +1,74 @@
+"""
+AI and Search Service - Semantic Search Microservice
+FastAPI application for semantic search over academic PDFs
+"""
 from fastapi import FastAPI
-from app.routers import ai_router, search_router
+from fastapi.middleware.cors import CORSMiddleware
+from app.config import settings
+from app.routers import search
+import logging
 
+# Configure logging
+logging.basicConfig(
+    level=logging.INFO if not settings.DEBUG else logging.DEBUG,
+    format='%(asctime)s - %(name)s - %(levelname)s - %(message)s'
+)
+
+logger = logging.getLogger(__name__)
+
+# Create FastAPI application
 app = FastAPI(
-    title="KnowledgeHub AI and Search Service",
-    description="AI-powered search and recommendations",
-    version="1.0.0"
+    title=settings.SERVICE_NAME,
+    description="Semantic Search Microservice for Knowledge Hub - Provides AI-powered search over academic PDFs",
+    version=settings.VERSION,
+    docs_url="/docs",
+    redoc_url="/redoc"
+)
+
+# Configure CORS
+app.add_middleware(
+    CORSMiddleware,
+    allow_origins=["*"],  # Configure appropriately for production
+    allow_credentials=True,
+    allow_methods=["*"],
+    allow_headers=["*"],
 )
 
 # Include routers
-app.include_router(ai_router.router, prefix="/ai", tags=["AI"])
-app.include_router(search_router.router, prefix="/search", tags=["Search"])
+app.include_router(search.router, prefix="/api/v1")
+
+@app.on_event("startup")
+async def startup_event():
+    """Initialize services on startup"""
+    logger.info(f"Starting {settings.SERVICE_NAME} v{settings.VERSION}")
+    logger.info(f"ChromaDB persist directory: {settings.CHROMA_PERSIST_DIRECTORY}")
+    logger.info(f"Embedding model: {settings.EMBEDDING_MODEL}")
+    logger.info(f"Chunk size: {settings.CHUNK_SIZE}, Overlap: {settings.CHUNK_OVERLAP}")
+    logger.info(f"MinIO endpoint: {settings.MINIO_ENDPOINT}")
+
+@app.on_event("shutdown")
+async def shutdown_event():
+    """Cleanup on shutdown"""
+    logger.info(f"Shutting down {settings.SERVICE_NAME}")
 
 @app.get("/")
 async def root():
+    """Root endpoint"""
     return {
-        "service": "AI and Search Service",
+        "service": settings.SERVICE_NAME,
+        "version": settings.VERSION,
         "status": "running",
-        "version": "1.0.0"
+        "docs": "/docs"
     }
 
-@app.get("/health")
-async def health_check():
-    return {"status": "healthy"}
 
 if __name__ == "__main__":
     import uvicorn
-    uvicorn.run(app, host="0.0.0.0", port=8000)
+    uvicorn.run(
+        "main:app",
+        host=settings.API_HOST,
+        port=settings.API_PORT,
+        reload=settings.DEBUG
+    )
+
+

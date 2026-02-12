@@ -77,18 +77,13 @@ public class FileService {
 
             String bucketName = getBucketName(bucketType);
 
-            // Generate unique file name
+
             String originalFileName = multipartFile.getOriginalFilename();
             String fileExtension = getFileExtension(originalFileName);
-            String uniqueFileName = UUID.randomUUID().toString() + fileExtension;
+            String uniqueFileName = uploadedByUserName+uploadedByUserId+ fileExtension;
 
-            // Detect content type
             String contentType = detectContentType(multipartFile);
-
-            // Get file size
             long fileSize = multipartFile.getSize();
-
-            // Upload to MinIO
             InputStream inputStream = multipartFile.getInputStream();
             minioClient.putObject(
                     PutObjectArgs.builder()
@@ -100,16 +95,12 @@ public class FileService {
             );
 
             log.info("File uploaded to MinIO: {}/{}", bucketName, uniqueFileName);
-
-
-
-            // Count pages if PDF
             Integer pageCount = null;
             if (contentType != null && contentType.equals("application/pdf")) {
                 pageCount = countPdfPages(multipartFile);
             }
 
-            // Create File entity
+
             File file = File.builder()
                     .fileName(uniqueFileName)
                     .originalFileName(originalFileName)
@@ -121,13 +112,8 @@ public class FileService {
                     .isPublished(false)
                     .isScanned(false)
                     .build();
-
-            // Save to database
             file = fileRepository.save(file);
-
             log.info("File metadata saved to database with ID: {}", file.getId());
-
-            // Build response
             return FileUploadResponse.builder()
                     .fileId(file.getId())
                     .fileName(uniqueFileName)
@@ -152,47 +138,7 @@ public class FileService {
     }
 
 
-    public FileDownloadResponse downloadFile(Long fileId) {
-        try {
-            // Get file metadata from database
-            File file = fileRepository.findById(fileId)
-                    .orElseThrow(() -> new IllegalArgumentException("File not found with ID: " + fileId));
 
-            // Extract bucket and object name from storage path
-            String[] pathParts = file.getStoragePath().split("/", 2);
-            String bucketName = pathParts[0];
-            String objectName = pathParts[1];
-
-            // Download from MinIO
-            InputStream stream = minioClient.getObject(
-                    GetObjectArgs.builder()
-                            .bucket(bucketName)
-                            .object(objectName)
-                            .build()
-            );
-
-            // Read to byte array
-            ByteArrayOutputStream baos = new ByteArrayOutputStream();
-            byte[] buffer = new byte[1024];
-            int length;
-            while ((length = stream.read(buffer)) != -1) {
-                baos.write(buffer, 0, length);
-            }
-
-            log.info("File downloaded from MinIO: {}", file.getStoragePath());
-
-            return FileDownloadResponse.builder()
-                    .fileContent(baos.toByteArray())
-                    .fileName(file.getOriginalFileName())
-                    .contentType(detectContentTypeFromFileName(file.getFileName()))
-                    .fileSize(file.getFileSize())
-                    .build();
-
-        } catch (Exception e) {
-            log.error("Error downloading file: {}", e.getMessage(), e);
-            throw new RuntimeException("Failed to download file: " + e.getMessage(), e);
-        }
-    }
 
 
     public String generatePresignedUrl(Long fileId, int expiryInMinutes) {
@@ -305,13 +251,6 @@ public class FileService {
         }
     }
 
-    private String detectContentTypeFromFileName(String fileName) {
-        try {
-            return tika.detect(fileName);
-        } catch (Exception e) {
-            return "application/octet-stream";
-        }
-    }
 
 
     private Integer countPdfPages(MultipartFile file) {

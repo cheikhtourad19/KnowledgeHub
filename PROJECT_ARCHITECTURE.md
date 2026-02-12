@@ -276,14 +276,74 @@ Notification {
 ### 7. AI and Search Service (`ai-and-search-service`)
 - **Port:** 8000
 - **Framework:** Python FastAPI
-- **Purpose:** AI-powered search and recommendations
+- **Database:** ChromaDB (Vector Database - Persistent)
+- **Storage:** MinIO (for PDF access)
+- **Purpose:** Semantic search over confidential academic PDFs
 
 **Key Features:**
-- Semantic search across documents
-- AI-powered recommendations
-- Health check endpoints
+- **Semantic Search**: AI-powered search using sentence embeddings
+- **Privacy-First**: All processing happens locally - no external APIs
+- **Zero Local Storage**: PDFs processed as byte streams from MinIO
+- **Persistent Vectors**: ChromaDB with persistent storage
+- **Unique Mapping**: Every vector tagged with `file_id` for PostgreSQL sync
 
-**Note:** Routers for `/ai/**` and `/search/**` are currently placeholders (not yet implemented).
+**Technology Stack:**
+- **Vector Database**: ChromaDB (PersistentClient)
+- **Embeddings**: `all-MiniLM-L6-v2` via Sentence-Transformers (Local execution)
+- **PDF Extraction**: PyMuPDF (fitz)
+- **Text Splitting**: LangChain RecursiveCharacterTextSplitter
+- **Storage Access**: MinIO Python SDK
+- **Chunk Size**: 1000 characters with 100 overlap
+
+**API Endpoints:**
+```
+POST /api/v1/index           # Index PDF from MinIO (file_id, bucket, object_name)
+POST /api/v1/search          # Semantic search (query, top_k)
+DELETE /api/v1/index/{id}    # Delete document vectors by file_id
+GET /api/v1/health           # Health check + vector DB stats
+```
+
+**Project Structure:**
+```
+ai-and-search-service/
+├── main.py                           # FastAPI application entry point
+├── requirements.txt                  # Python dependencies
+├── .env.example                      # Environment template
+├── README.md                         # Complete documentation
+├── app/
+│   ├── config.py                     # Settings (MinIO, ChromaDB, Embeddings)
+│   ├── models.py                     # Pydantic request/response models
+│   ├── routers/
+│   │   └── search.py                 # All API endpoints
+│   └── services/
+│       ├── minio_service.py          # MinIO client for PDF fetching
+│       ├── pdf_service.py            # PyMuPDF text extraction
+│       ├── text_chunking_service.py  # Text splitting
+│       └── vector_db_service.py      # ChromaDB + embeddings
+└── chroma_db/                        # Persistent vector storage (auto-created)
+```
+
+**Data Flow:**
+
+*Indexing:*
+```
+Spring Boot → POST /api/v1/index → MinIO (fetch PDF bytes)
+    → PyMuPDF (extract text) → LangChain (chunk: 1000/100)
+    → SentenceTransformers (embed) → ChromaDB (store with file_id metadata)
+```
+
+*Search:*
+```
+User Query → POST /api/v1/search → SentenceTransformers (embed query)
+    → ChromaDB (similarity search) → Extract unique file_ids
+    → Return [{"file_id": X, "score": Y}] → Spring Boot
+```
+
+**Security & Privacy:**
+- ✅ No External APIs - All AI processing happens locally
+- ✅ No Local File Storage - PDFs processed as byte streams in RAM
+- ✅ Persistent Storage - ChromaDB data survives service restarts
+- ✅ Secure MinIO - Credentials via environment variables
 
 ---
 
