@@ -80,7 +80,7 @@ public class FileService {
 
             String originalFileName = multipartFile.getOriginalFilename();
             String fileExtension = getFileExtension(originalFileName);
-            String uniqueFileName = uploadedByUserName+uploadedByUserId+ fileExtension;
+            String uniqueFileName = originalFileName+UUID.randomUUID().toString()+ fileExtension;
 
             String contentType = detectContentType(multipartFile);
             long fileSize = multipartFile.getSize();
@@ -202,6 +202,10 @@ public class FileService {
     public File getFileById(Long fileId) {
         return fileRepository.findById(fileId)
                 .orElseThrow(() -> new IllegalArgumentException("File not found with ID: " + fileId));
+    }
+
+    public List<File> getAllFiles(){
+        return fileRepository.findByIsPublishedTrue();
     }
 
 

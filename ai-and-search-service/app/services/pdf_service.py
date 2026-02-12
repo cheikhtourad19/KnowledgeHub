@@ -1,7 +1,6 @@
 """PDF extraction service using PyMuPDF (fitz) as per specification"""
 from io import BytesIO
 import fitz  # PyMuPDF
-from typing import str
 import logging
 
 logger = logging.getLogger(__name__)
@@ -40,6 +39,8 @@ class PDFExtractionService:
                 if text.strip():
                     text_content.append(text)
 
+            # Store page count before closing
+            page_count = doc.page_count
             doc.close()
 
             # Combine all pages
@@ -51,7 +52,7 @@ class PDFExtractionService:
 
             logger.info(
                 f"Successfully extracted {len(full_text)} characters "
-                f"from {doc.page_count} pages"
+                f"from {page_count} pages"
             )
 
             return full_text

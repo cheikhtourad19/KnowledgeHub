@@ -5,7 +5,7 @@ FastAPI application for semantic search over academic PDFs
 from fastapi import FastAPI
 from fastapi.middleware.cors import CORSMiddleware
 from app.config import settings
-from app.routers import search
+from app.routers.search import router as search_router
 import logging
 
 # Configure logging
@@ -35,7 +35,7 @@ app.add_middleware(
 )
 
 # Include routers
-app.include_router(search.router, prefix="/api/v1")
+app.include_router(search_router, prefix="/api/v1")
 
 @app.on_event("startup")
 async def startup_event():
