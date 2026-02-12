@@ -46,6 +46,9 @@ public class StudentService {
     public List<Classe> getAllClasses(){
         return classeRepository.findAll();
     }
+    public Classe getClasseById(Long classeId){
+        return classeRepository.findById(classeId).orElseThrow(()->new RuntimeException("Classe not found with id: "+classeId));
+    }
     public List<Student> getStudentsInClasse(Long classeId){
         return classeRepository.findById(classeId).orElseThrow(()->new RuntimeException("Classe not found with id: "+classeId)).getStudents();
     }
@@ -58,6 +61,10 @@ public class StudentService {
     public Student getStudentByEmail(String email) {
         return studentRepository.findByEmail(email)
                 .orElseThrow(() -> new RuntimeException("Student not found with email: " + email));
+    }
+
+    public Student getStudentById(Long id){
+        return studentRepository.findByIdWithClasse(id).orElseThrow(()->new RuntimeException("Student not found with id: "+id));
     }
 
 

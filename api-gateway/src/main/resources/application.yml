@@ -23,10 +23,10 @@ spring:
             - RewritePath=/user-service/(?<segment>.*), /$\{segment}
             - name: JwtAuthenticationFilter
 
-        - id: resource-service
+        - id: ressource-service
           uri: http://localhost:8083
           predicates:
-            - Path=/resource-service/**
+            - Path=/ressource-service/**
           filters:
             - RewritePath=/ressource-service/(?<segment>.*), /$\{segment}
             - name: JwtAuthenticationFilter

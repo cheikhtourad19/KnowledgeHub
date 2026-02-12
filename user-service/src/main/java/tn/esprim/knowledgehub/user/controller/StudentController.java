@@ -2,11 +2,13 @@ package tn.esprim.knowledgehub.user.controller;
 
 
 import jakarta.validation.Valid;
+import org.hibernate.Hibernate;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 import tn.esprim.knowledgehub.user.dto.request.CreateStudentRequest;
 import tn.esprim.knowledgehub.user.dto.response.ApiResponse;
+import tn.esprim.knowledgehub.user.dto.response.StudentDTO;
 import tn.esprim.knowledgehub.user.entity.Classe;
 import tn.esprim.knowledgehub.user.entity.Student;
 import tn.esprim.knowledgehub.user.service.StudentService;
@@ -90,6 +92,19 @@ public class StudentController {
                 ApiResponse.builder().success(true)
                         .message("Student retrieved successfully")
                         .data(student)
+                        .build()
+        );
+    }
+    @GetMapping("/by-id/{id}")
+    public ResponseEntity<ApiResponse<StudentDTO>> getStudentById(@PathVariable Long id) {
+        Student student = studentService.getStudentById(id);
+        StudentDTO studentDTO = StudentDTO.fromEntity(student);
+
+        return ResponseEntity.ok(
+                ApiResponse.<StudentDTO>builder()
+                        .success(true)
+                        .message("Student retrieved successfully")
+                        .data(studentDTO)
                         .build()
         );
     }

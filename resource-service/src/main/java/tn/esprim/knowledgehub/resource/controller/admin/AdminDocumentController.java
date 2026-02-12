@@ -11,5 +11,5 @@ public class AdminDocumentController {
 
     private final DocumentService documentService;
 
-    // TODO: Implement admin document endpoints
+
 }

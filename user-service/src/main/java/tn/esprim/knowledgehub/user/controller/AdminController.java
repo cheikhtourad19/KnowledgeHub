@@ -1,11 +1,13 @@
 package tn.esprim.knowledgehub.user.controller;
 
 
+import org.hibernate.Hibernate;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 import tn.esprim.knowledgehub.user.dto.request.StudentToClassRequest;
 import tn.esprim.knowledgehub.user.dto.response.ApiResponse;
+import tn.esprim.knowledgehub.user.entity.Classe;
 import tn.esprim.knowledgehub.user.entity.Student;
 import tn.esprim.knowledgehub.user.service.StudentService;
 import tn.esprim.knowledgehub.user.service.TeacherService;
@@ -22,6 +24,26 @@ public class AdminController {
     private TeacherService teacherService;
     @Autowired
     private StudentService studentService;
+
+    @GetMapping("/classe/")
+    public ResponseEntity<ApiResponse> getAllClasses(){
+        return ResponseEntity.ok(
+                ApiResponse.builder().success(true).data(studentService.getAllClasses()).build()
+        );
+
+    }
+
+
+    @GetMapping("/classe/{id}")
+    public ResponseEntity<ApiResponse> getClasseById(@PathVariable Long id){
+        Classe classe = studentService.getClasseById(id);
+        if (classe.getStudents() != null) {
+            Hibernate.initialize(classe.getStudents());
+        }
+        return ResponseEntity.ok(
+                ApiResponse.builder().success(true).data(classe).build()
+        );
+    }
 
     @PostMapping("/add-student-classe")
     public ResponseEntity<ApiResponse> addStudentToClasse(
