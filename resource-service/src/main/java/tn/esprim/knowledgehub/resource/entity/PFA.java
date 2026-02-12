@@ -44,15 +44,13 @@ public class PFA {
 
     private String supervisorName;
 
-    // File relationship
+
     @ManyToOne(fetch = FetchType.LAZY)
-    @JoinColumn(name = "report_file_id", nullable = false)
+    @JoinColumn(name = "report_file_id")
     private File reportFile;
 
     @Temporal(TemporalType.TIMESTAMP)
     private Date submissionDate;
-
-
 
     @Lob
     private String supervisorFeedback;

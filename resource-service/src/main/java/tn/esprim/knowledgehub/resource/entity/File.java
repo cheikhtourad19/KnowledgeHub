@@ -60,6 +60,7 @@ public class File {
     private List<String> keywords = new ArrayList<>();
 
     @Column(nullable = false)
+    @Builder.Default
     private Boolean isScanned = false;
 
 

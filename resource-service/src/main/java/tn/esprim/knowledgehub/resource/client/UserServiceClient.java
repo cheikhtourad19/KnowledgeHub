@@ -7,6 +7,7 @@ import org.springframework.web.bind.annotation.PathVariable;
 import tn.esprim.knowledgehub.resource.client.dto.ApiResponse;
 import tn.esprim.knowledgehub.resource.client.dto.ClasseDTO;
 import tn.esprim.knowledgehub.resource.client.dto.StudentDTO;
+import tn.esprim.knowledgehub.resource.client.dto.TeacherDTO;
 
 import java.util.List;
 import java.util.Map;
@@ -23,5 +24,7 @@ public interface UserServiceClient {
     ApiResponse<ClasseDTO> getClasseById(@PathVariable Long id);
     @GetMapping("/api/students/by-id/{id}")
     ApiResponse<StudentDTO> getStudentById(@PathVariable Long id);
+    @GetMapping("/api/teachers/by-id/{id}")
+    ApiResponse<TeacherDTO> getTeacherById(@PathVariable Long id);
 
 }

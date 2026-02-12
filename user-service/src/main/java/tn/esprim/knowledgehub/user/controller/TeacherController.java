@@ -92,6 +92,16 @@ public class TeacherController {
                         .build()
         );
     }
+    @GetMapping("/by-id/{id}")
+    public ResponseEntity<ApiResponse> getTeacherById(@PathVariable Long id) {
+        Teacher teacher = teacherService.getTeacherById(id);
+        return ResponseEntity.ok(
+                ApiResponse.builder().success(true)
+                        .message("Teacher retrieved successfully")
+                        .data(teacher)
+                        .build()
+        );
+    }
 
     @GetMapping("/by-email/{email}")
     public ResponseEntity<ApiResponse> getTeacherByEmail(@PathVariable String email) {

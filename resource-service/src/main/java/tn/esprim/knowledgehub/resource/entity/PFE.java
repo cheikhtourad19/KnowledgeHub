@@ -55,15 +55,15 @@ public class PFE {
 
     // File relationships
     @ManyToOne(fetch = FetchType.LAZY)
-    @JoinColumn(name = "report_file_id", nullable = false)
+    @JoinColumn(name = "report_file_id")
     private File reportFile;
 
     @ManyToOne(fetch = FetchType.LAZY)
-    @JoinColumn(name = "journal_file_id", nullable = false)
+    @JoinColumn(name = "journal_file_id")
     private File journalFile;
 
     @ManyToOne(fetch = FetchType.LAZY)
-    @JoinColumn(name = "attestation_file_id", nullable = false)
+    @JoinColumn(name = "attestation_file_id")
     private File attestationFile;
 
     @Temporal(TemporalType.TIMESTAMP)

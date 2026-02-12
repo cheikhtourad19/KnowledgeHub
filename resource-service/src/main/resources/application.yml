@@ -38,6 +38,24 @@ spring:
             connect-timeout: 5000
             read-timeout: 5000
 
+# MinIO Configuration
+minio:
+  endpoint: http://localhost:9000
+  access-key: minioadmin
+  secret-key: minioadmin
+  bucket-name: knowledgehub
+  buckets:
+    documents: knowledgehub-documents
+    pfa: knowledgehub-pfa
+    pfe: knowledgehub-pfe
+    stage: knowledgehub-stage
+    journal: knowledgehub-journal
+    attestation: knowledgehub-attestation
+
+# CORS Configuration
+cors:
+  allowed-origins: http://localhost:*,http://127.0.0.1:*,http://localhost:8080,https://*.yourdomain.com
+
 springdoc:
   api-docs:
     path: /api-docs
