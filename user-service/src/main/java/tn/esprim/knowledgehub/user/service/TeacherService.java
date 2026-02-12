@@ -37,4 +37,9 @@ public class TeacherService {
         return teacherRepository.findAll();
     }
 
+    public Teacher getTeacherByEmail(String email) {
+        return teacherRepository.findByEmail(email)
+                .orElseThrow(() -> new RuntimeException("Teacher not found with email: " + email));
+    }
+
 }

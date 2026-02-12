@@ -35,6 +35,7 @@ public class TeacherController {
         Teacher student = Teacher.builder()
                 .nom(request.getNom())
                 .authId(request.getAuthId())
+                .email(request.getEmail())
                 .prenom(request.getPrenom())
                 .build();
 
@@ -57,6 +58,7 @@ public class TeacherController {
                     Teacher.builder()
                             .nom(teacherRequest.getNom())
                             .authId(teacherRequest.getAuthId())
+                            .email(teacherRequest.getEmail())
                             .prenom(teacherRequest.getPrenom())
                             .build()
             );
@@ -74,8 +76,30 @@ public class TeacherController {
     public ResponseEntity<ApiResponse> getAllTeachers() {
         return ResponseEntity.ok(
                 ApiResponse.builder().success(true)
-                        .message("All students retrieved successfully")
+                        .message("All teachers retrieved successfully")
                         .data(teacherService.getAllTeachers())
+                        .build()
+        );
+    }
+
+    @GetMapping("/by-auth-id/{authId}")
+    public ResponseEntity<ApiResponse> getTeacherByAuthId(@PathVariable Long authId) {
+        Teacher teacher = teacherService.getTeacherByAuthId(authId);
+        return ResponseEntity.ok(
+                ApiResponse.builder().success(true)
+                        .message("Teacher retrieved successfully")
+                        .data(teacher)
+                        .build()
+        );
+    }
+
+    @GetMapping("/by-email/{email}")
+    public ResponseEntity<ApiResponse> getTeacherByEmail(@PathVariable String email) {
+        Teacher teacher = teacherService.getTeacherByEmail(email);
+        return ResponseEntity.ok(
+                ApiResponse.builder().success(true)
+                        .message("Teacher retrieved successfully")
+                        .data(teacher)
                         .build()
         );
     }

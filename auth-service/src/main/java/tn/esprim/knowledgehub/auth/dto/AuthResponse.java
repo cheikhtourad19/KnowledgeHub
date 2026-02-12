@@ -27,7 +27,8 @@ public class AuthResponse<T> {
     private String username;
     private String email;
     private AuthUser.Role role;
-    private Long userId;
+    private Long authId;  // ID from auth-service
+    private Long userId;  // ID from user-service (studentId or teacherId)
 
     // Factory methods for common responses
     public static <T> AuthResponse<T> success(T data, String message) {
@@ -47,7 +48,7 @@ public class AuthResponse<T> {
                 .build();
     }
 
-    public static AuthResponse<Object> authSuccess(String token, String username, String email, AuthUser.Role role, Long userId) {
+    public static AuthResponse<Object> authSuccess(String token, String username, String email, AuthUser.Role role, Long authId, Long userId) {
         return AuthResponse.<Object>builder()
                 .success(true)
                 .message("Authentication successful")
@@ -56,6 +57,7 @@ public class AuthResponse<T> {
                 .username(username)
                 .email(email)
                 .role(role)
+                .authId(authId)
                 .userId(userId)
                 .build();
     }

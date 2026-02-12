@@ -1,5 +1,7 @@
 package tn.esprim.knowledgehub.auth.client;
 
+import com.fasterxml.jackson.databind.JsonNode;
+import com.fasterxml.jackson.databind.ObjectMapper;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Value;
@@ -19,6 +21,7 @@ import java.util.List;
 public class UserServiceClient {
 
     private final RestTemplate restTemplate;
+    private final ObjectMapper objectMapper;
 
     @Value("${user-service.url:http://localhost:8082}")
     private String userServiceUrl;
@@ -101,6 +104,42 @@ public class UserServiceClient {
         } catch (Exception e) {
             log.error("Error creating teachers in user-service: {}", e.getMessage(), e);
             throw new RuntimeException("Failed to create teachers in user-service: " + e.getMessage());
+        }
+    }
+
+    public Long getStudentIdByAuthId(String authId) {
+        try {
+            String url = userServiceUrl + "/api/students/by-auth-id/" + authId;
+            ResponseEntity<String> response = restTemplate.getForEntity(url, String.class);
+
+            JsonNode root = objectMapper.readTree(response.getBody());
+            JsonNode data = root.get("data");
+            if (data != null && data.has("studentId")) {
+                return data.get("studentId").asLong();
+            }
+            log.warn("Student not found for authId: {}", authId);
+            return null;
+        } catch (Exception e) {
+            log.error("Error fetching student by authId: {}", e.getMessage());
+            return null;
+        }
+    }
+
+    public Long getTeacherIdByAuthId(String authId) {
+        try {
+            String url = userServiceUrl + "/api/teachers/by-auth-id/" + authId;
+            ResponseEntity<String> response = restTemplate.getForEntity(url, String.class);
+
+            JsonNode root = objectMapper.readTree(response.getBody());
+            JsonNode data = root.get("data");
+            if (data != null && data.has("teacherId")) {
+                return data.get("teacherId").asLong();
+            }
+            log.warn("Teacher not found for authId: {}", authId);
+            return null;
+        } catch (Exception e) {
+            log.error("Error fetching teacher by authId: {}", e.getMessage());
+            return null;
         }
     }
 

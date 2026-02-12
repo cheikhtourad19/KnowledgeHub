@@ -156,7 +156,7 @@ public class AuthController {
                     in = ParameterIn.HEADER,
                     schema = @Schema(type = "string")
             )
-            @RequestHeader(value = "X-User-Id", required = false) String userId) {
+            @RequestHeader(value = "X-Auth-Id", required = false) String userId) {
 
         AuthUser authUser = authService.editPassword(Long.valueOf(userId), request.getPassword());
         return ResponseEntity.ok(AuthResponse.success(authUser, "User updated successfully"));

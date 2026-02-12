@@ -18,12 +18,13 @@ public class UserProfileService {
 
 
     @Async("userProfileTaskExecutor")
-    public void createStudentProfileAsync(String authId, String prenom, String nom) {
+    public void createStudentProfileAsync(String authId, String email, String prenom, String nom) {
         try {
             log.info("Async creating student profile for authId: {}", authId);
 
             UserServiceRequest request = UserServiceRequest.builder()
                     .authId(authId)
+                    .email(email)
                     .prenom(prenom)
                     .nom(nom)
                     .build();
@@ -41,12 +42,13 @@ public class UserProfileService {
      * dima asynchrone 5err
      */
     @Async("userProfileTaskExecutor")
-    public void createTeacherProfileAsync(String authId, String prenom, String nom) {
+    public void createTeacherProfileAsync(String authId, String email, String prenom, String nom) {
         try {
             log.info("Async creating teacher profile for authId: {}", authId);
 
             UserServiceRequest request = UserServiceRequest.builder()
                     .authId(authId)
+                    .email(email)
                     .prenom(prenom)
                     .nom(nom)
                     .build();

@@ -19,6 +19,9 @@ public abstract class UserBase {
     @Column(nullable = false)
     protected String authId;
 
+    @Column(nullable = false, unique = true, length = 150)
+    protected String email;
+
     protected String nom;
     protected String prenom;
 }

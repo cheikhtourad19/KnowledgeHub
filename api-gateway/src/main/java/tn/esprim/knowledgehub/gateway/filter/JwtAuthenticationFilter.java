@@ -50,16 +50,18 @@ public class JwtAuthenticationFilter extends AbstractGatewayFilterFactory<JwtAut
                 Claims claims = validateToken(token);
                 System.out.println("Claims: " + claims);
 
+                String authId = claims.get("authId", String.class);
                 String userId = claims.get("userId", String.class);
                 String role = claims.get("role", String.class);
 
-                if (userId == null || role == null) {
-                    System.err.println("Missing required claims. userId: " + userId + ", role: " + role);
+                if (authId == null || role == null) {
+                    System.err.println("Missing required claims. authId: " + authId + ", role: " + role);
                     return onError(exchange, "Invalid token claims", HttpStatus.UNAUTHORIZED);
                 }
 
                 ServerHttpRequest modifiedRequest = exchange.getRequest().mutate()
-                        .header("X-User-Id", userId)
+                        .header("X-Auth-Id", authId)
+                        .header("X-User-Id", userId != null ? userId : "")
                         .header("X-User-Name", claims.getSubject())
                         .header("X-User-Role", role)
                         .build();

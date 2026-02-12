@@ -11,6 +11,7 @@ import org.springframework.http.HttpStatus;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
+import tn.esprim.knowledgehub.auth.client.UserServiceClient;
 import tn.esprim.knowledgehub.auth.dto.*;
 import tn.esprim.knowledgehub.auth.entity.AuthUser;
 import tn.esprim.knowledgehub.auth.entity.Reset;
@@ -20,6 +21,7 @@ import tn.esprim.knowledgehub.auth.repository.AuthUserRepository;
 import tn.esprim.knowledgehub.auth.repository.ResetRepository;
 import tn.esprim.knowledgehub.auth.util.JwtUtil;
 import tn.esprim.knowledgehub.auth.util.PasswordGenerator;
+import tn.esprim.knowledgehub.auth.client.UserServiceClient;
 
 import java.time.LocalDateTime;
 import java.util.List;
@@ -36,6 +38,7 @@ public class AuthService {
     private final UserProfileService userProfileService;
     private final NotificationClient notificationClient;
     private final ResetRepository resetRepository;
+    private final UserServiceClient userServiceClient;
 
 
     @Transactional
@@ -65,13 +68,22 @@ public class AuthService {
         authUser.setLastLogin(LocalDateTime.now());
         authUserRepository.save(authUser);
 
+        // Fetch userId from user-service based on role
+        Long userId = null;
+        if (authUser.getRole() == AuthUser.Role.STUDENT) {
+            userId = userServiceClient.getStudentIdByAuthId(authUser.getId().toString());
+        } else if (authUser.getRole() == AuthUser.Role.TEACHER) {
+            userId = userServiceClient.getTeacherIdByAuthId(authUser.getId().toString());
+        }
+
         String token = jwtUtil.generateToken(
                 authUser.getUsername(),
                 authUser.getId().toString(),
+                userId != null ? userId.toString() : null,
                 authUser.getRole().name()
         );
 
-        return AuthResponse.authSuccess(token, authUser.getUsername(), authUser.getEmail(), authUser.getRole(), authUser.getId());
+        return AuthResponse.authSuccess(token, authUser.getUsername(), authUser.getEmail(), authUser.getRole(), authUser.getId(), userId);
     }
 
     @Transactional
@@ -102,6 +114,7 @@ public class AuthService {
         if (request.getRole() == AuthUser.Role.STUDENT) {
             userProfileService.createStudentProfileAsync(
                     authUser.getId().toString(),
+                    authUser.getEmail(),
                     request.getPrenom(),
                     request.getNom()
             );
@@ -109,6 +122,7 @@ public class AuthService {
         } else if (request.getRole() == AuthUser.Role.TEACHER) {
             userProfileService.createTeacherProfileAsync(
                     authUser.getId().toString(),
+                    authUser.getEmail(),
                     request.getPrenom(),
                     request.getNom()
             );
@@ -192,6 +206,7 @@ public class AuthService {
             return TokenValidationResponse.builder()
                     .valid(true)
                     .username(claims.getSubject())
+                    .authId(claims.get("authId", String.class))
                     .userId(claims.get("userId", String.class))
                     .role(claims.get("role", String.class))
                     .build();

@@ -11,6 +11,7 @@ import lombok.NoArgsConstructor;
 @NoArgsConstructor
 public class UserServiceRequest {
     private String authId;
+    private String email;
     private String prenom;
     private String nom;
 }

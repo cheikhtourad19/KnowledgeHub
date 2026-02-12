@@ -29,6 +29,7 @@ public class StudentController {
         Student student = Student.builder()
                 .nom(request.getNom())
                 .authId(request.getAuthId())
+                .email(request.getEmail())
                 .prenom(request.getPrenom())
                 .build();
 
@@ -56,6 +57,7 @@ public class StudentController {
                     Student.builder()
                             .nom(studentRequest.getNom())
                             .authId(studentRequest.getAuthId())
+                            .email(studentRequest.getEmail())
                             .prenom(studentRequest.getPrenom())
                             .build()
             );
@@ -80,6 +82,29 @@ public class StudentController {
                         .build()
         );
     }
+
+    @GetMapping("/by-auth-id/{authId}")
+    public ResponseEntity<ApiResponse> getStudentByAuthId(@PathVariable String authId) {
+        Student student = studentService.getStudentByAuthId(authId);
+        return ResponseEntity.ok(
+                ApiResponse.builder().success(true)
+                        .message("Student retrieved successfully")
+                        .data(student)
+                        .build()
+        );
+    }
+
+    @GetMapping("/by-email/{email}")
+    public ResponseEntity<ApiResponse> getStudentByEmail(@PathVariable String email) {
+        Student student = studentService.getStudentByEmail(email);
+        return ResponseEntity.ok(
+                ApiResponse.builder().success(true)
+                        .message("Student retrieved successfully")
+                        .data(student)
+                        .build()
+        );
+    }
+
 
 
 

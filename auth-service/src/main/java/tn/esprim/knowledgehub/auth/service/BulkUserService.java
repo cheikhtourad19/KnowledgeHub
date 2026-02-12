@@ -139,6 +139,7 @@ public class BulkUserService {
             // Prepare user service request
             UserServiceRequest userRequest = UserServiceRequest.builder()
                     .authId(String.valueOf(savedAuthUser.getId()))
+                    .email(data.email)
                     .nom(data.nom)
                     .prenom(data.prenom)
                     .build();
@@ -286,6 +287,7 @@ public class BulkUserService {
             // Prepare user service request
             UserServiceRequest userRequest = UserServiceRequest.builder()
                     .authId(String.valueOf(savedAuthUser.getId()))
+                    .email(data.email)
                     .nom(data.nom)
                     .prenom(data.prenom)
                     .build();
