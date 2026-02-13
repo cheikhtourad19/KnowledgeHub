@@ -1,18 +1,19 @@
+# Default Profile (Local Development) - Hardcoded values matching local infrastructure
 server:
-  port: ${NOTIFICATION_SERVICE_PORT}
+  port: 8084
 
 spring:
   application:
     name: notification-service
   data:
     mongodb:
-      uri: ${MONGO_URI}
+      uri: mongodb://admin:7pVY9aXr9sIhKWGZATbud%2F5EjdWBhDgb@localhost:27017/notification_db?authSource=admin
 
   mail:
-    host: ${SMTP_HOST}
-    port: ${SMTP_PORT}
-    username: ${SMTP_USERNAME}
-    password: ${SMTP_PASSWORD}
+    host: smtp.gmail.com
+    port: 587
+    username: elghothvadel@gmail.com
+    password: irur psog dfhb ohsm
     properties:
       mail:
         smtp:
@@ -27,22 +28,51 @@ spring:
 
 notification:
   email:
-    from: ${SMTP_FROM_EMAIL}
-    from-name: ${SMTP_FROM_NAME}
+    from: elghothvadel@gmail.com
+    from-name: KnowledgeHub
 
 # Logging configuration
 logging:
   level:
-    root: ${LOG_LEVEL_ROOT:INFO}
-    tn.esprim.knowledgehub: ${LOG_LEVEL_KNOWLEDGEHUB:DEBUG}
-    org.springframework.data.mongodb: ${LOG_LEVEL_MONGODB:INFO}
+    root: WARN
+    tn.esprim.knowledgehub: DEBUG
+    org.springframework.data.mongodb: INFO
 
 # Swagger/OpenAPI configuration
 springdoc:
   api-docs:
     path: /api-docs
-    enabled: ${SWAGGER_ENABLED:true}
+    enabled: true
   swagger-ui:
     path: /swagger-ui.html
-    enabled: ${SWAGGER_ENABLED:true}
+    enabled: true
 
+---
+# Docker Profile (runs in Docker Compose containers)
+spring:
+  config:
+    activate:
+      on-profile: docker
+  data:
+    mongodb:
+      uri: ${MONGO_URI}
+
+  mail:
+    host: ${SMTP_HOST}
+    port: ${SMTP_PORT}
+    username: ${SMTP_USERNAME}
+    password: ${SMTP_PASSWORD}
+
+server:
+  port: ${NOTIFICATION_SERVICE_PORT}
+
+notification:
+  email:
+    from: ${SMTP_FROM_EMAIL}
+    from-name: ${SMTP_FROM_NAME}
+
+logging:
+  level:
+    root: ${LOG_LEVEL_ROOT:INFO}
+    tn.esprim.knowledgehub: ${LOG_LEVEL_KNOWLEDGEHUB:DEBUG}
+    org.springframework.data.mongodb: ${LOG_LEVEL_MONGODB:INFO}

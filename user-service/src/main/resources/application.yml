@@ -1,23 +1,19 @@
+# Default Profile (Local Development) - Hardcoded values matching local infrastructure
 server:
-  port: ${USER_SERVICE_PORT}
-
-notification:
-  service:
-    url: ${NOTIFICATION_SERVICE_URL}
+  port: 8082
 
 spring:
   application:
     name: user-service
   datasource:
-    url: jdbc:mysql://${MYSQL_HOST}:${MYSQL_PORT}/${MYSQL_USER_DB}?createDatabaseIfNotExist=true&useSSL=false&allowPublicKeyRetrieval=true&serverTimezone=UTC
-    username: ${MYSQL_USERNAME}
-    password: ${MYSQL_PASSWORD}
+    url: jdbc:mysql://localhost:3306/knowledgehub_user?createDatabaseIfNotExist=true&useSSL=false&serverTimezone=UTC
+    username: root
+    password: JYzNL0Tfb5r65W3dayz03/xDwS34yj6Z
     driver-class-name: com.mysql.cj.jdbc.Driver
-
   jpa:
     hibernate:
       ddl-auto: update
-    show-sql: false
+    show-sql: true
     properties:
       hibernate:
         dialect: org.hibernate.dialect.MySQLDialect
@@ -27,12 +23,56 @@ spring:
 springdoc:
   api-docs:
     path: /api-docs
-    enabled: ${SWAGGER_ENABLED:true}
+    enabled: true
   swagger-ui:
     path: /swagger-ui.html
-    enabled: ${SWAGGER_ENABLED:true}
+    enabled: true
+
+notification:
+  service:
+    url: http://localhost:8084
+
+management:
+  endpoints:
+    web:
+      exposure:
+        include: health,info,metrics
+  endpoint:
+    health:
+      show-details: when-authorized
 
 logging:
   level:
-    root: ${LOG_LEVEL_ROOT:INFO}
+    root: WARN
+    com.immozen: DEBUG
+    org.springframework.web: INFO
+    org.hibernate: INFO
+    tn.esprim.knowledgehub.user: DEBUG
+
+---
+# Docker Profile (runs in Docker Compose containers)
+spring:
+  config:
+    activate:
+      on-profile: docker
+  datasource:
+    url: jdbc:mysql://${MYSQL_HOST:mysql}:${MYSQL_PORT:3306}/${MYSQL_USER_DB:knowledgehub_user}?createDatabaseIfNotExist=true&useSSL=false&allowPublicKeyRetrieval=true&serverTimezone=UTC
+    username: ${MYSQL_USERNAME:root}
+    password: ${MYSQL_PASSWORD}
+    driver-class-name: com.mysql.cj.jdbc.Driver
+  jpa:
+    hibernate:
+      ddl-auto: ${SPRING_JPA_DDL_AUTO:update}
+    show-sql: ${SPRING_JPA_SHOW_SQL:false}
+
+server:
+  port: ${USER_SERVICE_PORT:8082}
+
+notification:
+  service:
+    url: ${NOTIFICATION_SERVICE_URL:http://notification-service:8084}
+
+logging:
+  level:
+    root: ${LOG_LEVEL_ROOT:WARN}
     tn.esprim.knowledgehub.user: ${LOG_LEVEL_KNOWLEDGEHUB:DEBUG}

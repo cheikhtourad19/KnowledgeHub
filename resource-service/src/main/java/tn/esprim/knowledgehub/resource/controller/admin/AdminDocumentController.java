@@ -11,6 +11,7 @@ import org.springframework.web.multipart.MultipartFile;
 import tn.esprim.knowledgehub.resource.dto.response.FileUploadResponse;
 import tn.esprim.knowledgehub.resource.entity.File;
 import tn.esprim.knowledgehub.resource.enums.FileType;
+import tn.esprim.knowledgehub.resource.service.AIandSearchService;
 import tn.esprim.knowledgehub.resource.service.FileService;
 
 @RestController
@@ -20,7 +21,7 @@ import tn.esprim.knowledgehub.resource.service.FileService;
 public class AdminDocumentController {
 
     private final FileService fileService;
-
+    private final AIandSearchService aiandSearchService;
 
 
     @Operation(summary = "Upload a file", description = "Upload a file to MinIO storage")
@@ -31,7 +32,7 @@ public class AdminDocumentController {
             @Parameter(description = "Bucket type (documents, pfa, pfe, stage)") @RequestParam("bucketType") String bucketType,
             @Parameter(description = "File title") @RequestParam(value = "title", required = false) String title,
             @Parameter(description = "File description") @RequestParam(value = "description", required = false) String description,
-            @RequestHeader(value = "X-Auth-Id") String authId,
+            @RequestHeader(value = "X-User-Id") String authId,
             @RequestHeader(value = "X-User-Name") String userEmail
     ) {
         try {
@@ -139,17 +140,23 @@ public class AdminDocumentController {
     public ResponseEntity<tn.esprim.knowledgehub.resource.dto.response.ApiResponse<File>> updatePublicationStatus(
             @Parameter(description = "File ID") @PathVariable Long fileId,
             @Parameter(description = "Publication status") @RequestParam Boolean isPublished,
-            @RequestHeader(value = "X-User-Role") String role
+            @RequestHeader(value = "X-User-Role") String role,
+            @RequestHeader(value = "X-User-Id") Long userId
     ) {
         try {
+            boolean isAdmin=role.equals("ADMIN");
+            boolean isTeacherAndOwner=role.equals("TEACHER") && fileService.getFileById(fileId).getUploadedByUserId().equals(userId);
 
-            if (!role.equals("ADMIN") && !role.equals("TEACHER")) {
+            if (!isAdmin && !isTeacherAndOwner) {
                 return ResponseEntity.status(403).body(
                         tn.esprim.knowledgehub.resource.dto.response.ApiResponse.error("Forbidden", "Only admins and teachers can update publication status")
                 );
             }
 
             File file = fileService.updatePublicationStatus(fileId, isPublished);
+            if (isPublished){
+                aiandSearchService.indexFile(fileId);
+            }
             return ResponseEntity.ok(tn.esprim.knowledgehub.resource.dto.response.ApiResponse.success(file, "Publication status updated successfully"));
         } catch (Exception e) {
             log.error("Error updating publication status: {}", e.getMessage(), e);
@@ -170,8 +177,6 @@ public class AdminDocumentController {
     ) {
         try {
             File file = fileService.getFileById(fileId);
-
-
             boolean isStaff = role.equals("ADMIN") || role.equals("TEACHER");
             boolean isOwner = file.getUploadedByUserId().equals(Long.parseLong(authId));
 

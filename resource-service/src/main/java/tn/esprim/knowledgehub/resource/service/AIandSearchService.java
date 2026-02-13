@@ -50,9 +50,14 @@ public class AIandSearchService {
         }
         List<File> files = new ArrayList<>();
         for (Long id : extracted_ids) {
-            File file_extracted=fileRepository.findById(id).orElseThrow();
-            if (file_extracted.getIsPublished()){
-                files.add(file_extracted);
+            try {
+
+                File file_extracted = fileRepository.findById(id).orElseThrow();
+                if (file_extracted.getIsPublished()) {
+                    files.add(file_extracted);
+                }
+            }catch (Exception e){
+                log.error("Error while searching for file with id: {}",id);
             }
             
         }
