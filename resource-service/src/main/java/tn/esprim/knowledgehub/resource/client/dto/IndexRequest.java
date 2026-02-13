@@ -16,11 +16,11 @@ public class IndexRequest {
 
     @NotNull(message = "File ID is required")
     @Min(value = 1, message = "File ID must be greater than 0")
-    private Integer fileId;
+    private Integer file_id;
 
     @NotBlank(message = "Bucket name is required")
     private String bucket;
 
     @NotBlank(message = "Object name is required")
-    private String objectName;
+    private String object_name;
 }

@@ -55,7 +55,7 @@ public class StudentPFAController {
                 .studentId(request.getStudentId())
                 .title(request.getTitle())
                 .year(request.getYear())
-                .status(SubmissionStatus.UNDER_REVIEW)
+                .status(SubmissionStatus.CREATED)
                 .build();
         pfa.setSupervisorId(teacher.getTeacherId());
         pfa.setSupervisorName(teacher.getNom()+" "+teacher.getPrenom());
@@ -92,12 +92,12 @@ public class StudentPFAController {
     ){
         PFA pfa = pfaService.getPFAById(idPFA);
         StudentDTO student = userServiceClient.getStudentById(pfa.getStudentId()).getData();
-        if (pfa.getStudentId().toString().equals(userId)){
+        if (!pfa.getStudentId().toString().equals(userId)){
             return ResponseEntity.status(HttpStatus.FORBIDDEN).body(
                     ApiResponse.error("Forbidden", "You are not allowed to upload files for this PFA")
             );
         }
-        if (pfa.getStatus().equals(SubmissionStatus.APPROVED)){
+        if (!pfa.getStatus().equals(SubmissionStatus.CREATED) && !pfa.getStatus().equals(SubmissionStatus.REJECTED)){
             return ResponseEntity.status(HttpStatus.FORBIDDEN).body(
                     ApiResponse.error("Forbidden", "This PFA is Already approuved")
             );
@@ -115,6 +115,15 @@ public class StudentPFAController {
         pfa.setReportFile(uploaded_file);
         pfa.setStatus(SubmissionStatus.SUBMITTED);
         pfaService.savePFA(pfa);
+        TeacherDTO teacherDTO=userServiceClient.getTeacherById(pfa.getSupervisorId()).getData();
+        notificationClient.sendNotificationAsync(
+                NotificationRequest.builder()
+                        .type(NotificationType.EMAIL)
+                        .recipientEmail(teacherDTO.getEmail())
+                        .content("en attente de validation du rapport de "+student.getNom()+" "+student.getPrenom())
+                        .subject("depot de rapport")
+                        .build()
+        );
         return ResponseEntity.ok(
                 ApiResponse.success(response,"File uploaded successfully")
         );
@@ -170,7 +179,7 @@ public class StudentPFAController {
                 ApiResponse.success(pfaService.getAllPFA(),"All PFA")
         );
     }
-    @GetMapping("/{id}")
+    @GetMapping("/get/{id}")
     public ResponseEntity<ApiResponse> getPFAById(
             @PathVariable  Long id,
             @RequestHeader(value = "X-User-role") String role,

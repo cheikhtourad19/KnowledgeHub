@@ -25,15 +25,15 @@ class Settings(BaseSettings):
     CHROMA_COLLECTION_NAME: str = "documents"
 
     # Embedding model configuration (Local execution as per specification)
-    EMBEDDING_MODEL: str = "sentence-transformers/all-MiniLM-L6-v2"
+    EMBEDDING_MODEL: str = "sentence-transformers/paraphrase-multilingual-MiniLM-L12-v2"
 
     # PDF processing configuration
     MAX_FILE_SIZE_MB: int = 50
 
-    # Text processing (Specification: chunk_size=1000, overlap=100)
+    # Text processing (Optimized for technical PDFs: chunk_size=800, overlap=150)
     MIN_TEXT_LENGTH: int = 10
-    CHUNK_SIZE: int = 1000
-    CHUNK_OVERLAP: int = 100
+    CHUNK_SIZE: int = 800
+    CHUNK_OVERLAP: int = 150
 
     class Config:
         env_file = ".env"

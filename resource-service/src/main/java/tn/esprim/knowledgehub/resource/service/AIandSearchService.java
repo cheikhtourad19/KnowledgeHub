@@ -25,8 +25,8 @@ public class AIandSearchService {
             IndexResponse response = aiClient.indexDocument(
                     IndexRequest.builder()
                             .bucket(file.getStoragePath().split("/")[0])
-                            .fileId(Math.toIntExact(fileId))
-                            .objectName(file.getStoragePath().split("/")[1])
+                            .file_id(Math.toIntExact(fileId))
+                            .object_name(file.getStoragePath().split("/")[1])
                             .build()
             );
         } catch (Exception e) {

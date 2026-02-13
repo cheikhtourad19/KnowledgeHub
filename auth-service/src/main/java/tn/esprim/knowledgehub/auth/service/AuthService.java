@@ -75,6 +75,9 @@ public class AuthService {
         } else if (authUser.getRole() == AuthUser.Role.TEACHER) {
             userId = userServiceClient.getTeacherIdByAuthId(authUser.getId().toString());
         }
+        else {
+            userId=userServiceClient.getAdminIdByAuthId(authUser.getId().toString());
+        }
 
         String token = jwtUtil.generateToken(
                 authUser.getUsername(),

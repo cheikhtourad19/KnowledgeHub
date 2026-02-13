@@ -32,7 +32,7 @@ public class AdminDocumentController {
             @Parameter(description = "Bucket type (documents, pfa, pfe, stage)") @RequestParam("bucketType") String bucketType,
             @Parameter(description = "File title") @RequestParam(value = "title", required = false) String title,
             @Parameter(description = "File description") @RequestParam(value = "description", required = false) String description,
-            @RequestHeader(value = "X-User-Id") String authId,
+            @RequestHeader(value = "X-User-Id") String userId,
             @RequestHeader(value = "X-User-Name") String userEmail
     ) {
         try {
@@ -41,7 +41,7 @@ public class AdminDocumentController {
             FileUploadResponse response = fileService.uploadFile(
                     file,
                     fileType,
-                    Long.parseLong(authId),
+                    Long.parseLong(userId),
                     userEmail,
                     bucketType,
                     title,
@@ -138,8 +138,8 @@ public class AdminDocumentController {
     @Operation(summary = "Update publication status", description = "Publish or unpublish a file")
     @PutMapping("/{fileId}/publication")
     public ResponseEntity<tn.esprim.knowledgehub.resource.dto.response.ApiResponse<File>> updatePublicationStatus(
-            @Parameter(description = "File ID") @PathVariable Long fileId,
-            @Parameter(description = "Publication status") @RequestParam Boolean isPublished,
+            @PathVariable Long fileId,
+            @RequestParam Boolean isPublished,
             @RequestHeader(value = "X-User-Role") String role,
             @RequestHeader(value = "X-User-Id") Long userId
     ) {
@@ -196,6 +196,9 @@ public class AdminDocumentController {
         }
 
     }
+
+
+
     }
 
 

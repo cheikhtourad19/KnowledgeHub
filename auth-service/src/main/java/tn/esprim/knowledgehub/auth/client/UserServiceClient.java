@@ -142,5 +142,23 @@ public class UserServiceClient {
             return null;
         }
     }
+    public Long getAdminIdByAuthId(String authId) {
+        try {
+            String url = userServiceUrl + "/api/admin/by-Authid/" + authId;
+            ResponseEntity<String> response = restTemplate.getForEntity(url, String.class);
+
+            JsonNode root = objectMapper.readTree(response.getBody());
+            JsonNode data = root.get("data");
+            if (data != null && data.has("id")) {
+                return data.get("id").asLong();
+            }
+            log.warn("admin not found for authId: {}", authId);
+            return null;
+        } catch (Exception e) {
+            log.error("Error fetching teacher by authId: {}", e.getMessage());
+            return null;
+        }
+    }
+
 
 }

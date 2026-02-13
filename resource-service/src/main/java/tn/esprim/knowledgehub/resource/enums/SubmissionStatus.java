@@ -1,7 +1,7 @@
 package tn.esprim.knowledgehub.resource.enums;
 
 public enum SubmissionStatus {
-
+    CREATED,
     SUBMITTED,          // Submitted to supervisor
     UNDER_REVIEW,       // Supervisor is reviewing
     REJECTED,           // Supervisor rejected - needs revision

@@ -5,15 +5,21 @@ import com.knowledgehub.notification.client.dto.NotificationRequest;
 import com.knowledgehub.notification.client.dto.NotificationType;
 import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
+import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
+import org.springframework.web.multipart.MultipartFile;
 import tn.esprim.knowledgehub.resource.client.UserServiceClient;
 import tn.esprim.knowledgehub.resource.client.dto.StudentDTO;
 import tn.esprim.knowledgehub.resource.client.dto.TeacherDTO;
 import tn.esprim.knowledgehub.resource.dto.request.CreatePFERequest;
 import tn.esprim.knowledgehub.resource.dto.response.ApiResponse;
+import tn.esprim.knowledgehub.resource.dto.response.FileUploadResponse;
+import tn.esprim.knowledgehub.resource.entity.File;
 import tn.esprim.knowledgehub.resource.entity.PFE;
+import tn.esprim.knowledgehub.resource.enums.FileType;
 import tn.esprim.knowledgehub.resource.enums.SubmissionStatus;
+import tn.esprim.knowledgehub.resource.service.FileService;
 import tn.esprim.knowledgehub.resource.service.PFEService;
 
 @RestController
@@ -24,6 +30,7 @@ public class StudentPFEController {
     private final PFEService pfeService;
     private final UserServiceClient userServiceClient;
     private final NotificationClient notificationClient;
+    private final FileService fileService;
 
     @PostMapping("/create")
     public ResponseEntity<ApiResponse> createPFE(
@@ -83,6 +90,59 @@ public class StudentPFEController {
 
     }
 
+    @PostMapping("/upload/{idPFE}")
+    public ResponseEntity<ApiResponse> uploadFile(
+            @PathVariable Long idPFE,
+            @RequestParam(value = "title", required = false) String title,
+            @RequestParam(value = "description", required = false) String description,
+            @RequestParam("file") MultipartFile file,
+            @RequestHeader(value = "X-User-Id") String userId
+    ) {
+        PFE pfe = pfeService.getPFEById(idPFE);
+        StudentDTO student = userServiceClient.getStudentById(pfe.getStudentId()).getData();
+
+        if (!pfe.getStudentId().toString().equals(userId)) {
+            return ResponseEntity.status(HttpStatus.FORBIDDEN).body(
+                    ApiResponse.error("Forbidden", "You are not allowed to upload files for this PFE")
+            );
+        }
+
+        if (!pfe.getStatus().equals(SubmissionStatus.UNDER_REVIEW) && !pfe.getStatus().equals(SubmissionStatus.REJECTED)) {
+            return ResponseEntity.status(HttpStatus.FORBIDDEN).body(
+                    ApiResponse.error("Forbidden", "This PFE is already approved")
+            );
+        }
+
+        FileUploadResponse response = fileService.uploadFile(
+                file,
+                FileType.PFE_REPORT,
+                Long.parseLong(userId),
+                student.getEmail(),
+                "pfe",
+                title,
+                description
+        );
+
+        File uploadedFile = fileService.getFileById(response.getFileId());
+        pfe.setReportFile(uploadedFile);
+        pfe.setStatus(SubmissionStatus.SUBMITTED);
+        pfeService.savePFE(pfe);
+
+        TeacherDTO teacherDTO = userServiceClient.getTeacherById(pfe.getSupervisorId()).getData();
+        notificationClient.sendNotificationAsync(
+                NotificationRequest.builder()
+                        .type(NotificationType.EMAIL)
+                        .recipientEmail(teacherDTO.getEmail())
+                        .content("En attente de validation du rapport de " + student.getNom() + " " + student.getPrenom())
+                        .subject("Dépôt de rapport PFE")
+                        .build()
+        );
+
+        return ResponseEntity.ok(
+                ApiResponse.success(response, "File uploaded successfully")
+        );
+    }
+
     @GetMapping("/student-PFE")
     public ResponseEntity<ApiResponse> getStudentPFE(
             @RequestHeader(value = "X-User-Role") String role,
@@ -133,7 +193,8 @@ public class StudentPFEController {
         );
     }
 
-    @GetMapping("/{id}")
+
+    @GetMapping("/get/{id}")
     public ResponseEntity<ApiResponse> getPFEById(
             @PathVariable Long id,
             @RequestHeader(value = "X-User-Role") String role,
@@ -156,4 +217,5 @@ public class StudentPFEController {
                 ApiResponse.success(pfe, "PFE with id: " + id)
         );
     }
+
 }

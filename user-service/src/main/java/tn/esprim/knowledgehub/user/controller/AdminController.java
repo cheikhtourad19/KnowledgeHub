@@ -9,6 +9,7 @@ import tn.esprim.knowledgehub.user.dto.request.StudentToClassRequest;
 import tn.esprim.knowledgehub.user.dto.response.ApiResponse;
 import tn.esprim.knowledgehub.user.entity.Classe;
 import tn.esprim.knowledgehub.user.entity.Student;
+import tn.esprim.knowledgehub.user.repository.AdminRepository;
 import tn.esprim.knowledgehub.user.service.StudentService;
 import tn.esprim.knowledgehub.user.service.TeacherService;
 
@@ -24,6 +25,15 @@ public class AdminController {
     private TeacherService teacherService;
     @Autowired
     private StudentService studentService;
+    @Autowired
+    private AdminRepository adminRepository;
+
+    @GetMapping("/by-Authid/{authId}")
+    public ResponseEntity<ApiResponse> getAdminById(@PathVariable String authId){
+        return ResponseEntity.ok(
+                ApiResponse.builder().success(true).data(adminRepository.findByAuthId(authId).orElse(null)).build()
+        );
+    }
 
     @GetMapping("/classe/")
     public ResponseEntity<ApiResponse> getAllClasses(){
@@ -32,6 +42,7 @@ public class AdminController {
         );
 
     }
+
 
 
     @GetMapping("/classe/{id}")
