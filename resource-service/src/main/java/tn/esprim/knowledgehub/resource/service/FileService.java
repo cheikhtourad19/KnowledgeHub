@@ -112,6 +112,7 @@ public class FileService {
                     .originalFileName(originalFileName)
                     .title(title)
                     .description(description)
+                    .fileType(fileType)
                     .fileSize(fileSize)
                     .storagePath(bucketName + "/" + uniqueFileName)
                     .uploadedByUserId(uploadedByUserId)

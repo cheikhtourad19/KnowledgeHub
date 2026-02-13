@@ -35,7 +35,7 @@ public class AdminDocumentController {
             @RequestHeader(value = "X-User-Name") String userEmail
     ) {
         try {
-            log.info("Uploading file: {} by user: {}", file.getOriginalFilename(), userEmail);
+            log.info("Uploading file: {} by user: {}", fileType, userEmail);
 
             FileUploadResponse response = fileService.uploadFile(
                     file,
