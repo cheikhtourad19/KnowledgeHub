@@ -1,24 +1,32 @@
 server:
-  port: 8083
+  port: ${RESOURCE_SERVICE_PORT:8083}
 
 notification:
   service:
-    url: http://localhost:8084
+    url: ${NOTIFICATION_SERVICE_URL:http://localhost:8084}
+
+user:
+  service:
+    url: ${USER_SERVICE_URL:http://localhost:8082}
+
+ai-search:
+  service:
+    url: ${AI_SEARCH_SERVICE_URL:http://localhost:8000}
 
 spring:
   application:
     name: resource-service
 
   datasource:
-    url: jdbc:mysql://localhost:3306/knowledgehub_ressource?createDatabaseIfNotExist=true&useSSL=false&serverTimezone=UTC
+    url: ${SPRING_DATASOURCE_URL:jdbc:mysql://localhost:3306/knowledgehub_ressource?createDatabaseIfNotExist=true&useSSL=false&serverTimezone=UTC}
     driver-class-name: com.mysql.cj.jdbc.Driver
-    username: root
-    password:
+    username: ${MYSQL_USERNAME:root}
+    password: ${MYSQL_PASSWORD}
 
   jpa:
     hibernate:
-      ddl-auto: update
-    show-sql: true
+      ddl-auto: ${SPRING_JPA_DDL_AUTO:update}
+    show-sql: ${SPRING_JPA_SHOW_SQL:false}
     properties:
       hibernate:
         dialect: org.hibernate.dialect.MySQLDialect
@@ -27,8 +35,8 @@ spring:
   servlet:
     multipart:
       enabled: true
-      max-file-size: 100MB
-      max-request-size: 100MB
+      max-file-size: ${FILE_MAX_SIZE:100MB}
+      max-request-size: ${FILE_MAX_REQUEST_SIZE:100MB}
 
   cloud:
     openfeign:
@@ -40,24 +48,31 @@ spring:
 
 # MinIO Configuration
 minio:
-  endpoint: http://localhost:9000
-  access-key: minioadmin
-  secret-key: minioadmin
-  bucket-name: knowledgehub
+  endpoint: ${MINIO_ENDPOINT:http://localhost:9000}
+  access-key: ${MINIO_ACCESS_KEY:minioadmin}
+  secret-key: ${MINIO_SECRET_KEY:minioadmin}
+  bucket-name: ${MINIO_BUCKET_DOCUMENTS:knowledgehub-documents}
   buckets:
-    documents: knowledgehub-documents
-    pfa: knowledgehub-pfa
-    pfe: knowledgehub-pfe
-    stage: knowledgehub-stage
-    journal: knowledgehub-journal
-    attestation: knowledgehub-attestation
+    documents: ${MINIO_BUCKET_DOCUMENTS:knowledgehub-documents}
+    pfa: ${MINIO_BUCKET_PFA:knowledgehub-pfa}
+    pfe: ${MINIO_BUCKET_PFE:knowledgehub-pfe}
+    stage: ${MINIO_BUCKET_STAGE:knowledgehub-stage}
+    journal: ${MINIO_BUCKET_JOURNAL:knowledgehub-journal}
+    attestation: ${MINIO_BUCKET_ATTESTATION:knowledgehub-attestation}
 
 # CORS Configuration
 cors:
-  allowed-origins: http://localhost:*,http://127.0.0.1:*,http://localhost:8080,https://*.yourdomain.com
+  allowed-origins: ${CORS_ALLOWED_ORIGINS:http://localhost:*,http://127.0.0.1:*,http://localhost:8080}
 
 springdoc:
   api-docs:
     path: /api-docs
+    enabled: ${SWAGGER_ENABLED:true}
   swagger-ui:
     path: /swagger-ui.html
+    enabled: ${SWAGGER_ENABLED:true}
+
+logging:
+  level:
+    root: ${LOG_LEVEL_ROOT:INFO}
+    tn.esprim.knowledgehub.resource: ${LOG_LEVEL_KNOWLEDGEHUB:DEBUG}

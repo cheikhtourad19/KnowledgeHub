@@ -1,23 +1,18 @@
 server:
-  port: 8084
+  port: ${NOTIFICATION_SERVICE_PORT:8084}
 
 spring:
   application:
     name: notification-service
   data:
     mongodb:
-      uri: mongodb://localhost:27017/notification_db
-      # MongoDB doesn't use JPA/Hibernate - remove JPA config
-  # Remove these JPA settings - they're for SQL databases only
-  # jpa:
-  #   hibernate:
-  #     ddl-auto: update
-  #   show-sql: true
+      uri: ${SPRING_DATA_MONGODB_URI:mongodb://localhost:27017/notification_db}
+
   mail:
-    host: smtp.gmail.com
-    port: 587
-    username: elghothvadel@gmail.com     # ← Your Gmail address
-    password: irur psog dfhb ohsm             # ← The 16-char App Password from Step 1
+    host: ${SMTP_HOST:smtp.gmail.com}
+    port: ${SMTP_PORT:587}
+    username: ${SMTP_USERNAME}
+    password: ${SMTP_PASSWORD}
     properties:
       mail:
         smtp:
@@ -29,20 +24,25 @@ spring:
           timeout: 5000
           writetimeout: 5000
     default-encoding: UTF-8
+
 notification:
   email:
-    from: elghothvadel@gmail.com         # ← Your Gmail address
-    from-name: KnowledgeHub Notifications
+    from: ${SMTP_FROM_EMAIL:noreply@knowledgehub.com}
+    from-name: ${SMTP_FROM_NAME:KnowledgeHub Notifications}
 
-# Optional: Add logging for debugging
+# Logging configuration
 logging:
   level:
-    com.example.notification: DEBUG
-    org.springframework.data.mongodb: DEBUG
+    root: ${LOG_LEVEL_ROOT:INFO}
+    tn.esprim.knowledgehub: ${LOG_LEVEL_KNOWLEDGEHUB:DEBUG}
+    org.springframework.data.mongodb: ${LOG_LEVEL_MONGODB:INFO}
 
 # Swagger/OpenAPI configuration
 springdoc:
   api-docs:
     path: /api-docs
+    enabled: ${SWAGGER_ENABLED:true}
   swagger-ui:
     path: /swagger-ui.html
+    enabled: ${SWAGGER_ENABLED:true}
+

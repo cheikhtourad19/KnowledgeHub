@@ -1,22 +1,24 @@
 server:
-  port: 8081
+  port: ${AUTH_SERVICE_PORT:8081}
+
 notification:
   service:
-    url: http://localhost:8084
+    url: ${NOTIFICATION_SERVICE_URL:http://localhost:8084}
+
 spring:
   application:
     name: auth-service
 
   datasource:
-    url: jdbc:mysql://localhost:3306/knowledgehub_auth?createDatabaseIfNotExist=true&useSSL=false&allowPublicKeyRetrieval=true&serverTimezone=UTC
-    username: root
-    password:
+    url: ${SPRING_DATASOURCE_URL:jdbc:mysql://localhost:3306/knowledgehub_auth?createDatabaseIfNotExist=true&useSSL=false&allowPublicKeyRetrieval=true&serverTimezone=UTC}
+    username: ${MYSQL_USERNAME:root}
+    password: ${MYSQL_PASSWORD}
     driver-class-name: com.mysql.cj.jdbc.Driver
 
   jpa:
     hibernate:
-      ddl-auto: update
-    show-sql: true
+      ddl-auto: ${SPRING_JPA_DDL_AUTO:update}
+    show-sql: ${SPRING_JPA_SHOW_SQL:false}
     properties:
       hibernate:
         dialect: org.hibernate.dialect.MySQLDialect
@@ -25,18 +27,21 @@ spring:
 
 # JWT Configuration
 jwt:
-  secret: PzwO3GB4uHSLcSFKFrU3aL70Uy0k9HNpqjLrcc4hVXq
-  expiration: 86400000 # 24 hours in milliseconds
-  refresh-expiration: 604800000 # 7 days in milliseconds
+  secret: ${JWT_SECRET}
+  expiration: ${JWT_EXPIRATION:86400000}
+  refresh-expiration: ${JWT_REFRESH_EXPIRATION:604800000}
 
 springdoc:
   api-docs:
     path: /api-docs
+    enabled: ${SWAGGER_ENABLED:true}
   swagger-ui:
     path: /swagger-ui.html
+    enabled: ${SWAGGER_ENABLED:true}
 
 logging:
   level:
-    tn.esprim.knowledgehub.auth: DEBUG
-    org.hibernate.SQL: DEBUG
+    root: ${LOG_LEVEL_ROOT:INFO}
+    tn.esprim.knowledgehub.auth: ${LOG_LEVEL_KNOWLEDGEHUB:DEBUG}
+    org.hibernate.SQL: ${LOG_LEVEL_SQL:DEBUG}
     org.hibernate.type.descriptor.sql.BasicBinder: TRACE

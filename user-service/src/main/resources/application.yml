@@ -1,21 +1,23 @@
 server:
-  port: 8082
+  port: ${USER_SERVICE_PORT:8082}
+
 notification:
   service:
-    url: http://localhost:8084
+    url: ${NOTIFICATION_SERVICE_URL:http://localhost:8084}
+
 spring:
   application:
     name: user-service
   datasource:
-    url: jdbc:mysql://localhost:3306/knowledgehub_user?createDatabaseIfNotExist=true&useSSL=false&allowPublicKeyRetrieval=true&serverTimezone=UTC
-    username: root
-    password:
+    url: ${SPRING_DATASOURCE_URL:jdbc:mysql://localhost:3306/knowledgehub_user?createDatabaseIfNotExist=true&useSSL=false&allowPublicKeyRetrieval=true&serverTimezone=UTC}
+    username: ${MYSQL_USERNAME:root}
+    password: ${MYSQL_PASSWORD}
     driver-class-name: com.mysql.cj.jdbc.Driver
 
   jpa:
     hibernate:
-      ddl-auto: update
-    show-sql: true
+      ddl-auto: ${SPRING_JPA_DDL_AUTO:update}
+    show-sql: ${SPRING_JPA_SHOW_SQL:false}
     properties:
       hibernate:
         dialect: org.hibernate.dialect.MySQLDialect
@@ -25,5 +27,12 @@ spring:
 springdoc:
   api-docs:
     path: /api-docs
+    enabled: ${SWAGGER_ENABLED:true}
   swagger-ui:
     path: /swagger-ui.html
+    enabled: ${SWAGGER_ENABLED:true}
+
+logging:
+  level:
+    root: ${LOG_LEVEL_ROOT:INFO}
+    tn.esprim.knowledgehub.user: ${LOG_LEVEL_KNOWLEDGEHUB:DEBUG}

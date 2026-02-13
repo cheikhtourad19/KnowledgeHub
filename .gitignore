@@ -1,14 +1,184 @@
-# Project exclude paths
-/api-gateway/target/
-/auth-service/target/
-# IDE specific files
+# ==============================================
+# KnowledgeHub Project .gitignore
+# ==============================================
+
+# ---------------------------------------------
+# Environment Variables & Secrets (CRITICAL!)
+# ---------------------------------------------
+.env
+.env.local
+.env.development
+.env.test
+.env.production
+.env.staging
+*.env
+!.env
+
+# ---------------------------------------------
+# Maven (Java Build Tool)
+# ---------------------------------------------
+target/
+pom.xml.tag
+pom.xml.releaseBackup
+pom.xml.versionsBackup
+pom.xml.next
+release.properties
+dependency-reduced-pom.xml
+buildNumber.properties
+.mvn/timing.properties
+.mvn/wrapper/maven-wrapper.jar
+mvnw
+mvnw.cmd
+
+# ---------------------------------------------
+# IntelliJ IDEA
+# ---------------------------------------------
 .idea/
 *.iml
-# Logs and temporary fileslogs/
-*.log
+*.iws
+*.ipr
+out/
+.idea_modules/
+
+# ---------------------------------------------
+# Eclipse
+# ---------------------------------------------
+.classpath
+.project
+.settings/
+bin/
+tmp/
 *.tmp
-# OS generated files.DS_Store
+*.bak
+*.swp
+*~.nib
+local.properties
+.metadata
+.loadpath
+.recommenders
+
+# ---------------------------------------------
+# VS Code
+# ---------------------------------------------
+.vscode/
+
+*.code-workspace
+
+# ---------------------------------------------
+# NetBeans
+# ---------------------------------------------
+nbproject/private/
+build/
+nbbuild/
+dist/
+nbdist/
+.nb-gradle/
+
+# ---------------------------------------------
+# Operating System Files
+# ---------------------------------------------
+# macOS
+.DS_Store
+.AppleDouble
+.LSOverride
+._*
+.Spotlight-V100
+.Trashes
+
+# Windows
 Thumbs.db
-# Maven wrapper filesmvnw
-mvnw.cmd
-target/
+ehthumbs.db
+Desktop.ini
+$RECYCLE.BIN/
+
+# Linux
+*~
+.directory
+
+# ---------------------------------------------
+# Logs & Temp Files
+# ---------------------------------------------
+logs/
+*.log
+*.log.*
+log/
+*.pid
+*.seed
+
+# ---------------------------------------------
+# Database Files
+# ---------------------------------------------
+*.sqlite
+*.sqlite3
+*.db
+
+# ---------------------------------------------
+# Docker & Data Volumes
+# ---------------------------------------------
+docker-compose.override.yml
+volumes/
+data/
+minio-data/
+mysql-data/
+mongodb-data/
+chromadb-data/
+
+# ---------------------------------------------
+# Spring Boot
+# ---------------------------------------------
+HELP.md
+.gradle
+!**/src/main/**/target/
+!**/src/test/**/target/
+
+# ---------------------------------------------
+# Application Properties (if containing secrets)
+# ---------------------------------------------
+**/application-secret.yml
+**/application-secret.yaml
+**/application-local.yml
+**/application-local.yaml
+
+# ---------------------------------------------
+# Compiled Class Files
+# ---------------------------------------------
+*.class
+
+# ---------------------------------------------
+# Python (for AI Service)
+# ---------------------------------------------
+__pycache__/
+*.pyc
+*.pyo
+venv/
+env/
+.venv/
+.Python
+
+# ---------------------------------------------
+# Temporary Files
+# ---------------------------------------------
+*.tmp
+*.temp
+*.bak
+*.backup
+*.swp
+*.swo
+
+# ---------------------------------------------
+# SSL Certificates & Keys
+# ---------------------------------------------
+*.pem
+*.key
+*.crt
+*.p12
+*.jks
+keystore/
+certificates/
+
+# ---------------------------------------------
+# Keep These Files
+# ---------------------------------------------
+!.gitignore
+
+

@@ -1,5 +1,5 @@
 server:
-  port: 8080
+  port: ${API_GATEWAY_PORT:8080}
 
 spring:
   application:
@@ -8,7 +8,7 @@ spring:
     gateway:
       routes:
         - id: auth-service
-          uri: http://localhost:8081
+          uri: ${AUTH_SERVICE_URL:http://localhost:8081}
           predicates:
             - Path=/auth-service/**
           filters:
@@ -16,7 +16,7 @@ spring:
             - name: JwtAuthenticationFilter
 
         - id: user-service
-          uri: http://localhost:8082
+          uri: ${USER_SERVICE_URL:http://localhost:8082}
           predicates:
             - Path=/user-service/**
           filters:
@@ -24,7 +24,7 @@ spring:
             - name: JwtAuthenticationFilter
 
         - id: ressource-service
-          uri: http://localhost:8083
+          uri: ${RESOURCE_SERVICE_URL:http://localhost:8083}
           predicates:
             - Path=/ressource-service/**
           filters:
@@ -32,7 +32,7 @@ spring:
             - name: JwtAuthenticationFilter
 
         - id: notification-service
-          uri: http://localhost:8084
+          uri: ${NOTIFICATION_SERVICE_URL:http://localhost:8084}
           predicates:
             - Path=/notification-service/**
           filters:
@@ -40,33 +40,34 @@ spring:
             - name: JwtAuthenticationFilter
 
         - id: ai-search-service
-          uri: http://localhost:8000
+          uri: ${AI_SEARCH_SERVICE_URL:http://localhost:8000}
           predicates:
             - Path=/ai-service/**
           filters:
             - RewritePath=/ai-service/(?<segment>.*), /$\{segment}
             - name: JwtAuthenticationFilter
+
 jwt:
-  secret: PzwO3GB4uHSLcSFKFrU3aL70Uy0k9HNpqjLrcc4hVXq
+  secret: ${JWT_SECRET}
+
 management:
   endpoints:
     web:
       exposure:
-        include: health,info,metrics
+        include: ${MANAGEMENT_ENDPOINTS:health,info,metrics}
   endpoint:
     health:
-      show-details: always
+      show-details: ${MANAGEMENT_HEALTH_SHOW_DETAILS:always}
 
 logging:
   level:
-    org.springframework.cloud.gateway: DEBUG
-    reactor.netty: DEBUG
-
-
+    root: ${LOG_LEVEL_ROOT:INFO}
+    org.springframework.cloud.gateway: ${LOG_LEVEL_GATEWAY:DEBUG}
+    reactor.netty: ${LOG_LEVEL_NETTY:DEBUG}
 
 springdoc:
   api-docs:
-    enabled: true
+    enabled: ${SWAGGER_ENABLED:true}
   swagger-ui:
-    enabled: true
+    enabled: ${SWAGGER_ENABLED:true}
     path: /swagger-ui.html
