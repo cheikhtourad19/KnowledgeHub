@@ -28,6 +28,13 @@ public class File {
     @Column(nullable = false)
     private String originalFileName;
 
+    @Column(length = 500)
+    private String title;
+
+    @Lob
+    @Column(columnDefinition = "TEXT")
+    private String description;
+
     @Column(nullable = false)
     private Boolean isPublished = false;
 
@@ -50,14 +57,8 @@ public class File {
 
     private Integer pageCount;
 
-    @Lob
-    @Column(columnDefinition = "MEDIUMTEXT")
-    private String extractedText;
-
-
-    @Column(name = "keywords")
-    @Builder.Default
-    private List<String> keywords = new ArrayList<>();
+    @Column(nullable = false)
+    private FileType fileType;
 
     @Column(nullable = false)
     @Builder.Default

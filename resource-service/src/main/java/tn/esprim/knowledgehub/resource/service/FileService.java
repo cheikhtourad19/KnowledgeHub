@@ -50,6 +50,8 @@ public class FileService {
     @Value("${minio.buckets.stage}")
     private String stageBucket;
 
+    private final AIandSearchService aiandSearchService;
+
     /**
      * Upload a file to MinIO and save metadata to database
      *
@@ -58,6 +60,8 @@ public class FileService {
      * @param uploadedByUserId The ID of the user uploading the file
      * @param uploadedByUserName The name of the user uploading the file
      * @param bucketType The bucket type (documents, pfa, pfe, stage)
+     * @param title The title of the file
+     * @param description The description of the file
      * @return FileUploadResponse with file details
      */
     @Transactional
@@ -66,7 +70,9 @@ public class FileService {
             FileType fileType,
             Long uploadedByUserId,
             String uploadedByUserName,
-            String bucketType
+            String bucketType,
+            String title,
+            String description
     ) {
         try {
 
@@ -104,6 +110,8 @@ public class FileService {
             File file = File.builder()
                     .fileName(uniqueFileName)
                     .originalFileName(originalFileName)
+                    .title(title)
+                    .description(description)
                     .fileSize(fileSize)
                     .storagePath(bucketName + "/" + uniqueFileName)
                     .uploadedByUserId(uploadedByUserId)
@@ -118,6 +126,8 @@ public class FileService {
                     .fileId(file.getId())
                     .fileName(uniqueFileName)
                     .originalFileName(originalFileName)
+                    .title(title)
+                    .description(description)
                     .fileSize(fileSize)
                     .contentType(contentType)
                     .storagePath(file.getStoragePath())
@@ -127,7 +137,7 @@ public class FileService {
                     .uploadedByUserName(uploadedByUserName)
                     .pageCount(pageCount)
                     .isPublished(false)
-                    .keywords(file.getKeywords())
+
                     .message("File uploaded successfully")
                     .build();
 
@@ -207,6 +217,9 @@ public class FileService {
     public List<File> getAllFiles(){
         return fileRepository.findByIsPublishedTrue();
     }
+    public List<File> getFilesByType(FileType fileType) {
+        return fileRepository.findByIsPublishedTrueAndFileType(fileType);
+    }
 
 
     public List<File> getFilesByUploader(Long userId) {
@@ -220,6 +233,32 @@ public class FileService {
                 .orElseThrow(() -> new IllegalArgumentException("File not found with ID: " + fileId));
 
         file.setIsPublished(isPublished);
+        aiandSearchService.indexFile(fileId);
+
+        return fileRepository.save(file);
+    }
+
+    /**
+     * Update file title and description
+     *
+     * @param fileId The ID of the file to update
+     * @param title The new title
+     * @param description The new description
+     * @return Updated file entity
+     */
+    @Transactional
+    public File updateFileMetadata(Long fileId, String title, String description) {
+        File file = fileRepository.findById(fileId)
+                .orElseThrow(() -> new IllegalArgumentException("File not found with ID: " + fileId));
+
+        if (title != null) {
+            file.setTitle(title);
+        }
+        if (description != null) {
+            file.setDescription(description);
+        }
+
+        log.info("Updated metadata for file ID: {}", fileId);
         return fileRepository.save(file);
     }
 

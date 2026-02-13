@@ -2,6 +2,34 @@
 
 > **AI Context Document** - This document provides a comprehensive overview of the KnowledgeHub microservices architecture for AI assistants and developers.
 
+## 🔄 Recent Updates (February 2026)
+
+### File Entity Enhancement
+- ✅ Added `title` field (VARCHAR 500, optional) - Store descriptive file titles
+- ✅ Added `description` field (TEXT, optional) - Store detailed file descriptions
+- ✅ Updated FileService to handle title/description in upload and updates
+- ✅ Added `updateFileMetadata()` endpoint for updating file metadata
+
+### Resource Service Controllers Implemented
+- ✅ **AdminDocumentController**: Full CRUD operations for file management
+  - Upload files with optional title/description
+  - Generate secure presigned URLs
+  - Update publication status
+  - Update file metadata with permission checks
+- ✅ **LibraryController**: Public document library
+  - Browse all documents
+  - Filter by file type
+  - AI-powered semantic search integration
+- ✅ **StudentPFAController**: PFA assignment management
+  - Create PFA assignments with automatic notifications
+
+### API Enhancements
+- ✅ Permission-based access control on all admin endpoints
+- ✅ Secure file preview with 2-minute presigned URLs
+- ✅ Integration with AI & Search Service for semantic search
+
+---
+
 ## 📋 Project Overview
 
 **KnowledgeHub** is an educational resource management platform built with a microservices architecture. It manages students, teachers, and academic resources (PFA - Projet de Fin d'Année, PFE - Projet de Fin d'Études, Stage reports) with centralized authentication via JWT tokens.
@@ -199,8 +227,10 @@ Stage {  // Internship
 
 File {
     Long id
-    String fileName
-    String originalFileName
+    String fileName              // Generated unique filename
+    String originalFileName      // Original uploaded filename
+    String title                 // File title (optional, 500 chars max)
+    String description           // File description (optional, TEXT type)
     Boolean isPublished
     Long fileSize
     String storagePath
@@ -208,8 +238,9 @@ File {
     Long uploadedByUserId
     String uploadedByUserName
     Integer pageCount
-    String extractedText     // For search functionality
+    String extractedText         // For search functionality (MEDIUMTEXT)
     List<String> keywords
+    Boolean isScanned
 }
 ```
 
@@ -405,17 +436,32 @@ KnowledgeHub/
 │       └── service/
 ├── resource-service/
 │   └── src/main/java/tn/esprim/knowledgehub/resource/
-│       ├── client/                  # UserServiceClient (Feign)
+│       ├── client/                  # UserServiceClient (Feign), AiClient
+│       │   └── dto/                 # DTOs for inter-service communication
 │       ├── controller/
-│       │   ├── admin/               # AdminDocumentController
-│       │   ├── library/             # LibraryController
-│       │   ├── student/             # StudentPFA/PFE/StageController
-│       │   └── teacher/             # TeacherDocument/ReviewController
+│       │   ├── admin/               # AdminDocumentController (✅ IMPLEMENTED)
+│       │   │                        # - Upload files with title/description
+│       │   │                        # - Get secure preview links
+│       │   │                        # - Get file metadata
+│       │   │                        # - Delete files
+│       │   │                        # - Update publication status
+│       │   │                        # - Update file metadata (title/description)
+│       │   ├── library/             # LibraryController (✅ IMPLEMENTED)
+│       │   │                        # - Get all documents
+│       │   │                        # - Get documents by type
+│       │   │                        # - AI-powered semantic search
+│       │   ├── student/             # StudentPFAController (✅ IMPLEMENTED)
+│       │   │                        # - Create PFA assignments
+│       │   │                        # StudentPFEController, StudentStageController (TODO)
+│       │   └── teacher/             # TeacherDocumentController (TODO)
+│       │                            # TeacherReviewController (TODO)
 │       ├── dto/
+│       │   ├── request/             # CreatePFARequest, CreatePFERequest, CreateStageRequest
+│       │   └── response/            # FileUploadResponse, ApiResponse, FileDownloadResponse
 │       ├── entity/                  # Document, PFA, PFE, Stage, File
 │       ├── enums/                   # DocumentCategory, SubmissionStatus, FileType
 │       ├── repository/
-│       └── service/
+│       └── service/                 # FileService, AIandSearchService, PFAService, etc.
 ├── notification-service/
 │   └── src/main/java/tn/esprim/knowledgehub/notification/
 │       ├── config/
@@ -505,17 +551,34 @@ Each service exposes Swagger UI at:
 ## 📝 Notes for AI Assistants
 
 ### Current State:
-1. **Fully Implemented:** Auth, User, Notification services
-2. **Partially Implemented:** Resource service (controllers have placeholder endpoints)
-3. **Placeholder:** AI & Search service (routers not yet implemented)
+1. **Fully Implemented:** 
+   - Auth Service (authentication, registration, password management)
+   - User Service (student/teacher profiles, class management)
+   - Notification Service (email/push notifications)
+   - Resource Service - File Management (upload, download, metadata management)
+   - Resource Service - Admin Controllers (document management)
+   - Resource Service - Library Controllers (public document access, AI search)
+   - Resource Service - Student Controllers (PFA creation)
+
+2. **Partially Implemented:** 
+   - Resource Service - Student Controllers (PFE and Stage controllers TODO)
+   - Resource Service - Teacher Controllers (document upload and review TODO)
+
+3. **Planned:** 
+   - AI & Search Service enhancements (currently basic implementation)
+   - Advanced document categorization
+   - Comprehensive review workflow for submissions
 
 ### Key Patterns:
 - All services follow standard Spring Boot layered architecture (Controller → Service → Repository)
 - DTOs separate API contracts from entities
 - Generic `ApiResponse<T>` wrapper for consistent responses
-- Header-based auth context propagation (`X-Auth-Id`, `X-User-Role`)
+- Header-based auth context propagation (`X-Auth-Id`, `X-User-Role`, `X-User-Name`)
+- Permission-based access control on sensitive endpoints
 
 ### Common Tasks:
 - Adding endpoints: Create in controller, implement in service
 - New entity: Add entity, repository, service, DTO, controller
 - Inter-service call: Use Feign client or RestTemplate
+- File operations: Use FileService for MinIO integration
+- Notifications: Use NotificationClient for async notifications

@@ -18,6 +18,8 @@ public class FileUploadResponse {
     private Long fileId;
     private String fileName;
     private String originalFileName;
+    private String title;
+    private String description;
     private Long fileSize;
     private String contentType;
     private String storagePath;

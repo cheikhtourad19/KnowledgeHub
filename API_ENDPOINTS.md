@@ -1053,6 +1053,8 @@ FileUploadResponse {
   Long fileId
   String fileName              // Generated UUID filename
   String originalFileName      // Original uploaded filename
+  String title                 // File title (optional)
+  String description           // File description (optional)
   Long fileSize               // File size in bytes
   String contentType          // MIME type
   String storagePath          // MinIO storage path
@@ -1366,12 +1368,361 @@ The following controllers exist with TODO comments. Endpoints need to be impleme
 #### Admin Document Controller
 - **Base Path:** `/api/admin/documents`
 - **Purpose:** Admin document management
-- **Planned Endpoints:** View all documents, manage document visibility, etc.
+- **Access:** Admin and authenticated users with appropriate permissions
+
+##### 1. Upload File
+
+**Endpoint:** `POST /api/admin/documents/upload`  
+**Access:** Authenticated users  
+**Content-Type:** `multipart/form-data`  
+**Headers Required:** `X-Auth-Id`, `X-User-Name`  
+**Description:** Uploads a file to MinIO storage and saves metadata
+
+**Request Parameters:**
+- `file`: File to upload (multipart)
+- `fileType`: File type enum (REPORT, EDUCATIONAL_MATERIAL, etc.)
+- `bucketType`: Bucket type (`documents`, `pfa`, `pfe`, `stage`)
+- `title`: (optional) File title
+- `description`: (optional) File description
+
+**Request Example (cURL):**
+```bash
+curl -X POST http://localhost:8083/api/admin/documents/upload \
+  -H "X-Auth-Id: 1" \
+  -H "X-User-Name: teacher@example.com" \
+  -F "file=@/path/to/document.pdf" \
+  -F "fileType=EDUCATIONAL_MATERIAL" \
+  -F "bucketType=documents" \
+  -F "title=Introduction to Spring Boot" \
+  -F "description=A comprehensive guide covering Spring Boot fundamentals"
+```
+
+**Response:**
+```json
+{
+  "success": true,
+  "message": "File uploaded successfully",
+  "data": {
+    "fileId": 1,
+    "fileName": "document.pdfa1b2c3d4-e5f6-7890-abcd-ef1234567890.pdf",
+    "originalFileName": "document.pdf",
+    "title": "Introduction to Spring Boot",
+    "description": "A comprehensive guide covering Spring Boot fundamentals",
+    "fileSize": 1048576,
+    "contentType": "application/pdf",
+    "storagePath": "knowledgehub-documents/document.pdfa1b2c3d4-e5f6-7890-abcd-ef1234567890.pdf",
+    "fileType": "EDUCATIONAL_MATERIAL",
+    "uploadDate": "2026-02-12T10:30:00",
+    "uploadedByUserId": 1,
+    "uploadedByUserName": "teacher@example.com",
+    "pageCount": 25,
+    "isPublished": false,
+    "keywords": [],
+    "message": "File uploaded successfully"
+  }
+}
+```
+
+##### 2. Get Secure Preview Link
+
+**Endpoint:** `GET /api/admin/documents/view/{fileId}`  
+**Access:** Admin, file owner, or public (if published)  
+**Headers Required:** `X-User-Role`, `X-User-Id`  
+**Description:** Generates a 2-minute secure presigned URL for file preview
+
+**Response:**
+```json
+{
+  "success": true,
+  "message": "Secure link generated",
+  "data": "http://localhost:9000/knowledgehub-documents/file.pdf?X-Amz-Algorithm=AWS4-HMAC-SHA256&..."
+}
+```
+
+**Response (Forbidden):**
+```json
+{
+  "success": false,
+  "error": "Forbidden",
+  "message": "This file is not yet published."
+}
+```
+
+##### 3. Get File Metadata
+
+**Endpoint:** `GET /api/admin/documents/{fileId}`  
+**Access:** Authenticated users  
+**Description:** Retrieves file metadata by ID
+
+**Response:**
+```json
+{
+  "success": true,
+  "message": "File retrieved successfully",
+  "data": {
+    "id": 1,
+    "fileName": "document.pdfa1b2c3d4-e5f6-7890-abcd-ef1234567890.pdf",
+    "originalFileName": "document.pdf",
+    "title": "Introduction to Spring Boot",
+    "description": "A comprehensive guide covering Spring Boot fundamentals",
+    "isPublished": false,
+    "fileSize": 1048576,
+    "storagePath": "knowledgehub-documents/document.pdfa1b2c3d4-e5f6-7890-abcd-ef1234567890.pdf",
+    "uploadDate": "2026-02-12T10:30:00",
+    "uploadedByUserId": 1,
+    "uploadedByUserName": "teacher@example.com",
+    "pageCount": 25,
+    "extractedText": "Sample text content...",
+    "keywords": ["spring", "boot", "tutorial"],
+    "isScanned": false
+  }
+}
+```
+
+##### 4. Delete File
+
+**Endpoint:** `DELETE /api/admin/documents/{fileId}`  
+**Access:** Admin or file owner  
+**Headers Required:** `X-User-Role`, `X-User-Id`  
+**Description:** Deletes a file from storage and database
+
+**Response (Success):**
+```json
+{
+  "success": true,
+  "message": "File deleted successfully",
+  "data": null
+}
+```
+
+**Response (Forbidden):**
+```json
+{
+  "success": false,
+  "error": "Forbidden",
+  "message": "Only admins and teachers can delete files"
+}
+```
+
+##### 5. Update Publication Status
+
+**Endpoint:** `PUT /api/admin/documents/{fileId}/publication`  
+**Access:** Admin or Teacher  
+**Headers Required:** `X-User-Role`  
+**Description:** Publish or unpublish a file
+
+**Request Parameters:**
+- `isPublished`: Boolean (true/false)
+
+**Request Example:**
+```bash
+curl -X PUT "http://localhost:8083/api/admin/documents/1/publication?isPublished=true" \
+  -H "X-User-Role: ADMIN"
+```
+
+**Response:**
+```json
+{
+  "success": true,
+  "message": "Publication status updated successfully",
+  "data": {
+    "id": 1,
+    "fileName": "document.pdf",
+    "isPublished": true,
+    "..."
+  }
+}
+```
+
+##### 6. Update File Metadata
+
+**Endpoint:** `PUT /api/admin/documents/{fileId}/metadata`  
+**Access:** Admin, Teacher, or file owner  
+**Headers Required:** `X-User-Role`, `X-Auth-Id`  
+**Description:** Updates file title and description
+
+**Request Parameters:**
+- `title`: (optional) New file title
+- `description`: (optional) New file description
+
+**Request Example:**
+```bash
+curl -X PUT "http://localhost:8083/api/admin/documents/1/metadata" \
+  -H "X-User-Role: STUDENT" \
+  -H "X-Auth-Id: 5" \
+  -d "title=Updated Title&description=Updated description"
+```
+
+**Response:**
+```json
+{
+  "success": true,
+  "message": "File metadata updated successfully",
+  "data": {
+    "id": 1,
+    "fileName": "document.pdf",
+    "title": "Updated Title",
+    "description": "Updated description",
+    "..."
+  }
+}
+```
+
+**Response (Forbidden):**
+```json
+{
+  "success": false,
+  "error": "Forbidden",
+  "message": "You don't have permission to update this file"
+}
+```
+
+---
 
 #### Library Controller
 - **Base Path:** `/api/public/library`
 - **Purpose:** Public library of approved documents
-- **Planned Endpoints:** Search documents, browse by category, download documents, etc.
+- **Access:** Public (no authentication required)
+
+##### 1. Get All Documents
+
+**Endpoint:** `GET /api/public/library/getDocuments`  
+**Access:** Public  
+**Description:** Retrieves all documents
+
+**Response:**
+```json
+{
+  "success": true,
+  "message": "Documents retrieved successfully",
+  "data": [
+    {
+      "id": 1,
+      "fileName": "document.pdf",
+      "originalFileName": "Spring Boot Guide.pdf",
+      "title": "Introduction to Spring Boot",
+      "description": "A comprehensive guide",
+      "isPublished": true,
+      "fileSize": 1048576,
+      "uploadDate": "2026-02-12T10:30:00",
+      "pageCount": 25
+    }
+  ]
+}
+```
+
+##### 2. Get Documents by Type
+
+**Endpoint:** `GET /api/public/library/getDocuments/{type}`  
+**Access:** Public  
+**Description:** Retrieves documents filtered by file type
+
+**Path Parameters:**
+- `type`: FileType enum (REPORT, EDUCATIONAL_MATERIAL, JOURNAL, ATTESTATION, SUPPLEMENTARY)
+
+**Response:**
+```json
+{
+  "success": true,
+  "message": "Documents retrieved successfully",
+  "data": [
+    {
+      "id": 1,
+      "fileName": "document.pdf",
+      "originalFileName": "Spring Boot Guide.pdf",
+      "fileType": "EDUCATIONAL_MATERIAL",
+      "title": "Introduction to Spring Boot",
+      "..."
+    }
+  ]
+}
+```
+
+##### 3. AI-Powered Semantic Search
+
+**Endpoint:** `POST /api/public/library/ai-search`  
+**Access:** Public  
+**Description:** Performs semantic search using AI embeddings
+
+**Request:**
+```json
+{
+  "query": "spring boot microservices tutorial"
+}
+```
+
+**Response:**
+```json
+{
+  "success": true,
+  "message": "result : 3",
+  "data": [
+    {
+      "id": 1,
+      "fileName": "microservices-guide.pdf",
+      "title": "Microservices Architecture",
+      "relevanceScore": 0.89
+    },
+    {
+      "id": 5,
+      "fileName": "spring-boot-intro.pdf",
+      "title": "Introduction to Spring Boot",
+      "relevanceScore": 0.85
+    }
+  ]
+}
+```
+
+---
+
+#### Student PFA Controller
+- **Base Path:** `/api/student/pfa`
+- **Purpose:** Student PFA (Projet de Fin d'Année) management
+- **Access:** Admin and Teachers
+
+##### 1. Create PFA
+
+**Endpoint:** `POST /api/student/pfa/create`  
+**Access:** Admin or Teacher  
+**Headers Required:** `X-User-Role`  
+**Description:** Creates a new PFA assignment for a student
+
+**Request:**
+```json
+{
+  "title": "E-commerce Platform Development",
+  "year": 2026,
+  "studentId": 10,
+  "studentName": "John Doe",
+  "studentEmail": "john.doe@example.com",
+  "supervisorId": 5,
+  "supervisorName": "Prof. Smith"
+}
+```
+
+**Response:**
+```json
+{
+  "success": true,
+  "message": "PFA created successfully",
+  "data": {
+    "id": 1,
+    "title": "E-commerce Platform Development",
+    "year": 2026,
+    "status": "UNDER_REVIEW",
+    "studentId": 10,
+    "studentName": "John Doe",
+    "studentEmail": "john.doe@example.com",
+    "supervisorId": 5,
+    "supervisorName": "Prof. Smith",
+    "submissionDate": "2026-02-12T10:30:00"
+  }
+}
+```
+
+**Note:** This endpoint also sends an email notification to the student.
+
+---
 
 ---
 
@@ -1420,8 +1771,10 @@ PFA {
 ```java
 File {
   Long id
-  String fileName
-  String originalFileName
+  String fileName              // Generated unique filename
+  String originalFileName      // Original uploaded filename
+  String title                 // File title (optional)
+  String description           // File description (optional)
   Boolean isPublished
   Long fileSize
   String storagePath
@@ -1432,6 +1785,7 @@ File {
   String extractedText         // For search functionality
   List<String> keywords
   FileType fileType           // REPORT, JOURNAL, ATTESTATION, etc.
+  Boolean isScanned
 }
 ```
 

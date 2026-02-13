@@ -1,0 +1,486 @@
+{
+	"info": {
+		"_postman_id": "ai-search-service-2024",
+		"name": "KnowledgeHub - AI and Search Service",
+		"description": "Semantic Search Microservice API Testing Collection\n\nThis collection tests all endpoints of the AI and Search Service including:\n- Document indexing from MinIO\n- Semantic search\n- Document deletion\n- Health checks",
+		"schema": "https://schema.getpostman.com/json/collection/v2.1.0/collection.json"
+	},
+	"item": [
+		{
+			"name": "Health Check",
+			"event": [
+				{
+					"listen": "test",
+					"script": {
+						"exec": [
+							"pm.test(\"Status code is 200\", function () {",
+							"    pm.response.to.have.status(200);",
+							"});",
+							"",
+							"pm.test(\"Service is healthy\", function () {",
+							"    var jsonData = pm.response.json();",
+							"    pm.expect(jsonData.status).to.eql(\"healthy\");",
+							"});",
+							"",
+							"pm.test(\"MinIO is connected\", function () {",
+							"    var jsonData = pm.response.json();",
+							"    pm.expect(jsonData.minio_connected).to.be.true;",
+							"});",
+							"",
+							"pm.test(\"Vector DB stats present\", function () {",
+							"    var jsonData = pm.response.json();",
+							"    pm.expect(jsonData.vector_db_stats).to.have.property('total_vectors');",
+							"});"
+						],
+						"type": "text/javascript"
+					}
+				}
+			],
+			"request": {
+				"method": "GET",
+				"header": [],
+				"url": {
+					"raw": "{{base_url}}/api/v1/health",
+					"host": [
+						"{{base_url}}"
+					],
+					"path": [
+						"api",
+						"v1",
+						"health"
+					]
+				},
+				"description": "Check service health, ChromaDB connection, and MinIO connectivity"
+			},
+			"response": []
+		},
+		{
+			"name": "Index Document",
+			"event": [
+				{
+					"listen": "test",
+					"script": {
+						"exec": [
+							"pm.test(\"Status code is 200\", function () {",
+							"    pm.response.to.have.status(200);",
+							"});",
+							"",
+							"pm.test(\"Indexing successful\", function () {",
+							"    var jsonData = pm.response.json();",
+							"    pm.expect(jsonData.success).to.be.true;",
+							"});",
+							"",
+							"pm.test(\"Chunks were indexed\", function () {",
+							"    var jsonData = pm.response.json();",
+							"    pm.expect(jsonData.chunks_indexed).to.be.above(0);",
+							"});",
+							"",
+							"pm.test(\"File ID matches request\", function () {",
+							"    var jsonData = pm.response.json();",
+							"    var requestData = JSON.parse(pm.request.body.raw);",
+							"    pm.expect(jsonData.file_id).to.eql(requestData.file_id);",
+							"});",
+							"",
+							"// Save file_id for later tests",
+							"var jsonData = pm.response.json();",
+							"pm.environment.set(\"test_file_id\", jsonData.file_id);"
+						],
+						"type": "text/javascript"
+					}
+				}
+			],
+			"request": {
+				"method": "POST",
+				"header": [
+					{
+						"key": "Content-Type",
+						"value": "application/json"
+					}
+				],
+				"body": {
+					"mode": "raw",
+					"raw": "{\n  \"file_id\": 123,\n  \"bucket\": \"academic-documents\",\n  \"object_name\": \"pfe/2024/report_123.pdf\"\n}"
+				},
+				"url": {
+					"raw": "{{base_url}}/api/v1/index",
+					"host": [
+						"{{base_url}}"
+					],
+					"path": [
+						"api",
+						"v1",
+						"index"
+					]
+				},
+				"description": "Index a PDF document from MinIO. The service will:\n1. Fetch PDF from MinIO as byte stream\n2. Extract text using PyMuPDF\n3. Split into chunks (size=1000, overlap=100)\n4. Generate embeddings\n5. Store in ChromaDB with file_id metadata\n\n**Note:** Update bucket and object_name to match your MinIO setup"
+			},
+			"response": []
+		},
+		{
+			"name": "Semantic Search",
+			"event": [
+				{
+					"listen": "test",
+					"script": {
+						"exec": [
+							"pm.test(\"Status code is 200\", function () {",
+							"    pm.response.to.have.status(200);",
+							"});",
+							"",
+							"pm.test(\"Response has matches array\", function () {",
+							"    var jsonData = pm.response.json();",
+							"    pm.expect(jsonData).to.have.property('matches');",
+							"    pm.expect(jsonData.matches).to.be.an('array');",
+							"});",
+							"",
+							"pm.test(\"Query matches request\", function () {",
+							"    var jsonData = pm.response.json();",
+							"    var requestData = JSON.parse(pm.request.body.raw);",
+							"    pm.expect(jsonData.query).to.eql(requestData.query);",
+							"});",
+							"",
+							"pm.test(\"Matches have required fields\", function () {",
+							"    var jsonData = pm.response.json();",
+							"    if (jsonData.matches.length > 0) {",
+							"        pm.expect(jsonData.matches[0]).to.have.property('file_id');",
+							"        pm.expect(jsonData.matches[0]).to.have.property('score');",
+							"        pm.expect(jsonData.matches[0].score).to.be.within(0, 1);",
+							"    }",
+							"});",
+							"",
+							"pm.test(\"Total results count is correct\", function () {",
+							"    var jsonData = pm.response.json();",
+							"    pm.expect(jsonData.total_results).to.eql(jsonData.matches.length);",
+							"});"
+						],
+						"type": "text/javascript"
+					}
+				}
+			],
+			"request": {
+				"method": "POST",
+				"header": [
+					{
+						"key": "Content-Type",
+						"value": "application/json"
+					}
+				],
+				"body": {
+					"mode": "raw",
+					"raw": "{\n  \"query\": \"machine learning algorithms for image classification\",\n  \"top_k\": 10\n}"
+				},
+				"url": {
+					"raw": "{{base_url}}/api/v1/search",
+					"host": [
+						"{{base_url}}"
+					],
+					"path": [
+						"api",
+						"v1",
+						"search"
+					]
+				},
+				"description": "Perform semantic search over indexed documents.\n\nThe service will:\n1. Generate embedding for the query\n2. Search ChromaDB for similar chunks\n3. Extract UNIQUE file_ids\n4. Return results with similarity scores (0-1)\n\n**Try different queries:**\n- \"deep learning neural networks\"\n- \"data analysis techniques\"\n- \"software architecture patterns\""
+			},
+			"response": []
+		},
+		{
+			"name": "Search - Top 5 Results",
+			"event": [
+				{
+					"listen": "test",
+					"script": {
+						"exec": [
+							"pm.test(\"Status code is 200\", function () {",
+							"    pm.response.to.have.status(200);",
+							"});",
+							"",
+							"pm.test(\"Returns at most 5 results\", function () {",
+							"    var jsonData = pm.response.json();",
+							"    pm.expect(jsonData.matches.length).to.be.at.most(5);",
+							"});"
+						],
+						"type": "text/javascript"
+					}
+				}
+			],
+			"request": {
+				"method": "POST",
+				"header": [
+					{
+						"key": "Content-Type",
+						"value": "application/json"
+					}
+				],
+				"body": {
+					"mode": "raw",
+					"raw": "{\n  \"query\": \"artificial intelligence\",\n  \"top_k\": 5\n}"
+				},
+				"url": {
+					"raw": "{{base_url}}/api/v1/search",
+					"host": [
+						"{{base_url}}"
+					],
+					"path": [
+						"api",
+						"v1",
+						"search"
+					]
+				},
+				"description": "Search with limited results (top 5)"
+			},
+			"response": []
+		},
+		{
+			"name": "Delete Document",
+			"event": [
+				{
+					"listen": "test",
+					"script": {
+						"exec": [
+							"pm.test(\"Status code is 200\", function () {",
+							"    pm.response.to.have.status(200);",
+							"});",
+							"",
+							"pm.test(\"Deletion successful\", function () {",
+							"    var jsonData = pm.response.json();",
+							"    pm.expect(jsonData.success).to.be.true;",
+							"});",
+							"",
+							"pm.test(\"File ID matches\", function () {",
+							"    var jsonData = pm.response.json();",
+							"    var fileId = parseInt(pm.request.url.path[pm.request.url.path.length - 1]);",
+							"    pm.expect(jsonData.file_id).to.eql(fileId);",
+							"});",
+							"",
+							"pm.test(\"Has deletion count\", function () {",
+							"    var jsonData = pm.response.json();",
+							"    pm.expect(jsonData).to.have.property('chunks_deleted');",
+							"});"
+						],
+						"type": "text/javascript"
+					}
+				}
+			],
+			"request": {
+				"method": "DELETE",
+				"header": [],
+				"url": {
+					"raw": "{{base_url}}/api/v1/index/123",
+					"host": [
+						"{{base_url}}"
+					],
+					"path": [
+						"api",
+						"v1",
+						"index",
+						"123"
+					]
+				},
+				"description": "Delete all vectors associated with a file_id.\n\n**Note:** Change the file_id (123) to match a document you've indexed"
+			},
+			"response": []
+		},
+		{
+			"name": "Delete Using Environment Variable",
+			"event": [
+				{
+					"listen": "test",
+					"script": {
+						"exec": [
+							"pm.test(\"Status code is 200\", function () {",
+							"    pm.response.to.have.status(200);",
+							"});",
+							"",
+							"pm.test(\"Deletion successful\", function () {",
+							"    var jsonData = pm.response.json();",
+							"    pm.expect(jsonData.success).to.be.true;",
+							"});"
+						],
+						"type": "text/javascript"
+					}
+				}
+			],
+			"request": {
+				"method": "DELETE",
+				"header": [],
+				"url": {
+					"raw": "{{base_url}}/api/v1/index/{{test_file_id}}",
+					"host": [
+						"{{base_url}}"
+					],
+					"path": [
+						"api",
+						"v1",
+						"index",
+						"{{test_file_id}}"
+					]
+				},
+				"description": "Delete the document that was indexed in the \"Index Document\" test (uses environment variable)"
+			},
+			"response": []
+		},
+		{
+			"name": "Root Endpoint",
+			"event": [
+				{
+					"listen": "test",
+					"script": {
+						"exec": [
+							"pm.test(\"Status code is 200\", function () {",
+							"    pm.response.to.have.status(200);",
+							"});",
+							"",
+							"pm.test(\"Service is running\", function () {",
+							"    var jsonData = pm.response.json();",
+							"    pm.expect(jsonData.status).to.eql(\"running\");",
+							"});"
+						],
+						"type": "text/javascript"
+					}
+				}
+			],
+			"request": {
+				"method": "GET",
+				"header": [],
+				"url": {
+					"raw": "{{base_url}}/",
+					"host": [
+						"{{base_url}}"
+					],
+					"path": [
+						""
+					]
+				},
+				"description": "Check if the service is running"
+			},
+			"response": []
+		},
+		{
+			"name": "Error Test - Invalid File ID",
+			"event": [
+				{
+					"listen": "test",
+					"script": {
+						"exec": [
+							"pm.test(\"Status code is 400 or 422\", function () {",
+							"    pm.expect(pm.response.code).to.be.oneOf([400, 422]);",
+							"});",
+							"",
+							"pm.test(\"Error response has detail\", function () {",
+							"    var jsonData = pm.response.json();",
+							"    pm.expect(jsonData).to.have.property('detail');",
+							"});"
+						],
+						"type": "text/javascript"
+					}
+				}
+			],
+			"request": {
+				"method": "POST",
+				"header": [
+					{
+						"key": "Content-Type",
+						"value": "application/json"
+					}
+				],
+				"body": {
+					"mode": "raw",
+					"raw": "{\n  \"file_id\": -1,\n  \"bucket\": \"test-bucket\",\n  \"object_name\": \"test.pdf\"\n}"
+				},
+				"url": {
+					"raw": "{{base_url}}/api/v1/index",
+					"host": [
+						"{{base_url}}"
+					],
+					"path": [
+						"api",
+						"v1",
+						"index"
+					]
+				},
+				"description": "Test error handling with invalid file_id (negative number)"
+			},
+			"response": []
+		},
+		{
+			"name": "Error Test - Empty Query",
+			"event": [
+				{
+					"listen": "test",
+					"script": {
+						"exec": [
+							"pm.test(\"Status code is 422\", function () {",
+							"    pm.response.to.have.status(422);",
+							"});",
+							"",
+							"pm.test(\"Validation error returned\", function () {",
+							"    var jsonData = pm.response.json();",
+							"    pm.expect(jsonData).to.have.property('detail');",
+							"});"
+						],
+						"type": "text/javascript"
+					}
+				}
+			],
+			"request": {
+				"method": "POST",
+				"header": [
+					{
+						"key": "Content-Type",
+						"value": "application/json"
+					}
+				],
+				"body": {
+					"mode": "raw",
+					"raw": "{\n  \"query\": \"\",\n  \"top_k\": 10\n}"
+				},
+				"url": {
+					"raw": "{{base_url}}/api/v1/search",
+					"host": [
+						"{{base_url}}"
+					],
+					"path": [
+						"api",
+						"v1",
+						"search"
+					]
+				},
+				"description": "Test error handling with empty search query"
+			},
+			"response": []
+		}
+	],
+	"event": [
+		{
+			"listen": "prerequest",
+			"script": {
+				"type": "text/javascript",
+				"exec": [
+					""
+				]
+			}
+		},
+		{
+			"listen": "test",
+			"script": {
+				"type": "text/javascript",
+				"exec": [
+					""
+				]
+			}
+		}
+	],
+	"variable": [
+		{
+			"key": "base_url",
+			"value": "http://localhost:8000",
+			"type": "string"
+		},
+		{
+			"key": "test_file_id",
+			"value": "1",
+			"type": "string"
+		}
+	]
+}

@@ -1,11 +1,12 @@
 package tn.esprim.knowledgehub.resource.controller.library;
 
-import feign.Response;
+
 import lombok.RequiredArgsConstructor;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 import tn.esprim.knowledgehub.resource.client.dto.ApiResponse;
 import tn.esprim.knowledgehub.resource.client.dto.SearchRequest;
+import tn.esprim.knowledgehub.resource.enums.FileType;
 import tn.esprim.knowledgehub.resource.service.AIandSearchService;
 import tn.esprim.knowledgehub.resource.service.FileService;
 
@@ -27,6 +28,17 @@ public class LibraryController {
                             .data(fileService.getAllFiles())
                             .build()
             );
+    }
+    @GetMapping("/getDocuments/{type}")
+    public ResponseEntity<ApiResponse> getDocumentsByType(@PathVariable FileType type){
+        return ResponseEntity.ok(
+                ApiResponse.builder()
+                        .success(true)
+                        .message("Documents retrieved successfully")
+                        .data(fileService.getFilesByType(type))
+                        .build()
+        );
+
     }
 
     @PostMapping("/ai-search")

@@ -2,14 +2,14 @@ package tn.esprim.knowledgehub.resource.enums;
 
 public enum FileType {
     // Student submission files
-    REPORT,             // Main project/internship report
-    JOURNAL,            // Daily internship log
-    ATTESTATION,        // Company certificate
+    PFA_REPORT,
+    PFE_REPORT,
+    STAGE_REPORT,
+    JOURNAL,
+    ATTESTATION,
 
-    // Teacher publication files
     EDUCATIONAL_MATERIAL,
 
 
-    // Other
     SUPPLEMENTARY
 }

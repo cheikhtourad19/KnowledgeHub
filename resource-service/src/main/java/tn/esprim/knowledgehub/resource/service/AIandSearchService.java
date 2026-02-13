@@ -48,7 +48,15 @@ public class AIandSearchService {
         for (SearchMatch searchMatch : response.getMatches()) {
             extracted_ids.add(Long.valueOf(searchMatch.getFile_id()));
         }
-        return fileRepository.findAllById(extracted_ids);
+        List<File> files = new ArrayList<>();
+        for (Long id : extracted_ids) {
+            File file_extracted=fileRepository.findById(id).orElseThrow();
+            if (file_extracted.getIsPublished()){
+                files.add(file_extracted);
+            }
+            
+        }
+        return files;
     }
 
 }
