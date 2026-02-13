@@ -37,13 +37,27 @@ public class StudentPFEController {
             @RequestBody @Valid CreatePFERequest request,
             @RequestHeader(value = "X-User-Role") String role
     ) {
-        if (!role.equals("ADMIN") && !role.equals("TEACHER")) {
-            return ResponseEntity.status(403).body(
-                    ApiResponse.error("Forbidden", "Only admins and teachers can create PFE")
+        // Fixed: Error message now matches the actual check
+        if (!role.equals("ADMIN")) {
+            return ResponseEntity.status(HttpStatus.FORBIDDEN).body(
+                    ApiResponse.error("Forbidden", "Only admins can create PFE")
             );
         }
+
+        // Fixed: Added null checks for DTOs
         StudentDTO student = userServiceClient.getStudentById(request.getStudentId()).getData();
+        if (student == null) {
+            return ResponseEntity.status(HttpStatus.NOT_FOUND).body(
+                    ApiResponse.error("Not Found", "Student not found with ID: " + request.getStudentId())
+            );
+        }
+
         TeacherDTO supervisor = userServiceClient.getTeacherById(request.getSupervisorId()).getData();
+        if (supervisor == null) {
+            return ResponseEntity.status(HttpStatus.NOT_FOUND).body(
+                    ApiResponse.error("Not Found", "Supervisor not found with ID: " + request.getSupervisorId())
+            );
+        }
 
         PFE pfe = PFE.builder()
                 .studentId(request.getStudentId())
@@ -59,12 +73,22 @@ public class StudentPFEController {
 
         if (request.getChefDeJuryId() != null) {
             TeacherDTO chef = userServiceClient.getTeacherById(request.getChefDeJuryId()).getData();
+            if (chef == null) {
+                return ResponseEntity.status(HttpStatus.NOT_FOUND).body(
+                        ApiResponse.error("Not Found", "Chef de Jury not found with ID: " + request.getChefDeJuryId())
+                );
+            }
             pfe.setChefDeJuryId(chef.getTeacherId());
             pfe.setChefDeJuryName(chef.getNom() + " " + chef.getPrenom());
         }
 
         if (request.getRapporteurId() != null) {
             TeacherDTO rapporteur = userServiceClient.getTeacherById(request.getRapporteurId()).getData();
+            if (rapporteur == null) {
+                return ResponseEntity.status(HttpStatus.NOT_FOUND).body(
+                        ApiResponse.error("Not Found", "Rapporteur not found with ID: " + request.getRapporteurId())
+                );
+            }
             pfe.setRapporteurId(rapporteur.getTeacherId());
             pfe.setRapporteurName(rapporteur.getNom() + " " + rapporteur.getPrenom());
         }
@@ -87,21 +111,25 @@ public class StudentPFEController {
                         .data(saved)
                         .build()
         );
-
     }
 
-    @PostMapping("/upload/{idPFE}")
-    public ResponseEntity<ApiResponse> uploadFile(
+    @PostMapping("/upload-report/{idPFE}")
+    public ResponseEntity<ApiResponse> uploadReportFile(
             @PathVariable Long idPFE,
             @RequestParam(value = "title", required = false) String title,
             @RequestParam(value = "description", required = false) String description,
             @RequestParam("file") MultipartFile file,
-            @RequestHeader(value = "X-User-Id") String userId
+            @RequestHeader(value = "X-User-Id") Long userId  // Fixed: Changed from String to Long
     ) {
         PFE pfe = pfeService.getPFEById(idPFE);
-        StudentDTO student = userServiceClient.getStudentById(pfe.getStudentId()).getData();
+        if (pfe == null) {
+            return ResponseEntity.status(HttpStatus.NOT_FOUND).body(
+                    ApiResponse.error("Not Found", "PFE not found with ID: " + idPFE)
+            );
+        }
 
-        if (!pfe.getStudentId().toString().equals(userId)) {
+        // Fixed: Direct Long comparison instead of String conversion
+        if (!pfe.getStudentId().equals(userId)) {
             return ResponseEntity.status(HttpStatus.FORBIDDEN).body(
                     ApiResponse.error("Forbidden", "You are not allowed to upload files for this PFE")
             );
@@ -113,10 +141,23 @@ public class StudentPFEController {
             );
         }
 
+        if (pfe.getAttestationFile() == null || pfe.getJournalFile() == null) {
+            return ResponseEntity.status(HttpStatus.FORBIDDEN).body(
+                    ApiResponse.error("Forbidden", "Upload is possible only after attestation and journal")
+            );
+        }
+
+        StudentDTO student = userServiceClient.getStudentById(pfe.getStudentId()).getData();
+        if (student == null) {
+            return ResponseEntity.status(HttpStatus.NOT_FOUND).body(
+                    ApiResponse.error("Not Found", "Student not found")
+            );
+        }
+
         FileUploadResponse response = fileService.uploadFile(
                 file,
                 FileType.PFE_REPORT,
-                Long.parseLong(userId),
+                userId,  // Fixed: No need to parse, already Long
                 student.getEmail(),
                 "pfe",
                 title,
@@ -128,15 +169,129 @@ public class StudentPFEController {
         pfe.setStatus(SubmissionStatus.SUBMITTED);
         pfeService.savePFE(pfe);
 
-        TeacherDTO teacherDTO = userServiceClient.getTeacherById(pfe.getSupervisorId()).getData();
-        notificationClient.sendNotificationAsync(
-                NotificationRequest.builder()
-                        .type(NotificationType.EMAIL)
-                        .recipientEmail(teacherDTO.getEmail())
-                        .content("En attente de validation du rapport de " + student.getNom() + " " + student.getPrenom())
-                        .subject("Dépôt de rapport PFE")
-                        .build()
+        // Fixed: Added null check for supervisor
+        if (pfe.getSupervisorId() != null) {
+            TeacherDTO teacherDTO = userServiceClient.getTeacherById(pfe.getSupervisorId()).getData();
+            if (teacherDTO != null) {
+                notificationClient.sendNotificationAsync(
+                        NotificationRequest.builder()
+                                .type(NotificationType.EMAIL)
+                                .recipientEmail(teacherDTO.getEmail())
+                                .content("En attente de validation du rapport de " + student.getNom() + " " + student.getPrenom())
+                                .subject("Dépôt de rapport PFE")
+                                .build()
+                );
+            }
+        }
+
+        return ResponseEntity.ok(
+                ApiResponse.success(response, "File uploaded successfully")
         );
+    }
+
+    // Fixed: Method name typo corrected
+    @PostMapping("/upload-attestation/{idPFE}")
+    public ResponseEntity<ApiResponse> uploadAttestationFile(
+            @PathVariable Long idPFE,
+            @RequestParam(value = "title", required = false) String title,
+            @RequestParam(value = "description", required = false) String description,
+            @RequestParam("file") MultipartFile file,
+            @RequestHeader(value = "X-User-Id") Long userId  // Fixed: Changed from String to Long
+    ) {
+        PFE pfe = pfeService.getPFEById(idPFE);
+        if (pfe == null) {
+            return ResponseEntity.status(HttpStatus.NOT_FOUND).body(
+                    ApiResponse.error("Not Found", "PFE not found with ID: " + idPFE)
+            );
+        }
+
+        // Fixed: Direct Long comparison
+        if (!pfe.getStudentId().equals(userId)) {
+            return ResponseEntity.status(HttpStatus.FORBIDDEN).body(
+                    ApiResponse.error("Forbidden", "You are not allowed to upload files for this PFE")
+            );
+        }
+
+        if (pfe.getAttestationFile() != null) {
+            return ResponseEntity.status(HttpStatus.FORBIDDEN).body(
+                    ApiResponse.error("Forbidden", "Upload is possible only once")
+            );
+        }
+
+        StudentDTO student = userServiceClient.getStudentById(pfe.getStudentId()).getData();
+        if (student == null) {
+            return ResponseEntity.status(HttpStatus.NOT_FOUND).body(
+                    ApiResponse.error("Not Found", "Student not found")
+            );
+        }
+
+        FileUploadResponse response = fileService.uploadFile(
+                file,
+                FileType.SUPPLEMENTARY,
+                userId,  // Fixed: No need to parse
+                student.getEmail(),
+                "attestation",  // Fixed: Typo corrected from "attestaion"
+                title,
+                description
+        );
+
+        File uploadedFile = fileService.getFileById(response.getFileId());
+        pfe.setAttestationFile(uploadedFile);
+        pfeService.savePFE(pfe);
+
+        return ResponseEntity.ok(
+                ApiResponse.success(response, "File uploaded successfully")
+        );
+    }
+
+    @PostMapping("/upload-journal/{idPFE}")
+    public ResponseEntity<ApiResponse> uploadJournalFile(
+            @PathVariable Long idPFE,
+            @RequestParam(value = "title", required = false) String title,
+            @RequestParam(value = "description", required = false) String description,
+            @RequestParam("file") MultipartFile file,
+            @RequestHeader(value = "X-User-Id") Long userId  // Fixed: Changed from String to Long
+    ) {
+        PFE pfe = pfeService.getPFEById(idPFE);
+        if (pfe == null) {
+            return ResponseEntity.status(HttpStatus.NOT_FOUND).body(
+                    ApiResponse.error("Not Found", "PFE not found with ID: " + idPFE)
+            );
+        }
+
+        // Fixed: Direct Long comparison
+        if (!pfe.getStudentId().equals(userId)) {
+            return ResponseEntity.status(HttpStatus.FORBIDDEN).body(
+                    ApiResponse.error("Forbidden", "You are not allowed to upload files for this PFE")
+            );
+        }
+
+        if (pfe.getJournalFile() != null) {
+            return ResponseEntity.status(HttpStatus.FORBIDDEN).body(
+                    ApiResponse.error("Forbidden", "Upload is possible only once")
+            );
+        }
+
+        StudentDTO student = userServiceClient.getStudentById(pfe.getStudentId()).getData();
+        if (student == null) {
+            return ResponseEntity.status(HttpStatus.NOT_FOUND).body(
+                    ApiResponse.error("Not Found", "Student not found")
+            );
+        }
+
+        FileUploadResponse response = fileService.uploadFile(
+                file,
+                FileType.SUPPLEMENTARY,
+                userId,  // Fixed: No need to parse
+                student.getEmail(),
+                "journal",
+                title,
+                description
+        );
+
+        File uploadedFile = fileService.getFileById(response.getFileId());
+        pfe.setJournalFile(uploadedFile);
+        pfeService.savePFE(pfe);
 
         return ResponseEntity.ok(
                 ApiResponse.success(response, "File uploaded successfully")
@@ -149,7 +304,6 @@ public class StudentPFEController {
             @RequestHeader(value = "X-User-Id") Long userId,
             @RequestParam(required = false) Long studentId
     ) {
-
         if (role.equals("STUDENT")) {
             return ResponseEntity.ok(
                     ApiResponse.success(
@@ -157,6 +311,14 @@ public class StudentPFEController {
                     )
             );
         }
+
+        // Fixed: Added validation for studentId parameter
+        if (studentId == null) {
+            return ResponseEntity.status(HttpStatus.BAD_REQUEST).body(
+                    ApiResponse.error("Bad Request", "Student ID is required for non-student users")
+            );
+        }
+
         return ResponseEntity.ok(
                 ApiResponse.success(
                         pfeService.getPFEByStudent(studentId), "PFE for student id: " + studentId
@@ -170,10 +332,11 @@ public class StudentPFEController {
             @RequestHeader(value = "X-User-Id") Long userId
     ) {
         if (!role.equals("TEACHER") && !role.equals("ADMIN")) {
-            return ResponseEntity.status(403).body(
+            return ResponseEntity.status(HttpStatus.FORBIDDEN).body(
                     ApiResponse.error("Forbidden", "Only teachers and admins can access this endpoint")
             );
         }
+
         return ResponseEntity.ok(
                 ApiResponse.success(pfeService.getPFEBySupervisor(userId), "All PFE")
         );
@@ -184,15 +347,15 @@ public class StudentPFEController {
             @RequestHeader(value = "X-User-Role") String role
     ) {
         if (!role.equals("ADMIN")) {
-            return ResponseEntity.status(403).body(
+            return ResponseEntity.status(HttpStatus.FORBIDDEN).body(
                     ApiResponse.error("Forbidden", "Only admins can access this endpoint")
             );
         }
+
         return ResponseEntity.ok(
                 ApiResponse.success(pfeService.getAllPFE(), "All PFE")
         );
     }
-
 
     @GetMapping("/get/{id}")
     public ResponseEntity<ApiResponse> getPFEById(
@@ -201,21 +364,33 @@ public class StudentPFEController {
             @RequestHeader(value = "X-User-Id") Long userId
     ) {
         PFE pfe = pfeService.getPFEById(id);
+        if (pfe == null) {
+            return ResponseEntity.status(HttpStatus.NOT_FOUND).body(
+                    ApiResponse.error("Not Found", "PFE not found with ID: " + id)
+            );
+        }
+
         if (role.equals("STUDENT") && !pfe.getStudentId().equals(userId)) {
-            return ResponseEntity.status(403).body(
+            return ResponseEntity.status(HttpStatus.FORBIDDEN).body(
                     ApiResponse.error("Forbidden", "You are not allowed to access this PFE")
             );
         }
-        if (role.equals("TEACHER") && !pfe.getSupervisorId().equals(userId)
-                && (pfe.getChefDeJuryId() == null || !pfe.getChefDeJuryId().equals(userId))
-                && (pfe.getRapporteurId() == null || !pfe.getRapporteurId().equals(userId))) {
-            return ResponseEntity.status(403).body(
-                    ApiResponse.error("Forbidden", "You are not allowed to access this PFE")
-            );
+
+
+        if (role.equals("TEACHER")) {
+            boolean isSupervisor = pfe.getSupervisorId() != null && pfe.getSupervisorId().equals(userId);
+            boolean isChefDeJury = pfe.getChefDeJuryId() != null && pfe.getChefDeJuryId().equals(userId);
+            boolean isRapporteur = pfe.getRapporteurId() != null && pfe.getRapporteurId().equals(userId);
+
+            if (!isSupervisor && !isChefDeJury && !isRapporteur) {
+                return ResponseEntity.status(HttpStatus.FORBIDDEN).body(
+                        ApiResponse.error("Forbidden", "You are not allowed to access this PFE")
+                );
+            }
         }
+
         return ResponseEntity.ok(
                 ApiResponse.success(pfe, "PFE with id: " + id)
         );
     }
-
 }

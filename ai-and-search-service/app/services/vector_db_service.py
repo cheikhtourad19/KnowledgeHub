@@ -5,8 +5,15 @@ from chromadb.config import Settings as ChromaSettings
 from sentence_transformers import SentenceTransformer
 from app.config import settings
 import logging
+import math
 
 logger = logging.getLogger(__name__)
+
+# Production-safe ranking constants
+MIN_SIMILARITY = 0.30  # Minimum relevance threshold to filter generic matches
+MIN_CHUNK_AGREEMENT = 2  # Minimum chunks required above threshold for multi-chunk agreement
+AUTHORITY_BOOST_TEACHER = 0.04  # Optional metadata boost for teacher documents
+AUTHORITY_BOOST_OFFICIAL = 0.05  # Optional metadata boost for official publications
 
 
 class VectorDBService:
@@ -118,7 +125,13 @@ class VectorDBService:
         top_k: int = 10
     ) -> List[Dict[str, Any]]:
         """
-        Perform semantic search and return unique file_ids with scores.
+        Perform semantic search with production-safe ranking improvements.
+
+        Ranking improvements:
+        1. Chunk-count normalization to reduce large document bias
+        2. Minimum relevance threshold (MIN_SIMILARITY = 0.30)
+        3. Multi-chunk agreement (at least 2 chunks above threshold)
+        4. Optional authority-aware metadata boosts
 
         Args:
             query: Search query string
@@ -131,14 +144,15 @@ class VectorDBService:
             # Generate query embedding
             query_embedding = self.generate_embedding(query)
 
-            # Query ChromaDB
+            # Query ChromaDB - get more results to ensure we have enough after filtering
             results = self.collection.query(
                 query_embeddings=[query_embedding],
-                n_results=top_k * 3  # Get more results to filter unique file_ids
+                n_results=top_k * 5  # Increased multiplier to account for filtering
             )
 
-            # Extract unique file_ids with their best scores
-            file_scores = {}
+            # Track all chunks per file_id for multi-chunk agreement and normalization
+            file_chunks = {}  # {file_id: [scores]}
+            file_metadata = {}  # {file_id: metadata} for authority boosts
 
             if results['metadatas'] and results['distances']:
                 for metadata, distance in zip(
@@ -149,22 +163,72 @@ class VectorDBService:
                     # Convert distance to similarity score (1 - distance for cosine)
                     score = 1.0 - distance
 
-                    # Keep the best score for each file_id
-                    if file_id not in file_scores or score > file_scores[file_id]:
-                        file_scores[file_id] = score
+                    # Apply minimum similarity threshold (mandatory)
+                    if score < MIN_SIMILARITY:
+                        continue
 
-            # Format results and sort by score
-            matches = [
-                {"file_id": file_id, "score": float(score)}
-                for file_id, score in file_scores.items()
-            ]
-            matches.sort(key=lambda x: x['score'], reverse=True)
+                    # Track all qualifying chunks for this file
+                    if file_id not in file_chunks:
+                        file_chunks[file_id] = []
+                        file_metadata[file_id] = metadata
+
+                    file_chunks[file_id].append(score)
+
+            # Calculate normalized scores with ranking improvements
+            normalized_matches = []
+
+            for file_id, chunk_scores in file_chunks.items():
+                # Multi-chunk agreement check (recommended)
+                # A document should have at least 2 chunks above threshold
+                if len(chunk_scores) < MIN_CHUNK_AGREEMENT:
+                    logger.debug(
+                        f"Skipping file_id={file_id}: only {len(chunk_scores)} chunk(s) above threshold"
+                    )
+                    continue
+
+                # Get best chunk score
+                best_chunk_score = max(chunk_scores)
+                chunk_count = len(chunk_scores)
+
+                # Apply chunk-count normalization (mandatory)
+                # This reduces dominance of large documents
+                normalized_score = best_chunk_score * (1.0 / math.log(chunk_count + 1))
+
+                # Optional authority-aware metadata boost (production-ready)
+                metadata = file_metadata[file_id]
+                authority_boost = 0.0
+
+                # Check for authority metadata if available
+                if 'is_teacher_document' in metadata and metadata['is_teacher_document']:
+                    authority_boost = AUTHORITY_BOOST_TEACHER
+                elif 'is_official_publication' in metadata and metadata['is_official_publication']:
+                    authority_boost = AUTHORITY_BOOST_OFFICIAL
+
+                # Apply soft boost (never allows bad matches to rank high)
+                final_score = min(1.0, normalized_score + authority_boost)
+
+                normalized_matches.append({
+                    "file_id": file_id,
+                    "score": float(final_score),
+                    "chunk_count": chunk_count,  # For debugging/monitoring
+                    "best_chunk_score": float(best_chunk_score)  # For debugging/monitoring
+                })
+
+            # Sort by final score
+            normalized_matches.sort(key=lambda x: x['score'], reverse=True)
 
             # Return top_k unique file_ids
-            matches = matches[:top_k]
+            normalized_matches = normalized_matches[:top_k]
+
+            # Clean up debugging fields before returning
+            matches = [
+                {"file_id": match["file_id"], "score": match["score"]}
+                for match in normalized_matches
+            ]
 
             logger.info(
-                f"Search returned {len(matches)} unique file_ids for query: '{query[:50]}...'"
+                f"Search returned {len(matches)} unique file_ids for query: '{query[:50]}...' "
+                f"(filtered by MIN_SIMILARITY={MIN_SIMILARITY}, MIN_CHUNK_AGREEMENT={MIN_CHUNK_AGREEMENT})"
             )
 
             return matches

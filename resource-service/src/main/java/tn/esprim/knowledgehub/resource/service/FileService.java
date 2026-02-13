@@ -86,7 +86,7 @@ public class FileService {
 
             String originalFileName = multipartFile.getOriginalFilename();
             String fileExtension = getFileExtension(originalFileName);
-            String uniqueFileName = originalFileName+UUID.randomUUID().toString()+ fileExtension;
+            String uniqueFileName = originalFileName+ UUID.randomUUID() + fileExtension;
 
             String contentType = detectContentType(multipartFile);
             long fileSize = multipartFile.getSize();
