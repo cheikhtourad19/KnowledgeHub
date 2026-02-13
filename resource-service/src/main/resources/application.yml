@@ -1,32 +1,38 @@
 server:
-  port: ${RESOURCE_SERVICE_PORT:8083}
+  port: ${RESOURCE_SERVICE_PORT}
 
 notification:
   service:
-    url: ${NOTIFICATION_SERVICE_URL:http://localhost:8084}
+    url: ${NOTIFICATION_SERVICE_URL}
 
 user:
   service:
-    url: ${USER_SERVICE_URL:http://localhost:8082}
+    url: ${USER_SERVICE_URL}
 
 ai-search:
   service:
-    url: ${AI_SEARCH_SERVICE_URL:http://localhost:8000}
+    url: ${AI_SEARCH_SERVICE_URL}
 
 spring:
   application:
     name: resource-service
 
+  # Explicitly exclude MongoDB auto-configuration (resource-service uses MySQL only)
+  autoconfigure:
+    exclude:
+      - org.springframework.boot.autoconfigure.mongo.MongoAutoConfiguration
+      - org.springframework.boot.autoconfigure.data.mongo.MongoDataAutoConfiguration
+
   datasource:
-    url: ${SPRING_DATASOURCE_URL:jdbc:mysql://localhost:3306/knowledgehub_ressource?createDatabaseIfNotExist=true&useSSL=false&serverTimezone=UTC}
+    url: jdbc:mysql://${MYSQL_HOST}:${MYSQL_PORT}/${MYSQL_RESOURCE_DB}?createDatabaseIfNotExist=true&useSSL=false&serverTimezone=UTC
     driver-class-name: com.mysql.cj.jdbc.Driver
-    username: ${MYSQL_USERNAME:root}
+    username: ${MYSQL_USERNAME}
     password: ${MYSQL_PASSWORD}
 
   jpa:
     hibernate:
-      ddl-auto: ${SPRING_JPA_DDL_AUTO:update}
-    show-sql: ${SPRING_JPA_SHOW_SQL:false}
+      ddl-auto: update
+    show-sql: false
     properties:
       hibernate:
         dialect: org.hibernate.dialect.MySQLDialect
@@ -35,8 +41,8 @@ spring:
   servlet:
     multipart:
       enabled: true
-      max-file-size: ${FILE_MAX_SIZE:100MB}
-      max-request-size: ${FILE_MAX_REQUEST_SIZE:100MB}
+      max-file-size: 100MB
+      max-request-size: 100MB
 
   cloud:
     openfeign:
@@ -48,17 +54,17 @@ spring:
 
 # MinIO Configuration
 minio:
-  endpoint: ${MINIO_ENDPOINT:http://localhost:9000}
-  access-key: ${MINIO_ACCESS_KEY:minioadmin}
-  secret-key: ${MINIO_SECRET_KEY:minioadmin}
-  bucket-name: ${MINIO_BUCKET_DOCUMENTS:knowledgehub-documents}
+  endpoint: ${MINIO_ENDPOINT}
+  access-key: ${MINIO_ACCESS_KEY}
+  secret-key: ${MINIO_SECRET_KEY}
+  bucket-name: ${MINIO_BUCKET_DOCUMENTS}
   buckets:
-    documents: ${MINIO_BUCKET_DOCUMENTS:knowledgehub-documents}
-    pfa: ${MINIO_BUCKET_PFA:knowledgehub-pfa}
-    pfe: ${MINIO_BUCKET_PFE:knowledgehub-pfe}
-    stage: ${MINIO_BUCKET_STAGE:knowledgehub-stage}
-    journal: ${MINIO_BUCKET_JOURNAL:knowledgehub-journal}
-    attestation: ${MINIO_BUCKET_ATTESTATION:knowledgehub-attestation}
+    documents: ${MINIO_BUCKET_DOCUMENTS}
+    pfa: ${MINIO_BUCKET_PFA}
+    pfe: ${MINIO_BUCKET_PFE}
+    stage: ${MINIO_BUCKET_STAGE}
+    journal: ${MINIO_BUCKET_JOURNAL}
+    attestation: ${MINIO_BUCKET_ATTESTATION}
 
 # CORS Configuration
 cors:

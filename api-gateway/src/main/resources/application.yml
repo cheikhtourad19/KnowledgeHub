@@ -1,5 +1,5 @@
 server:
-  port: ${API_GATEWAY_PORT:8080}
+  port: ${API_GATEWAY_PORT}
 
 spring:
   application:
@@ -8,7 +8,7 @@ spring:
     gateway:
       routes:
         - id: auth-service
-          uri: ${AUTH_SERVICE_URL:http://localhost:8081}
+          uri: ${AUTH_SERVICE_URL}
           predicates:
             - Path=/auth-service/**
           filters:
@@ -16,7 +16,7 @@ spring:
             - name: JwtAuthenticationFilter
 
         - id: user-service
-          uri: ${USER_SERVICE_URL:http://localhost:8082}
+          uri: ${USER_SERVICE_URL}
           predicates:
             - Path=/user-service/**
           filters:
@@ -24,7 +24,7 @@ spring:
             - name: JwtAuthenticationFilter
 
         - id: ressource-service
-          uri: ${RESOURCE_SERVICE_URL:http://localhost:8083}
+          uri: ${RESOURCE_SERVICE_URL}
           predicates:
             - Path=/ressource-service/**
           filters:
@@ -32,7 +32,7 @@ spring:
             - name: JwtAuthenticationFilter
 
         - id: notification-service
-          uri: ${NOTIFICATION_SERVICE_URL:http://localhost:8084}
+          uri: ${NOTIFICATION_SERVICE_URL}
           predicates:
             - Path=/notification-service/**
           filters:
@@ -40,7 +40,7 @@ spring:
             - name: JwtAuthenticationFilter
 
         - id: ai-search-service
-          uri: ${AI_SEARCH_SERVICE_URL:http://localhost:8000}
+          uri: ${AI_SEARCH_SERVICE_URL}
           predicates:
             - Path=/ai-service/**
           filters:

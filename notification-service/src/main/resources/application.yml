@@ -1,16 +1,16 @@
 server:
-  port: ${NOTIFICATION_SERVICE_PORT:8084}
+  port: ${NOTIFICATION_SERVICE_PORT}
 
 spring:
   application:
     name: notification-service
   data:
     mongodb:
-      uri: ${SPRING_DATA_MONGODB_URI:mongodb://localhost:27017/notification_db}
+      uri: ${MONGO_URI}
 
   mail:
-    host: ${SMTP_HOST:smtp.gmail.com}
-    port: ${SMTP_PORT:587}
+    host: ${SMTP_HOST}
+    port: ${SMTP_PORT}
     username: ${SMTP_USERNAME}
     password: ${SMTP_PASSWORD}
     properties:
@@ -27,8 +27,8 @@ spring:
 
 notification:
   email:
-    from: ${SMTP_FROM_EMAIL:noreply@knowledgehub.com}
-    from-name: ${SMTP_FROM_NAME:KnowledgeHub Notifications}
+    from: ${SMTP_FROM_EMAIL}
+    from-name: ${SMTP_FROM_NAME}
 
 # Logging configuration
 logging:
