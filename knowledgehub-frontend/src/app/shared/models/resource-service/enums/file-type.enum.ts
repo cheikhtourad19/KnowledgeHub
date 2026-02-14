@@ -1,0 +1,11 @@
+/**
+ * File Type Enum
+ */
+export enum FileType {
+  REPORT = 'REPORT',
+  JOURNAL = 'JOURNAL',
+  ATTESTATION = 'ATTESTATION',
+  EDUCATIONAL_MATERIAL = 'EDUCATIONAL_MATERIAL',
+  THESIS = 'THESIS',
+  OTHER = 'OTHER'
+}
