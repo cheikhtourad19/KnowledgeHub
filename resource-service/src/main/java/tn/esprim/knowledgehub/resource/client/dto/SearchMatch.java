@@ -1,5 +1,6 @@
 package tn.esprim.knowledgehub.resource.client.dto;
 
+import com.fasterxml.jackson.annotation.JsonProperty;
 import lombok.AllArgsConstructor;
 import lombok.Builder;
 import lombok.Data;
@@ -11,7 +12,8 @@ import lombok.NoArgsConstructor;
 @NoArgsConstructor
 public class SearchMatch {
 
-    private Integer file_id;
+    @JsonProperty("file_id")
+    private Integer fileId;
 
     private Double score;
 }

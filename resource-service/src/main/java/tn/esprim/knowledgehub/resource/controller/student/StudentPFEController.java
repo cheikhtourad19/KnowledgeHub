@@ -157,7 +157,7 @@ public class StudentPFEController {
         FileUploadResponse response = fileService.uploadFile(
                 file,
                 FileType.PFE_REPORT,
-                userId,  // Fixed: No need to parse, already Long
+                userId,
                 student.getEmail(),
                 "pfe",
                 title,
@@ -169,7 +169,7 @@ public class StudentPFEController {
         pfe.setStatus(SubmissionStatus.SUBMITTED);
         pfeService.savePFE(pfe);
 
-        // Fixed: Added null check for supervisor
+
         if (pfe.getSupervisorId() != null) {
             TeacherDTO teacherDTO = userServiceClient.getTeacherById(pfe.getSupervisorId()).getData();
             if (teacherDTO != null) {
@@ -189,7 +189,7 @@ public class StudentPFEController {
         );
     }
 
-    // Fixed: Method name typo corrected
+
     @PostMapping("/upload-attestation/{idPFE}")
     public ResponseEntity<ApiResponse> uploadAttestationFile(
             @PathVariable Long idPFE,
@@ -205,7 +205,7 @@ public class StudentPFEController {
             );
         }
 
-        // Fixed: Direct Long comparison
+
         if (!pfe.getStudentId().equals(userId)) {
             return ResponseEntity.status(HttpStatus.FORBIDDEN).body(
                     ApiResponse.error("Forbidden", "You are not allowed to upload files for this PFE")
@@ -228,9 +228,9 @@ public class StudentPFEController {
         FileUploadResponse response = fileService.uploadFile(
                 file,
                 FileType.SUPPLEMENTARY,
-                userId,  // Fixed: No need to parse
+                userId,
                 student.getEmail(),
-                "attestation",  // Fixed: Typo corrected from "attestaion"
+                "attestation",
                 title,
                 description
         );
@@ -259,7 +259,7 @@ public class StudentPFEController {
             );
         }
 
-        // Fixed: Direct Long comparison
+
         if (!pfe.getStudentId().equals(userId)) {
             return ResponseEntity.status(HttpStatus.FORBIDDEN).body(
                     ApiResponse.error("Forbidden", "You are not allowed to upload files for this PFE")
@@ -312,7 +312,7 @@ public class StudentPFEController {
             );
         }
 
-        // Fixed: Added validation for studentId parameter
+
         if (studentId == null) {
             return ResponseEntity.status(HttpStatus.BAD_REQUEST).body(
                     ApiResponse.error("Bad Request", "Student ID is required for non-student users")

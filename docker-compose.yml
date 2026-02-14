@@ -76,245 +76,248 @@ services:
   # ========================================
 
   # API Gateway
-#  api-gateway:
-#    build:
-#      context: .
-#      dockerfile: api-gateway/Dockerfile
-#    container_name: knowledgehub-api-gateway
-#    ports:
-#      - "${API_GATEWAY_PORT:-8080}:8080"
-#    environment:
-#      SPRING_PROFILES_ACTIVE: ${SPRING_PROFILES_ACTIVE:-docker}
-#      API_GATEWAY_PORT: ${API_GATEWAY_PORT:-8080}
-#      JWT_SECRET: ${JWT_SECRET}
-#      JWT_EXPIRATION: ${JWT_EXPIRATION}
-#      JWT_REFRESH_EXPIRATION: ${JWT_REFRESH_EXPIRATION}
-#      AUTH_SERVICE_URL: ${AUTH_SERVICE_URL}
-#      USER_SERVICE_URL: ${USER_SERVICE_URL}
-#      RESOURCE_SERVICE_URL: ${RESOURCE_SERVICE_URL}
-#      NOTIFICATION_SERVICE_URL: ${NOTIFICATION_SERVICE_URL}
-#      AI_SEARCH_SERVICE_URL: ${AI_SEARCH_SERVICE_URL}
-#      CORS_ALLOWED_ORIGINS: ${CORS_ALLOWED_ORIGINS}
-#      SWAGGER_ENABLED: ${SWAGGER_ENABLED:-true}
-#      LOGGING_LEVEL_ROOT: ${LOG_LEVEL_ROOT:-WARN}
-#      LOGGING_LEVEL_TN_ESPRIM: ${LOG_LEVEL_KNOWLEDGEHUB:-INFO}
-#      LOG_LEVEL_GATEWAY: ${LOG_LEVEL_GATEWAY:-DEBUG}
-#      LOG_LEVEL_NETTY: ${LOG_LEVEL_NETTY:-DEBUG}
-#      JAVA_OPTS: ${JAVA_OPTS:--Xms512m -Xmx1024m}
-#    depends_on:
-#      auth-service:
-#        condition: service_started
-#      user-service:
-#        condition: service_started
-#      resource-service:
-#        condition: service_started
-#      notification-service:
-#        condition: service_started
-#    networks:
-#      - knowledgehub-network
-#    restart: unless-stopped
-#    healthcheck:
-#      test: ["CMD", "curl", "-f", "http://localhost:8080/actuator/health"]
-#      interval: 30s
-#      timeout: 10s
-#      retries: 3
-#      start_period: 60s
+  api-gateway:
+    build:
+      context: .
+      dockerfile: api-gateway/Dockerfile
+    container_name: knowledgehub-api-gateway
+    ports:
+      - "${API_GATEWAY_PORT:-8080}:8080"
+    environment:
+      SPRING_PROFILES_ACTIVE: ${SPRING_PROFILES_ACTIVE:-docker}
+      API_GATEWAY_PORT: ${API_GATEWAY_PORT:-8080}
+      JWT_SECRET: ${JWT_SECRET}
+      JWT_EXPIRATION: ${JWT_EXPIRATION}
+      JWT_REFRESH_EXPIRATION: ${JWT_REFRESH_EXPIRATION}
+      AUTH_SERVICE_URL: ${AUTH_SERVICE_URL}
+      USER_SERVICE_URL: ${USER_SERVICE_URL}
+      RESOURCE_SERVICE_URL: ${RESOURCE_SERVICE_URL}
+      NOTIFICATION_SERVICE_URL: ${NOTIFICATION_SERVICE_URL}
+      AI_SEARCH_SERVICE_URL: ${AI_SEARCH_SERVICE_URL}
+      CORS_ALLOWED_ORIGINS: ${CORS_ALLOWED_ORIGINS}
+      SWAGGER_ENABLED: ${SWAGGER_ENABLED:-true}
+      LOGGING_LEVEL_ROOT: ${LOG_LEVEL_ROOT:-WARN}
+      LOGGING_LEVEL_TN_ESPRIM: ${LOG_LEVEL_KNOWLEDGEHUB:-INFO}
+      LOG_LEVEL_GATEWAY: ${LOG_LEVEL_GATEWAY:-DEBUG}
+      LOG_LEVEL_NETTY: ${LOG_LEVEL_NETTY:-DEBUG}
+      JAVA_OPTS: ${JAVA_OPTS:--Xms512m -Xmx1024m}
+    depends_on:
+      auth-service:
+        condition: service_started
+      user-service:
+        condition: service_started
+      resource-service:
+        condition: service_started
+      notification-service:
+        condition: service_started
+    networks:
+      - knowledgehub-network
+    restart: unless-stopped
+    healthcheck:
+      test: ["CMD", "curl", "-f", "http://localhost:8080/actuator/health"]
+      interval: 30s
+      timeout: 10s
+      retries: 3
+      start_period: 60s
 
   # Auth Service
-#  auth-service:
-#    build:
-#      context: .
-#      dockerfile: auth-service/Dockerfile
-#    container_name: knowledgehub-auth-service
-#    ports:
-#      - "${AUTH_SERVICE_PORT:-8081}:8081"
-#    environment:
-#      SPRING_PROFILES_ACTIVE: ${SPRING_PROFILES_ACTIVE:-docker}
-#      SPRING_DATASOURCE_URL: jdbc:mysql://${MYSQL_HOST}:${MYSQL_PORT}/${MYSQL_AUTH_DB}?createDatabaseIfNotExist=true&useSSL=false&allowPublicKeyRetrieval=true
-#      SPRING_DATASOURCE_USERNAME: ${MYSQL_USERNAME}
-#      SPRING_DATASOURCE_PASSWORD: ${MYSQL_PASSWORD}
-#      JWT_SECRET: ${JWT_SECRET}
-#      JWT_EXPIRATION: ${JWT_EXPIRATION}
-#      NOTIFICATION_SERVICE_URL: ${NOTIFICATION_SERVICE_URL}
-#      USER_SERVICE_URL: ${USER_SERVICE_URL}
-#      LOGGING_LEVEL_ROOT: ${LOG_LEVEL_ROOT:-WARN}
-#      LOGGING_LEVEL_TN_ESPRIM: ${LOG_LEVEL_KNOWLEDGEHUB:-INFO}
-#      JAVA_OPTS: ${JAVA_OPTS:--Xms512m -Xmx1024m}
-#    depends_on:
-#      mysql:
-#        condition: service_healthy
-#    networks:
-#      - knowledgehub-network
-#    restart: unless-stopped
-#    healthcheck:
-#      test: ["CMD", "curl", "-f", "http://localhost:8081/actuator/health"]
-#      interval: 30s
-#      timeout: 10s
-#      retries: 3
-#      start_period: 60s
+  auth-service:
+    build:
+      context: .
+      dockerfile: auth-service/Dockerfile
+    container_name: knowledgehub-auth-service
+    ports:
+      - "${AUTH_SERVICE_PORT:-8081}:8081"
+    environment:
+      SPRING_PROFILES_ACTIVE: ${SPRING_PROFILES_ACTIVE:-docker}
+      AUTH_SERVICE_PORT: ${AUTH_SERVICE_PORT:-8081}
+      SPRING_DATASOURCE_URL: jdbc:mysql://${MYSQL_HOST}:${MYSQL_PORT}/${MYSQL_AUTH_DB}?createDatabaseIfNotExist=true&useSSL=false&allowPublicKeyRetrieval=true
+      SPRING_DATASOURCE_USERNAME: ${MYSQL_USERNAME}
+      SPRING_DATASOURCE_PASSWORD: ${MYSQL_PASSWORD}
+      JWT_SECRET: ${JWT_SECRET}
+      JWT_EXPIRATION: ${JWT_EXPIRATION}
+      NOTIFICATION_SERVICE_URL: ${NOTIFICATION_SERVICE_URL}
+      USER_SERVICE_URL: ${USER_SERVICE_URL}
+      LOGGING_LEVEL_ROOT: ${LOG_LEVEL_ROOT:-WARN}
+      LOGGING_LEVEL_TN_ESPRIM: ${LOG_LEVEL_KNOWLEDGEHUB:-INFO}
+      JAVA_OPTS: ${JAVA_OPTS:--Xms512m -Xmx1024m}
+    depends_on:
+      mysql:
+        condition: service_healthy
+    networks:
+      - knowledgehub-network
+    restart: unless-stopped
+    healthcheck:
+      test: ["CMD", "curl", "-f", "http://localhost:8081/actuator/health"]
+      interval: 30s
+      timeout: 10s
+      retries: 3
+      start_period: 60s
 
   # User Service
-#  user-service:
-#    build:
-#      context: .
-#      dockerfile: user-service/Dockerfile
-#    container_name: knowledgehub-user-service
-#    ports:
-#      - "${USER_SERVICE_PORT:-8082}:8082"
-#    environment:
-#      SPRING_PROFILES_ACTIVE: ${SPRING_PROFILES_ACTIVE:-docker}
-#      USER_SERVICE_PORT: ${USER_SERVICE_PORT:-8082}
-#      MYSQL_HOST: ${MYSQL_HOST}
-#      MYSQL_PORT: ${MYSQL_PORT}
-#      MYSQL_USER_DB: ${MYSQL_USER_DB}
-#      MYSQL_USERNAME: ${MYSQL_USERNAME}
-#      MYSQL_PASSWORD: ${MYSQL_PASSWORD}
-#      SPRING_DATASOURCE_URL: jdbc:mysql://${MYSQL_HOST}:${MYSQL_PORT}/${MYSQL_USER_DB}?createDatabaseIfNotExist=true&useSSL=false&allowPublicKeyRetrieval=true
-#      SPRING_DATASOURCE_USERNAME: ${MYSQL_USERNAME}
-#      SPRING_DATASOURCE_PASSWORD: ${MYSQL_PASSWORD}
-#      SWAGGER_ENABLED: ${SWAGGER_ENABLED:-true}
-#      LOGGING_LEVEL_ROOT: ${LOG_LEVEL_ROOT:-WARN}
-#      LOGGING_LEVEL_TN_ESPRIM: ${LOG_LEVEL_KNOWLEDGEHUB:-INFO}
-#      JAVA_OPTS: ${JAVA_OPTS:--Xms512m -Xmx1024m}
-#    depends_on:
-#      mysql:
-#        condition: service_healthy
-#    networks:
-#      - knowledgehub-network
-#    restart: unless-stopped
-#    healthcheck:
-#      test: ["CMD", "curl", "-f", "http://localhost:8082/actuator/health"]
-#      interval: 30s
-#      timeout: 10s
-#      retries: 3
-#      start_period: 60s
+  user-service:
+    build:
+      context: .
+      dockerfile: user-service/Dockerfile
+    container_name: knowledgehub-user-service
+    ports:
+      - "${USER_SERVICE_PORT:-8082}:8082"
+    environment:
+      SPRING_PROFILES_ACTIVE: ${SPRING_PROFILES_ACTIVE:-docker}
+      USER_SERVICE_PORT: ${USER_SERVICE_PORT:-8082}
+      MYSQL_HOST: ${MYSQL_HOST}
+      MYSQL_PORT: ${MYSQL_PORT}
+      MYSQL_USER_DB: ${MYSQL_USER_DB}
+      MYSQL_USERNAME: ${MYSQL_USERNAME}
+      MYSQL_PASSWORD: ${MYSQL_PASSWORD}
+      SPRING_DATASOURCE_URL: jdbc:mysql://${MYSQL_HOST}:${MYSQL_PORT}/${MYSQL_USER_DB}?createDatabaseIfNotExist=true&useSSL=false&allowPublicKeyRetrieval=true
+      SPRING_DATASOURCE_USERNAME: ${MYSQL_USERNAME}
+      SPRING_DATASOURCE_PASSWORD: ${MYSQL_PASSWORD}
+      SWAGGER_ENABLED: ${SWAGGER_ENABLED:-true}
+      LOGGING_LEVEL_ROOT: ${LOG_LEVEL_ROOT:-WARN}
+      LOGGING_LEVEL_TN_ESPRIM: ${LOG_LEVEL_KNOWLEDGEHUB:-INFO}
+      JAVA_OPTS: ${JAVA_OPTS:--Xms512m -Xmx1024m}
+    depends_on:
+      mysql:
+        condition: service_healthy
+    networks:
+      - knowledgehub-network
+    restart: unless-stopped
+    healthcheck:
+      test: ["CMD", "curl", "-f", "http://localhost:8082/actuator/health"]
+      interval: 30s
+      timeout: 10s
+      retries: 3
+      start_period: 60s
 
   # Resource Service
-#  resource-service:
-#    build:
-#      context: .
-#      dockerfile: resource-service/Dockerfile
-#    container_name: knowledgehub-resource-service
-#    ports:
-#      - "${RESOURCE_SERVICE_PORT:-8083}:8083"
-#    environment:
-#      SPRING_PROFILES_ACTIVE: ${SPRING_PROFILES_ACTIVE:-docker}
-#      RESOURCE_SERVICE_PORT: ${RESOURCE_SERVICE_PORT:-8083}
-#      MYSQL_HOST: ${MYSQL_HOST}
-#      MYSQL_PORT: ${MYSQL_PORT}
-#      MYSQL_RESOURCE_DB: ${MYSQL_RESOURCE_DB}
-#      MYSQL_USERNAME: ${MYSQL_USERNAME}
-#      MYSQL_PASSWORD: ${MYSQL_PASSWORD}
-#      SPRING_DATASOURCE_URL: jdbc:mysql://${MYSQL_HOST}:${MYSQL_PORT}/${MYSQL_RESOURCE_DB}?createDatabaseIfNotExist=true&useSSL=false&allowPublicKeyRetrieval=true
-#      SPRING_DATASOURCE_USERNAME: ${MYSQL_USERNAME}
-#      SPRING_DATASOURCE_PASSWORD: ${MYSQL_PASSWORD}
-#      MINIO_ENDPOINT: ${MINIO_ENDPOINT}
-#      MINIO_ACCESS_KEY: ${MINIO_ACCESS_KEY}
-#      MINIO_SECRET_KEY: ${MINIO_SECRET_KEY}
-#      MINIO_BUCKET_DOCUMENTS: ${MINIO_BUCKET_DOCUMENTS}
-#      MINIO_BUCKET_PFA: ${MINIO_BUCKET_PFA}
-#      MINIO_BUCKET_PFE: ${MINIO_BUCKET_PFE}
-#      MINIO_BUCKET_STAGE: ${MINIO_BUCKET_STAGE}
-#      MINIO_BUCKET_JOURNAL: ${MINIO_BUCKET_JOURNAL}
-#      MINIO_BUCKET_ATTESTATION: ${MINIO_BUCKET_ATTESTATION}
-#      USER_SERVICE_URL: ${USER_SERVICE_URL}
-#      AI_SEARCH_SERVICE_URL: ${AI_SEARCH_SERVICE_URL}
-#      NOTIFICATION_SERVICE_URL: ${NOTIFICATION_SERVICE_URL}
-#      CORS_ALLOWED_ORIGINS: ${CORS_ALLOWED_ORIGINS}
-#      SWAGGER_ENABLED: ${SWAGGER_ENABLED:-true}
-#      LOGGING_LEVEL_ROOT: ${LOG_LEVEL_ROOT:-WARN}
-#      LOGGING_LEVEL_TN_ESPRIM: ${LOG_LEVEL_KNOWLEDGEHUB:-INFO}
-#      JAVA_OPTS: ${JAVA_OPTS:--Xms512m -Xmx1024m}
-#    depends_on:
-#      mysql:
-#        condition: service_healthy
-#      minio:
-#        condition: service_healthy
-#    networks:
-#      - knowledgehub-network
-#    restart: unless-stopped
-#    healthcheck:
-#      test: ["CMD", "curl", "-f", "http://localhost:8083/actuator/health"]
-#      interval: 30s
-#      timeout: 10s
-#      retries: 3
-#      start_period: 60s
+  resource-service:
+    build:
+      context: .
+      dockerfile: resource-service/Dockerfile
+    container_name: knowledgehub-resource-service
+    ports:
+      - "${RESOURCE_SERVICE_PORT:-8083}:8083"
+    environment:
+      SPRING_PROFILES_ACTIVE: ${SPRING_PROFILES_ACTIVE:-docker}
+      RESOURCE_SERVICE_PORT: ${RESOURCE_SERVICE_PORT:-8083}
+      MYSQL_HOST: ${MYSQL_HOST}
+      MYSQL_PORT: ${MYSQL_PORT}
+      MYSQL_RESOURCE_DB: ${MYSQL_RESOURCE_DB}
+      MYSQL_USERNAME: ${MYSQL_USERNAME}
+      MYSQL_PASSWORD: ${MYSQL_PASSWORD}
+      SPRING_DATASOURCE_URL: jdbc:mysql://${MYSQL_HOST}:${MYSQL_PORT}/${MYSQL_RESOURCE_DB}?createDatabaseIfNotExist=true&useSSL=false&allowPublicKeyRetrieval=true
+      SPRING_DATASOURCE_USERNAME: ${MYSQL_USERNAME}
+      SPRING_DATASOURCE_PASSWORD: ${MYSQL_PASSWORD}
+      MINIO_ENDPOINT: ${MINIO_ENDPOINT}
+      MINIO_ACCESS_KEY: ${MINIO_ACCESS_KEY}
+      MINIO_SECRET_KEY: ${MINIO_SECRET_KEY}
+      MINIO_BUCKET_DOCUMENTS: ${MINIO_BUCKET_DOCUMENTS}
+      MINIO_BUCKET_PFA: ${MINIO_BUCKET_PFA}
+      MINIO_BUCKET_PFE: ${MINIO_BUCKET_PFE}
+      MINIO_BUCKET_STAGE: ${MINIO_BUCKET_STAGE}
+      MINIO_BUCKET_JOURNAL: ${MINIO_BUCKET_JOURNAL}
+      MINIO_BUCKET_ATTESTATION: ${MINIO_BUCKET_ATTESTATION}
+      USER_SERVICE_URL: ${USER_SERVICE_URL}
+      AI_SEARCH_SERVICE_URL: ${AI_SEARCH_SERVICE_URL}
+      NOTIFICATION_SERVICE_URL: ${NOTIFICATION_SERVICE_URL}
+      CORS_ALLOWED_ORIGINS: ${CORS_ALLOWED_ORIGINS}
+      SWAGGER_ENABLED: ${SWAGGER_ENABLED:-true}
+      LOGGING_LEVEL_ROOT: ${LOG_LEVEL_ROOT:-WARN}
+      LOGGING_LEVEL_TN_ESPRIM: ${LOG_LEVEL_KNOWLEDGEHUB:-INFO}
+      JAVA_OPTS: ${JAVA_OPTS:--Xms512m -Xmx1024m}
+    depends_on:
+      mysql:
+        condition: service_healthy
+      minio:
+        condition: service_healthy
+    networks:
+      - knowledgehub-network
+    restart: unless-stopped
+    healthcheck:
+      test: ["CMD", "curl", "-f", "http://localhost:8083/actuator/health"]
+      interval: 30s
+      timeout: 10s
+      retries: 3
+      start_period: 60s
 
   # Notification Service
-#  notification-service:
-#    build:
-#      context: .
-#      dockerfile: notification-service/Dockerfile
-#    container_name: knowledgehub-notification-service
-#    ports:
-#      - "${NOTIFICATION_SERVICE_PORT:-8084}:8084"
-#    environment:
-#      SPRING_PROFILES_ACTIVE: ${SPRING_PROFILES_ACTIVE:-docker}
-#      NOTIFICATION_SERVICE_PORT: ${NOTIFICATION_SERVICE_PORT:-8084}
-#      MONGO_HOST: ${MONGO_HOST}
-#      MONGO_PORT: ${MONGO_PORT}
-#      MONGO_DATABASE: ${MONGO_DATABASE}
-#      MONGO_ROOT_USERNAME: ${MONGO_ROOT_USERNAME}
-#      MONGO_ROOT_PASSWORD: ${MONGO_ROOT_PASSWORD}
-#      SPRING_DATA_MONGODB_URI: ${MONGO_URI}
-#      SMTP_HOST: ${SMTP_HOST}
-#      SMTP_PORT: ${SMTP_PORT}
-#      SMTP_USERNAME: ${SMTP_USERNAME}
-#      SMTP_PASSWORD: ${SMTP_PASSWORD}
-#      SMTP_FROM_EMAIL: ${SMTP_FROM_EMAIL}
-#      SMTP_FROM_NAME: ${SMTP_FROM_NAME}
-#      SWAGGER_ENABLED: ${SWAGGER_ENABLED:-true}
-#      LOGGING_LEVEL_ROOT: ${LOG_LEVEL_ROOT:-WARN}
-#      LOGGING_LEVEL_TN_ESPRIM: ${LOG_LEVEL_KNOWLEDGEHUB:-INFO}
-#      LOG_LEVEL_MONGODB: ${LOG_LEVEL_MONGODB:-INFO}
-#      JAVA_OPTS: ${JAVA_OPTS:--Xms512m -Xmx1024m}
-#    depends_on:
-#      mongodb:
-#        condition: service_healthy
-#    networks:
-#      - knowledgehub-network
-#    restart: unless-stopped
-#    healthcheck:
-#      test: ["CMD", "curl", "-f", "http://localhost:8084/actuator/health"]
-#      interval: 30s
-#      timeout: 10s
-#      retries: 3
-#      start_period: 60s
+  notification-service:
+    build:
+      context: .
+      dockerfile: notification-service/Dockerfile
+    container_name: knowledgehub-notification-service
+    ports:
+      - "${NOTIFICATION_SERVICE_PORT:-8084}:8084"
+    environment:
+      SPRING_PROFILES_ACTIVE: ${SPRING_PROFILES_ACTIVE:-docker}
+      NOTIFICATION_SERVICE_PORT: ${NOTIFICATION_SERVICE_PORT:-8084}
+      MONGO_HOST: ${MONGO_HOST}
+      MONGO_PORT: ${MONGO_PORT}
+      MONGO_DATABASE: ${MONGO_DATABASE}
+      MONGO_ROOT_USERNAME: ${MONGO_ROOT_USERNAME}
+      MONGO_ROOT_PASSWORD: ${MONGO_ROOT_PASSWORD}
+      SPRING_DATA_MONGODB_URI: ${MONGO_URI}
+      SMTP_HOST: ${SMTP_HOST}
+      SMTP_PORT: ${SMTP_PORT}
+      SMTP_USERNAME: ${SMTP_USERNAME}
+      SMTP_PASSWORD: ${SMTP_PASSWORD}
+      SMTP_FROM_EMAIL: ${SMTP_FROM_EMAIL}
+      SMTP_FROM_NAME: ${SMTP_FROM_NAME}
+      SWAGGER_ENABLED: ${SWAGGER_ENABLED:-true}
+      LOGGING_LEVEL_ROOT: ${LOG_LEVEL_ROOT:-WARN}
+      LOGGING_LEVEL_TN_ESPRIM: ${LOG_LEVEL_KNOWLEDGEHUB:-INFO}
+      LOG_LEVEL_MONGODB: ${LOG_LEVEL_MONGODB:-INFO}
+      JAVA_OPTS: ${JAVA_OPTS:--Xms512m -Xmx1024m}
+    depends_on:
+      mongodb:
+        condition: service_healthy
+    networks:
+      - knowledgehub-network
+    restart: unless-stopped
+    healthcheck:
+      test: ["CMD", "curl", "-f", "http://localhost:8084/actuator/health"]
+      interval: 30s
+      timeout: 10s
+      retries: 3
+      start_period: 60s
 
-  # AI & Search Service (Python FastAPI)
-#  ai-search-service:
-#    build:
-#      context: ./ai-and-search-service
-#      dockerfile: Dockerfile
-#    container_name: knowledgehub-ai-search-service
-#    ports:
-#      - "${AI_SEARCH_SERVICE_PORT:-8000}:8000"
-#    environment:
-#      PYTHONUNBUFFERED: ${PYTHONUNBUFFERED:-1}
-#      MINIO_ENDPOINT: ${MINIO_ENDPOINT}
-#      MINIO_ACCESS_KEY: ${MINIO_ACCESS_KEY}
-#      MINIO_SECRET_KEY: ${MINIO_SECRET_KEY}
-#      CHROMA_PERSIST_DIRECTORY: ${CHROMA_PERSIST_DIRECTORY:-/app/chroma_db}
-#      CHROMA_COLLECTION_NAME: ${CHROMA_COLLECTION_NAME:-knowledgehub_documents}
-#      EMBEDDING_MODEL: ${EMBEDDING_MODEL:-all-MiniLM-L6-v2}
-#      CHUNK_SIZE: ${CHUNK_SIZE:-1000}
-#      CHUNK_OVERLAP: ${CHUNK_OVERLAP:-100}
-#      LOG_LEVEL: ${LOG_LEVEL:-INFO}
-#    volumes:
-#      - chromadb_data:/app/chroma_db
-#    depends_on:
-#      minio:
-#        condition: service_healthy
-#    networks:
-#      - knowledgehub-network
-#    restart: unless-stopped
-#    healthcheck:
-#      test: ["CMD", "curl", "-f", "http://localhost:8000/api/v1/health"]
-#      interval: 30s
-#      timeout: 10s
-#      retries: 3
-#      start_period: 60s
-#
+
+  ai-search-service:
+    build:
+      context: ./ai-and-search-service
+      dockerfile: Dockerfile
+    container_name: knowledgehub-ai-search-service
+
+
+    env_file:
+      - ./ai-and-search-service/.env
+    environment:
+      MINIO_ENDPOINT: minio:9000
+      MINIO_ACCESS_KEY: ${MINIO_ACCESS_KEY}
+      MINIO_SECRET_KEY: ${MINIO_SECRET_KEY}
+      MINIO_SECURE: "false"
+    ports:
+      - "${AI_SEARCH_SERVICE_PORT:-8000}:8000"
+
+    volumes:
+      - chromadb_data:/app/chroma_db
+
+    depends_on:
+      minio:
+        condition: service_healthy
+
+    networks:
+      - knowledgehub-network
+
+    restart: unless-stopped
+
+    healthcheck:
+      test: ["CMD", "curl", "-f", "http://localhost:8000/api/v1/health"]
+      interval: 30s
+      timeout: 10s
+      retries: 3
+      start_period: 60s
 
 # ========================================
 # Networks

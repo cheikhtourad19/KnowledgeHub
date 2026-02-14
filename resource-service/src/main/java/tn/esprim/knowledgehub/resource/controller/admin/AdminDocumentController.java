@@ -125,6 +125,16 @@ public class AdminDocumentController {
                 );
             }
 
+            // Delete from vector DB if file was published
+            if (file.getIsPublished()) {
+                try {
+                    aiandSearchService.deleteFile(Math.toIntExact(fileId));
+                } catch (Exception e) {
+                    log.warn("Could not delete file from vector DB: {}", e.getMessage());
+                    // Continue with file deletion even if vector DB deletion fails
+                }
+            }
+
             fileService.deleteFile(fileId);
             return ResponseEntity.ok(tn.esprim.knowledgehub.resource.dto.response.ApiResponse.success(null, "File deleted successfully"));
         } catch (Exception e) {
@@ -154,9 +164,6 @@ public class AdminDocumentController {
             }
 
             File file = fileService.updatePublicationStatus(fileId, isPublished);
-            if (isPublished){
-                aiandSearchService.indexFile(fileId);
-            }
             return ResponseEntity.ok(tn.esprim.knowledgehub.resource.dto.response.ApiResponse.success(file, "Publication status updated successfully"));
         } catch (Exception e) {
             log.error("Error updating publication status: {}", e.getMessage(), e);

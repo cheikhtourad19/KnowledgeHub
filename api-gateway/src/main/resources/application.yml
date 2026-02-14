@@ -122,3 +122,12 @@ spring:
           filters:
             - RewritePath=/ai-service/(?<segment>.*), /$\{segment}
             - name: JwtAuthenticationFilter
+
+jwt:
+  secret: ${JWT_SECRET}
+
+logging:
+  level:
+    root: ${LOG_LEVEL_ROOT:INFO}
+    org.springframework.cloud.gateway: ${LOG_LEVEL_GATEWAY:DEBUG}
+    reactor.netty: ${LOG_LEVEL_NETTY:DEBUG}

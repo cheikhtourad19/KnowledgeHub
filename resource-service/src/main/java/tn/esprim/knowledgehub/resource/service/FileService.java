@@ -234,7 +234,14 @@ public class FileService {
                 .orElseThrow(() -> new IllegalArgumentException("File not found with ID: " + fileId));
 
         file.setIsPublished(isPublished);
-        aiandSearchService.indexFile(fileId);
+
+        if (isPublished) {
+            // Index the file when publishing
+            aiandSearchService.indexFile(fileId);
+        } else {
+            // Delete the file from vector DB when unpublishing
+            aiandSearchService.deleteFile(Math.toIntExact(fileId));
+        }
 
         return fileRepository.save(file);
     }

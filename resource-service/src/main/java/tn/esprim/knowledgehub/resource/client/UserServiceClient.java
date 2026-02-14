@@ -12,7 +12,7 @@ import java.util.List;
 
 @FeignClient(
         name = "user-service",
-        url = "${application.config.user-service-url}"
+        url = "${user.service.url:http://localhost:8082}"  // Fixed to match YAML
 )
 public interface UserServiceClient {
 

@@ -35,18 +35,29 @@ public class AIandSearchService {
         return file;
 
     }
+
+    public void deleteFile(Integer fileId){
+        try {
+            DeleteResponse response = aiClient.deleteDocument(fileId);
+            log.info("File with id {} deleted from vector DB: {} chunks deleted", fileId, response.getChunksDeleted());
+        } catch (Exception e) {
+            log.error("Error deleting file with id {} from vector DB: {}", fileId, e.getMessage());
+            throw new RuntimeException("Failed to delete file from vector DB", e);
+        }
+    }
+
     public List<File> searchFile(String query){
 
         SearchRequest request = SearchRequest.builder()
                 .query(query)
                 .build();
         SearchResponse response = aiClient.semanticSearch(request);
-        if (response.getTotal_results()==0){
+        if (response.getTotalResults()==0){
             throw new RuntimeException("No result found");
         }
         List<Long> extracted_ids= new ArrayList<>();
         for (SearchMatch searchMatch : response.getMatches()) {
-            extracted_ids.add(Long.valueOf(searchMatch.getFile_id()));
+            extracted_ids.add(Long.valueOf(searchMatch.getFileId()));
         }
         List<File> files = new ArrayList<>();
         for (Long id : extracted_ids) {

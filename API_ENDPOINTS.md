@@ -1,6 +1,6 @@
 # KnowledgeHub - API Endpoints Documentation
 
-> **Complete API Reference** - This document contains all REST API endpoints with detailed request/response structures for each microservice.
+> **Complete API Reference** - This document contains all 50 REST API endpoints with detailed request/response structures for each microservice.
 
 ## Table of Contents
 1. [Auth Service Endpoints](#auth-service-endpoints)

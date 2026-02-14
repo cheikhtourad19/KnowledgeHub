@@ -24,3 +24,5 @@ langchain-text-splitters==0.2.0
 # Additional utilities
 aiofiles==23.2.1
 
+# Resolve numpy compatibility issue with chromadb
+numpy<2.0.0

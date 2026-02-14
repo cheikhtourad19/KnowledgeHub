@@ -1,5 +1,6 @@
 package tn.esprim.knowledgehub.resource.client.dto;
 
+import com.fasterxml.jackson.annotation.JsonProperty;
 import lombok.AllArgsConstructor;
 import lombok.Builder;
 import lombok.Data;
@@ -17,5 +18,6 @@ public class SearchResponse {
 
     private List<SearchMatch> matches;
 
-    private Integer total_results;
+    @JsonProperty("total_results")
+    private Integer totalResults;
 }

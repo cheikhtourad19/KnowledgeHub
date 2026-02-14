@@ -1,7 +1,8 @@
-# Default Profile (Local Development) - Hardcoded values matching local infrastructure
+# Default Profile (Local Development)
 server:
   port: 8083
 
+# Service URLs
 notification:
   service:
     url: http://localhost:8084
@@ -18,7 +19,7 @@ spring:
   application:
     name: resource-service
 
-  # Explicitly exclude MongoDB auto-configuration (resource-service uses MySQL only)
+  # Exclude MongoDB auto-configuration
   autoconfigure:
     exclude:
       - org.springframework.boot.autoconfigure.mongo.MongoAutoConfiguration
@@ -45,16 +46,18 @@ spring:
       max-file-size: 100MB
       max-request-size: 100MB
 
-  cloud:
-    openfeign:
-      client:
-        config:
-          default:
-            connect-timeout: 5000
-            read-timeout: 5000
-application:
-  config:
-    user-service-url: http://localhost:8082
+# Feign Configuration - SINGLE SOURCE OF TRUTH
+feign:
+  client:
+    config:
+      default:
+        connectTimeout: 10000   # 10 seconds
+        readTimeout: 300000     # 5 minutes for AI processing
+      # Specific timeout for AI client (if you want different from default)
+      ai-search-service:
+        connectTimeout: 10000
+        readTimeout: 600000     # 10 minutes for heavy AI operations
+
 # MinIO Configuration
 minio:
   endpoint: http://localhost:9000
@@ -73,6 +76,7 @@ minio:
 cors:
   allowed-origins: http://localhost:*,http://127.0.0.1:*,http://localhost:8080
 
+# Swagger/OpenAPI
 springdoc:
   api-docs:
     path: /api-docs
@@ -81,25 +85,29 @@ springdoc:
     path: /swagger-ui.html
     enabled: true
 
+# Logging
 logging:
   level:
     root: WARN
     tn.esprim.knowledgehub.resource: DEBUG
+    feign: DEBUG  # Added to debug Feign calls
 
 ---
-# Docker Profile (runs in Docker Compose containers)
+# Docker Profile
 spring:
   config:
     activate:
       on-profile: docker
+
   datasource:
     url: jdbc:mysql://${MYSQL_HOST}:${MYSQL_PORT}/${MYSQL_RESOURCE_DB}?createDatabaseIfNotExist=true&useSSL=false&serverTimezone=UTC
     username: ${MYSQL_USERNAME}
     password: ${MYSQL_PASSWORD}
 
 server:
-  port: ${RESOURCE_SERVICE_PORT}
+  port: ${RESOURCE_SERVICE_PORT:8083}
 
+# Service URLs for Docker
 notification:
   service:
     url: ${NOTIFICATION_SERVICE_URL}
@@ -112,6 +120,7 @@ ai-search:
   service:
     url: ${AI_SEARCH_SERVICE_URL}
 
+# MinIO for Docker
 minio:
   endpoint: ${MINIO_ENDPOINT}
   access-key: ${MINIO_ACCESS_KEY}
@@ -132,4 +141,4 @@ logging:
   level:
     root: ${LOG_LEVEL_ROOT:INFO}
     tn.esprim.knowledgehub.resource: ${LOG_LEVEL_KNOWLEDGEHUB:DEBUG}
-
+    feign: ${LOG_LEVEL_FEIGN:DEBUG}
