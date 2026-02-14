@@ -142,6 +142,10 @@ export class AuthService {
     return this.currentAuthState.userId;
   }
 
+  getUser():any | null {
+    return this.currentAuthState;
+  }
+
   /**
    * Get auth ID
    */

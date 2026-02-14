@@ -1,0 +1,128 @@
+<!-- login.component.html -->
+<div class="min-h-screen flex items-center justify-center bg-gray-50 px-4 py-12">
+  <div class="w-full max-w-md">
+    <!-- Login Card -->
+    <div class="bg-white rounded-lg shadow-xl overflow-hidden">
+      <!-- Red Header Banner with Logo -->
+      <div class="bg-[#C60C30] px-8 py-6 text-center">
+        <div class="mb-4">
+          <!-- College Logo - Replace src with your logo -->
+          <img
+            src="assets/images/logo_esprim.jpg"
+            alt="College Logo"
+            class="h-16 w-auto mx-auto"
+          />
+        </div>
+        <h2 class="text-2xl font-bold text-white">KnowledgeHub</h2>
+        <p class="text-white/90 text-sm mt-1">Portal Login</p>
+      </div>
+
+      <!-- Form Section -->
+      <div class="p-8">
+        <form [formGroup]="loginForm" (ngSubmit)="onSubmit()" class="space-y-5">
+          <!-- Email Field -->
+          <div>
+            <label for="email" class="block text-sm font-semibold text-[#333333] mb-2">
+              Email Address
+            </label>
+            <div class="relative">
+              <div class="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none">
+                <svg class="h-5 w-5 text-[#666666]" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                  <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M16 12a4 4 0 10-8 0 4 4 0 008 0zm0 0v1.5a2.5 2.5 0 005 0V12a9 9 0 10-9 9m4.5-1.206a8.959 8.959 0 01-4.5 1.207"/>
+                </svg>
+              </div>
+              <input
+                id="email"
+                type="email"
+                formControlName="email"
+                placeholder="you@example.com"
+                class="w-full pl-10 pr-4 py-3 border border-[#F0F0F0] rounded-lg focus:ring-2 focus:ring-[#C60C30] focus:border-[#C60C30] outline-none transition text-[#333333]"
+                [class.border-red-500]="email?.invalid && email?.touched"
+              />
+            </div>
+            <p *ngIf="email?.invalid && email?.touched" class="mt-2 text-sm text-red-600">
+              <span *ngIf="email?.errors?.['required']">Email is required</span>
+              <span *ngIf="email?.errors?.['email']">Please enter a valid email</span>
+            </p>
+          </div>
+
+          <!-- Password Field -->
+          <div>
+            <label for="password" class="block text-sm font-semibold text-[#333333] mb-2">
+              Password
+            </label>
+            <div class="relative">
+              <div class="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none">
+                <svg class="h-5 w-5 text-[#666666]" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                  <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 15v2m-6 4h12a2 2 0 002-2v-6a2 2 0 00-2-2H6a2 2 0 00-2 2v6a2 2 0 002 2zm10-10V7a4 4 0 00-8 0v4h8z"/>
+                </svg>
+              </div>
+              <input
+                id="password"
+                type="password"
+                formControlName="password"
+                placeholder="••••••••"
+                class="w-full pl-10 pr-4 py-3 border border-[#F0F0F0] rounded-lg focus:ring-2 focus:ring-[#C60C30] focus:border-[#C60C30] outline-none transition text-[#333333]"
+                [class.border-red-500]="password?.invalid && password?.touched"
+              />
+            </div>
+            <p *ngIf="password?.invalid && password?.touched" class="mt-2 text-sm text-red-600">
+              <span *ngIf="password?.errors?.['required']">Password is required</span>
+              <span *ngIf="password?.errors?.['minlength']">Password must be at least 6 characters</span>
+            </p>
+          </div>
+
+          <!-- Error Message -->
+          <div
+            *ngIf="errorMessage"
+            class="p-4 bg-red-50 border-l-4 border-[#C60C30] text-[#C60C30] rounded"
+          >
+            <div class="flex items-start">
+              <svg class="w-5 h-5 mr-2 flex-shrink-0" fill="currentColor" viewBox="0 0 20 20">
+                <path fill-rule="evenodd" d="M10 18a8 8 0 100-16 8 8 0 000 16zM8.707 7.293a1 1 0 00-1.414 1.414L8.586 10l-1.293 1.293a1 1 0 101.414 1.414L10 11.414l1.293 1.293a1 1 0 001.414-1.414L11.414 10l1.293-1.293a1 1 0 00-1.414-1.414L10 8.586 8.707 7.293z" clip-rule="evenodd"/>
+              </svg>
+              <p class="text-sm font-medium">{{ errorMessage }}</p>
+            </div>
+          </div>
+
+          <!-- Submit Button -->
+          <button
+            type="submit"
+            [disabled]="isLoading || loginForm.invalid"
+            class="w-full bg-[#C60C30] hover:bg-[#A00A28] text-white font-semibold py-3.5 px-4 rounded-lg transition duration-300 ease-in-out transform hover:-translate-y-0.5 hover:shadow-lg disabled:opacity-50 disabled:cursor-not-allowed disabled:hover:translate-y-0 disabled:hover:shadow-none flex items-center justify-center"
+          >
+            <span *ngIf="!isLoading" class="flex items-center">
+              Sign In
+              <svg class="w-5 h-5 ml-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M13 7l5 5m0 0l-5 5m5-5H6"/>
+              </svg>
+            </span>
+            <span *ngIf="isLoading" class="flex items-center">
+              <svg class="animate-spin h-5 w-5 mr-3" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24">
+                <circle class="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" stroke-width="4"></circle>
+                <path class="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"></path>
+              </svg>
+              Signing in...
+            </span>
+          </button>
+        </form>
+
+        <!-- Footer Links -->
+        <div class="mt-6 space-y-3 text-center">
+          <a
+            routerLink="/auth/forgot-password"
+            class="block text-sm text-[#C60C30] hover:text-[#A00A28] font-medium hover:underline transition"
+          >
+            Forgot your password?
+          </a>
+
+        </div>
+      </div>
+    </div>
+
+    <!-- Footer -->
+    <p class="text-center text-[#666666] text-sm mt-6">
+      © 2026 ESPRIM. All rights reserved.
+    </p>
+  </div>
+</div>
