@@ -1,0 +1,49 @@
+<!-- src/app/shared/components/not-found/not-found.component.html -->
+
+<div class="min-h-screen flex items-center justify-center bg-gray-50 px-4 py-12">
+  <div class="max-w-2xl w-full text-center">
+    <!-- 404 Illustration -->
+    <div class="mb-8">
+      <svg class="mx-auto w-64 h-64 text-primary-700" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="1" d="M9.172 16.172a4 4 0 015.656 0M9 10h.01M15 10h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z" />
+      </svg>
+    </div>
+
+    <!-- Error Code -->
+    <h1 class="text-9xl font-bold text-primary-700 mb-4">404</h1>
+
+    <!-- Error Message -->
+    <h2 class="text-3xl font-semibold text-gray-900 mb-4">
+      Page Not Found
+    </h2>
+
+    <p class="text-lg text-gray-600 mb-8 max-w-md mx-auto">
+      Oops! The page you're looking for doesn't exist. It might have been moved or deleted.
+    </p>
+
+    <!-- Action Buttons -->
+    <div class="flex flex-col sm:flex-row gap-4 justify-center items-center">
+      <button
+        (click)="goBack()"
+        class="inline-flex items-center px-6 py-3 text-sm font-medium text-gray-900 bg-white border border-gray-300 rounded-lg hover:bg-gray-100 focus:ring-4 focus:outline-none focus:ring-gray-200 transition-colors"
+      >
+        <svg class="w-4 h-4 me-2" aria-hidden="true" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+          <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M10 19l-7-7m0 0l7-7m-7 7h18" />
+        </svg>
+        Go Back
+      </button>
+
+      <button
+        (click)="goHome()"
+        class="inline-flex items-center px-6 py-3 text-sm font-medium text-white bg-primary-700 rounded-lg hover:bg-primary-800 focus:ring-4 focus:outline-none focus:ring-primary-300 transition-colors"
+      >
+        <svg class="w-4 h-4 me-2" aria-hidden="true" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+          <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M3 12l2-2m0 0l7-7 7 7M5 10v10a1 1 0 001 1h3m10-11l2 2m-2-2v10a1 1 0 01-1 1h-3m-6 0a1 1 0 001-1v-4a1 1 0 011-1h2a1 1 0 011 1v4a1 1 0 001 1m-6 0h6" />
+        </svg>
+        Aller a la page d'accueil
+      </button>
+    </div>
+
+
+  </div>
+</div>

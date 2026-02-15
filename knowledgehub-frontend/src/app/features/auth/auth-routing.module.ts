@@ -6,11 +6,12 @@ import {ResetPasswordComponent} from "./pages/reset-password/reset-password.comp
 
 const routes: Routes = [
   {
-    path:'login',component:LoginComponent
-  },
-  {
     path:'',redirectTo:'/auth/login',pathMatch:'full'
   },
+  {
+    path:'login',component:LoginComponent
+  },
+
   {
     path:'forgot-password', component: ForgotPasswordComponent
   },

@@ -1,0 +1,33 @@
+// src/app/shared/components/not-found/not-found.component.scss
+
+:host {
+  display: block;
+}
+
+// Animation for the icon
+svg {
+  animation: bounce 2s infinite;
+}
+
+@keyframes bounce {
+  0%, 100% {
+    transform: translateY(0);
+  }
+  50% {
+    transform: translateY(-10px);
+  }
+}
+
+// Button hover effects
+button {
+  &:hover {
+    transform: translateY(-2px);
+    box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.1), 0 2px 4px -1px rgba(0, 0, 0, 0.06);
+  }
+
+  &:active {
+    transform: translateY(0);
+  }
+
+  transition: all 0.2s ease-in-out;
+}

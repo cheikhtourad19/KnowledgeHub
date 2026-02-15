@@ -6,6 +6,7 @@ import { AuthApiService } from '../../services/auth-api.service';
 import { AuthService } from '../../../../core/services/auth.service';
 import { LoginRequest } from '../../../../shared/models/auth-service/requests/login-request.model';
 
+import { MessageService } from 'primeng/api';
 @Component({
   selector: 'app-login',
   templateUrl: './login.component.html',
@@ -20,7 +21,8 @@ export class LoginComponent {
     private authApiService: AuthApiService,
     private fb: FormBuilder,
     private router: Router,
-    private authService: AuthService
+    private authService: AuthService,
+    private messageService: MessageService
   ) {
     this.loginForm = this.fb.group({
       email: ['', [Validators.required, Validators.email]],
@@ -65,13 +67,15 @@ export class LoginComponent {
 
         this.isLoading = false;
         console.log('Login successful:', response);
-
+        this.messageService.add({severity:'success', summary:'Success Message', detail:'Login Successful'});
         this.errorMessage=this.authService.getUser()?.role;
-        //this.navigateByRole(response.role ?? '');
+        this.navigateByRole(response.role ?? '');
       },
       error: (error) => {
         this.isLoading = false;
         this.errorMessage = error.message || 'Login failed. Please try again.';
+        this.messageService.add({severity:'error', summary:'Erreur', detail:error.message});
+
         console.error('Login error:', error);
       }
     });
@@ -80,13 +84,13 @@ export class LoginComponent {
   private navigateByRole(role: string): void {
     switch (role) {
       case 'ADMIN':
-        this.router.navigate(['/admin/dashboard']);
+        this.router.navigate(['/admin/']);
         break;
       case 'TEACHER':
-        this.router.navigate(['/teacher/dashboard']);
+        this.router.navigate(['/teacher']);
         break;
       case 'STUDENT':
-        this.router.navigate(['/student/dashboard']);
+        this.router.navigate(['/student']);
         break;
       default:
         this.router.navigate(['/dashboard']);

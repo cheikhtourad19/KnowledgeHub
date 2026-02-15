@@ -7,20 +7,22 @@ module.exports = {
     extend: {
       colors: {
         primary: {
-          50: '#eff6ff',
-          100: '#dbeafe',
-          200: '#bfdbfe',
-          300: '#93c5fd',
-          400: '#60a5fa',
-          500: '#3b82f6',
-          600: '#2563eb',
-          700: '#1d4ed8',
-          800: '#1e40af',
-          900: '#1e3a8a',
-        },
+          50: '#fef2f3',
+          100: '#fde6e8',
+          200: '#fbd0d5',
+          300: '#f7aab2',
+          400: '#f27a8a',
+          500: '#e74c60',
+          600: '#d32f4a',
+          700: '#C60C30',
+          800: '#a51032',
+          900: '#8b1230',
+        }
       },
     },
   },
-  plugins: [],
+  plugins: [
+    require('flowbite/plugin')
+  ],
 }
 

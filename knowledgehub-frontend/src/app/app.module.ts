@@ -8,6 +8,9 @@ import { CoreModule } from './core/core.module';
 import { SharedModule } from './shared/shared.module';
 import { authInterceptor } from './core/interceptors/auth.interceptor';
 import { errorInterceptor } from './core/interceptors/error.interceptor';
+import {BrowserAnimationsModule} from "@angular/platform-browser/animations";
+import {ToastModule} from "primeng/toast";
+import {MessageService} from "primeng/api";
 
 @NgModule({
   declarations: [
@@ -17,12 +20,15 @@ import { errorInterceptor } from './core/interceptors/error.interceptor';
     BrowserModule,
     AppRoutingModule,
     CoreModule,
-    SharedModule
+    SharedModule,
+    BrowserAnimationsModule,
+    ToastModule,
   ],
   providers: [
     provideHttpClient(
       withInterceptors([authInterceptor, errorInterceptor])
-    )
+    ),
+    MessageService
   ],
   bootstrap: [AppComponent]
 })

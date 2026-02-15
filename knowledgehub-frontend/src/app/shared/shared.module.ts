@@ -4,12 +4,15 @@ import { RouterModule } from '@angular/router';
 import { FileSizePipe } from './pipes/file-size.pipe';
 import { DateFormatPipe } from './pipes/date-format.pipe';
 import { UnauthorizedComponent } from './components/unauthorized/unauthorized.component';
+import { NotFoundComponent } from './components/not-found/not-found.component';
 
 @NgModule({
   declarations: [
     FileSizePipe,
     DateFormatPipe,
-    UnauthorizedComponent
+    UnauthorizedComponent,
+    NotFoundComponent,
+
   ],
   imports: [
     CommonModule,

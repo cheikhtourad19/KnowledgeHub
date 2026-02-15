@@ -4,12 +4,13 @@ import { authGuard } from './core/guards/auth.guard';
 import { roleGuard } from './core/guards/role.guard';
 import { UserRole } from './shared/models/auth-service/entities/auth-user.model';
 import { UnauthorizedComponent } from './shared/components/unauthorized/unauthorized.component';
+import {NotFoundComponent} from "./shared/components/not-found/not-found.component";
+import {AppComponent} from "./app.component";
 
 const routes: Routes = [
   {
     path: '',
-    redirectTo: '/auth/login',
-    pathMatch: 'full'
+    component: AppComponent
   },
 
   {
@@ -21,14 +22,14 @@ const routes: Routes = [
     path: 'student',
     loadChildren: () => import('./features/student/student.module').then(m => m.StudentModule),
     canActivate: [authGuard, roleGuard],
-    data: { roles: [UserRole.STUDENT] }
+    data: { roles: [UserRole.STUDENT, UserRole.ADMIN] }
   },
 
   {
     path: 'teacher',
     loadChildren: () => import('./features/teacher/teacher.module').then(m => m.TeacherModule),
     canActivate: [authGuard, roleGuard],
-    data: { roles: [UserRole.TEACHER] }
+    data: { roles: [UserRole.TEACHER, UserRole.ADMIN] }
   },
 
   {
@@ -57,7 +58,7 @@ const routes: Routes = [
 
   {
     path: '**',
-    redirectTo: '/auth/login'
+    component: NotFoundComponent
   }
 ];
 

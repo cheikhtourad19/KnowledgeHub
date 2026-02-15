@@ -1,4 +1,6 @@
 <!-- login.component.html -->
+
+
 <div class="min-h-screen flex items-center justify-center bg-gray-50 px-4 py-12">
   <div class="w-full max-w-md">
     <!-- Login Card -->
@@ -6,7 +8,6 @@
       <!-- Red Header Banner with Logo -->
       <div class="bg-[#C60C30] px-8 py-6 text-center">
         <div class="mb-4">
-          <!-- College Logo - Replace src with your logo -->
           <img
             src="assets/images/logo_esprim.jpg"
             alt="College Logo"
@@ -14,7 +15,7 @@
           />
         </div>
         <h2 class="text-2xl font-bold text-white">KnowledgeHub</h2>
-        <p class="text-white/90 text-sm mt-1">Portal Login</p>
+        <p class="text-white/90 text-sm mt-1">Student Portal Login</p>
       </div>
 
       <!-- Form Section -->
@@ -88,7 +89,7 @@
           <!-- Submit Button -->
           <button
             type="submit"
-            [disabled]="isLoading || loginForm.invalid"
+            [disabled]="isLoading"
             class="w-full bg-[#C60C30] hover:bg-[#A00A28] text-white font-semibold py-3.5 px-4 rounded-lg transition duration-300 ease-in-out transform hover:-translate-y-0.5 hover:shadow-lg disabled:opacity-50 disabled:cursor-not-allowed disabled:hover:translate-y-0 disabled:hover:shadow-none flex items-center justify-center"
           >
             <span *ngIf="!isLoading" class="flex items-center">
@@ -115,13 +116,21 @@
           >
             Forgot your password?
           </a>
-
+          <div class="text-sm text-[#666666]">
+            Don't have an account?
+            <a
+              routerLink="/auth/register"
+              class="text-[#C60C30] hover:text-[#A00A28] font-semibold hover:underline transition"
+            >
+              Contact Administrator
+            </a>
+          </div>
         </div>
       </div>
     </div>
 
     <!-- Footer -->
-    <p class="text-center text-[#666666] text-sm mt-6">
+    <p class="text-center text-[#666660] text-sm mt-6">
       © 2026 ESPRIM. All rights reserved.
     </p>
   </div>
