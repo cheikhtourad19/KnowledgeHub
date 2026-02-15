@@ -1,6 +1,7 @@
 // api-gateway/src/main/java/tn/esprim/knowledgehub/gateway/config/CorsConfig.java
 package tn.esprim.knowledgehub.gateway.config;
 
+import org.springframework.beans.factory.annotation.Value;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
 import org.springframework.web.cors.CorsConfiguration;
@@ -9,20 +10,25 @@ import org.springframework.web.cors.reactive.UrlBasedCorsConfigurationSource;
 
 import java.util.Arrays;
 import java.util.Collections;
+import java.util.List;
+import java.util.stream.Collectors;
 
 @Configuration
 public class CorsConfig {
+
+    @Value("${cors.allowed-origins:http://localhost:4200,http://localhost:80,http://localhost}")
+    private String allowedOrigins;
 
     @Bean
     public CorsWebFilter corsWebFilter() {
         CorsConfiguration corsConfig = new CorsConfiguration();
 
-        // Allow your Angular app origin
-        corsConfig.setAllowedOrigins(Arrays.asList(
-                "http://localhost:4200",
-                "http://localhost:4201",
-                "http://127.0.0.1:4200"
-        ));
+        // Parse allowed origins from environment variable
+        List<String> origins = Arrays.stream(allowedOrigins.split(","))
+                .map(String::trim)
+                .collect(Collectors.toList());
+
+        corsConfig.setAllowedOrigins(origins);
 
         // Allow all HTTP methods
         corsConfig.setAllowedMethods(Arrays.asList(
@@ -30,7 +36,7 @@ public class CorsConfig {
         ));
 
         // Allow all headers
-        corsConfig.setAllowedHeaders(Arrays.asList("*"));
+        corsConfig.setAllowedHeaders(Collections.singletonList("*"));
 
         // Allow credentials (cookies, authorization headers)
         corsConfig.setAllowCredentials(true);
