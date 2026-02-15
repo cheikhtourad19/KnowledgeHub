@@ -1,7 +1,7 @@
 // Production environment configuration (Docker)
 export const environment = {
   production: true,
-  apiUrl: 'http://localhost:8080', // API Gateway URL - will be configured in Docker
+  apiUrl: '', // Empty = same origin, nginx proxies all API requests to api-gateway
   apiTimeout: 30000,
   enableDebugLogs: false
 };
