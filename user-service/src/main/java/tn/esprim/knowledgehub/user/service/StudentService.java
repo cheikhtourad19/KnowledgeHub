@@ -30,7 +30,7 @@ public class StudentService {
         return studentRepository.saveAll(students);
     }
     public List<Student> getAllStudents(){
-        return studentRepository.findAll();
+        return studentRepository.findAllWithClasse();
     }
     public Classe createClasse(Classe classe){
         return classeRepository.save(classe);

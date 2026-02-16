@@ -5,6 +5,8 @@ import jakarta.validation.constraints.NotBlank;
 import jakarta.validation.constraints.NotNull;
 import lombok.*;
 
+import java.util.Date;
+
 @Data
 @Builder
 @NoArgsConstructor
@@ -21,6 +23,10 @@ public class CreatePFERequest {
     private Long studentId;
     private String studentName;
     private String studentEmail;
+
+    private String entrepriseName;
+    private Date dateDebut;
+    private Date dateFin;
 
     @NotNull(message = "Supervisor ID is required")
     private Long supervisorId;

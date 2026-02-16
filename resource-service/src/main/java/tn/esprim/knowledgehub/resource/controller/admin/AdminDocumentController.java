@@ -8,11 +8,16 @@ import org.springframework.http.MediaType;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 import org.springframework.web.multipart.MultipartFile;
+import tn.esprim.knowledgehub.resource.client.UserServiceClient;
+import tn.esprim.knowledgehub.resource.client.dto.TeacherDTO;
 import tn.esprim.knowledgehub.resource.dto.response.FileUploadResponse;
 import tn.esprim.knowledgehub.resource.entity.File;
 import tn.esprim.knowledgehub.resource.enums.FileType;
 import tn.esprim.knowledgehub.resource.service.AIandSearchService;
 import tn.esprim.knowledgehub.resource.service.FileService;
+import tn.esprim.knowledgehub.resource.service.PFEService;
+
+import java.util.List;
 
 @RestController
 @RequestMapping("/api/admin/documents")
@@ -22,6 +27,8 @@ public class AdminDocumentController {
 
     private final FileService fileService;
     private final AIandSearchService aiandSearchService;
+    private final UserServiceClient userServiceClient;
+    private final PFEService pfeService;
 
 
     @Operation(summary = "Upload a file", description = "Upload a file to MinIO storage")
@@ -67,19 +74,14 @@ public class AdminDocumentController {
         try {
 
             File file = fileService.getFileById(fileId);
-
+            List<Long> users_with_access = pfeService.getTeachersInPFEandFile(file.getId());
             boolean isAdmin = role.equals("ADMIN") ;
-            boolean isOwner = file.getUploadedByUserId().equals(Long.parseLong(userId));
-
-            if (!file.getIsPublished() && !isAdmin && !isOwner) {
+            if (!file.getIsPublished() && !isAdmin && !users_with_access.contains(Long.parseLong(userId))) {
                 return ResponseEntity.status(403).body(
                         tn.esprim.knowledgehub.resource.dto.response.ApiResponse.error("Forbidden", "This file is not yet published.")
                 );
             }
-
-
             String presignedUrl = fileService.generatePresignedUrl(fileId, 2);
-
             return ResponseEntity.ok(tn.esprim.knowledgehub.resource.dto.response.ApiResponse.success(presignedUrl, "Secure link generated"));
         } catch (Exception e) {
             log.error("Error generating view link: {}", e.getMessage());
@@ -125,13 +127,11 @@ public class AdminDocumentController {
                 );
             }
 
-            // Delete from vector DB if file was published
             if (file.getIsPublished()) {
                 try {
                     aiandSearchService.deleteFile(Math.toIntExact(fileId));
                 } catch (Exception e) {
                     log.warn("Could not delete file from vector DB: {}", e.getMessage());
-                    // Continue with file deletion even if vector DB deletion fails
                 }
             }
 

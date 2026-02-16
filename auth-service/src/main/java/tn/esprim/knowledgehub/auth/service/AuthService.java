@@ -24,7 +24,10 @@ import tn.esprim.knowledgehub.auth.util.PasswordGenerator;
 import tn.esprim.knowledgehub.auth.client.UserServiceClient;
 
 import java.time.LocalDateTime;
+import java.time.LocalDateTime;
+import java.time.LocalDateTime;
 import java.util.List;
+import java.util.Optional;
 import java.util.UUID;
 
 @Service
@@ -145,60 +148,200 @@ public class AuthService {
 
     @Transactional
     public void createResetToken(String email) {
-        authUserRepository.findByEmail(email).ifPresent(authUser -> {
+        log.info("Creating reset token for email: {}", email);
 
-            resetRepository.deleteByAuthUser(authUser);
+        authUserRepository.findByEmail(email).ifPresentOrElse(authUser -> {
+            log.info("User found for email: {}, User ID: {}", email, authUser.getId());
 
-            String token = UUID.randomUUID().toString();
+            try {
+                resetRepository.deleteByAuthUser(authUser);
+                log.info("Deleted existing reset tokens for user: {}", authUser.getId());
 
-            Reset reset = Reset.builder()
-                    .authUser(authUser)
-                    .code(passwordEncoder.encode(token))
-                    .expiresAt(LocalDateTime.now().plusMinutes(15))
-                    .build();
+                String token = UUID.randomUUID().toString();
+                LocalDateTime expiryTime = LocalDateTime.now().plusMinutes(15);
 
-            resetRepository.save(reset);
+                log.info("Generated token: {}, Expires at: {}", token, expiryTime);
 
-            notificationClient.sendNotification(
-                    NotificationRequest.builder()
-                            .userId(authUser.getId().toString())
-                            .recipientEmail(email)
-                            .type(NotificationType.EMAIL)
-                            .subject("Reset password")
-                            .content("Your reset code is: " + token)
-                            .build()
-            );
+                Reset reset = Reset.builder()
+                        .authUser(authUser)
+                        .code(token)
+                        .expiresAt(expiryTime)
+                        .build();
+
+                Reset savedReset = resetRepository.save(reset);
+                log.info("Reset token saved with ID: {}, Code: {}, ExpiresAt: {}",
+                    savedReset.getId(), savedReset.getCode(), savedReset.getExpiresAt());
+
+                notificationClient.sendNotification(
+                        NotificationRequest.builder()
+                                .userId(authUser.getId().toString())
+                                .recipientEmail(email)
+                                .type(NotificationType.EMAIL)
+                                .subject("Reset password")
+                                .content("Your reset code is: " + token + ". This code will expire in 15 minutes.")
+                                .build()
+                );
+                log.info("Reset notification sent to: {}", email);
+            } catch (Exception e) {
+                log.error("Error creating reset token for user: {}", authUser.getId(), e);
+                throw new RuntimeException("Failed to create reset token", e);
+            }
+        }, () -> {
+            log.warn("No user found for email: {}", email);
         });
     }
 
+    public boolean checkIfValidResetToken(String token) {
 
+        return resetRepository.findByCodeAndExpiresAtAfter(token, LocalDateTime.now()).isPresent();
+    }
+
+    public VerifyResetResponse verifyResetToken(String email, String token) {
+        log.info("Verifying reset token for email: {}", email);
+        log.debug("Token received: {}", token);
+
+        if (email == null || email.trim().isEmpty() || token == null || token.trim().isEmpty()) {
+            log.warn("Empty or null email/token provided");
+            return VerifyResetResponse.builder()
+                    .valid(false)
+                    .token(null)
+                    .message("Email and token are required")
+                    .build();
+        }
+
+        String trimmedEmail = email.trim();
+        String trimmedToken = token.trim();
+
+        log.debug("Trimmed email: {}, Trimmed token: {}", trimmedEmail, trimmedToken);
+
+        // Find user by email
+        Optional<AuthUser> userOpt = authUserRepository.findByEmail(trimmedEmail);
+
+        if (userOpt.isEmpty()) {
+            log.warn("User not found for email: {}", trimmedEmail);
+            return VerifyResetResponse.builder()
+                    .valid(false)
+                    .token(null)
+                    .message("Invalid email or token")
+                    .build();
+        }
+
+        AuthUser user = userOpt.get();
+        log.info("User found with ID: {}", user.getId());
+
+        // Find valid reset token
+        LocalDateTime now = LocalDateTime.now();
+        log.debug("Current time: {}", now);
+
+        Optional<Reset> resetOpt = resetRepository.findByCodeAndExpiresAtAfter(
+                trimmedToken,
+                now
+        );
+
+        if (resetOpt.isEmpty()) {
+            log.warn("Reset token not found or expired for token: {}", trimmedToken);
+
+            // Check if token exists at all (without expiry check)
+            List<Reset> anyResets = resetRepository.findByCode(trimmedToken);
+            if (!anyResets.isEmpty()) {
+                Reset r = anyResets.get(0);
+                log.error("Token exists but is expired. Token: {}, ExpiresAt: {}, Now: {}",
+                    trimmedToken, r.getExpiresAt(), now);
+            } else {
+                log.error("Token does not exist in database: {}", trimmedToken);
+            }
+
+            return VerifyResetResponse.builder()
+                    .valid(false)
+                    .token(null)
+                    .message("Invalid or expired token")
+                    .build();
+        }
+
+        Reset reset = resetOpt.get();
+        log.info("Reset token found. User ID: {}, Expires at: {}", reset.getAuthUser().getId(), reset.getExpiresAt());
+
+        // Verify the reset belongs to this user
+        if (!reset.getAuthUser().getId().equals(user.getId())) {
+            log.warn("Reset token does not belong to user. Expected user ID: {}, Token user ID: {}",
+                user.getId(), reset.getAuthUser().getId());
+            return VerifyResetResponse.builder()
+                    .valid(false)
+                    .token(null)
+                    .message("Invalid token")
+                    .build();
+        }
+
+        log.info("Reset token verified successfully for email: {}", trimmedEmail);
+        return VerifyResetResponse.builder()
+                .valid(true)
+                .token(trimmedToken)
+                .message("Token verified successfully")
+                .build();
+    }
     @Transactional
     public AuthUser resetPassword(String token, String newPassword) {
+        log.info("=== RESET PASSWORD DEBUG START ===");
+        log.info("Received token: '{}'", token);
+        log.info("Token length: {}", token != null ? token.length() : "null");
+        log.info("Current time: {}", LocalDateTime.now());
 
-        List<Reset> validResets =
-                resetRepository.findByExpiresAtAfter(LocalDateTime.now());
+        // Trim the token
+        String trimmedToken = token != null ? token.trim() : null;
+        log.info("Trimmed token: '{}'", trimmedToken);
 
-        Reset reset = validResets.stream()
-                .filter(r -> passwordEncoder.matches(token, r.getCode()))
-                .findFirst()
-                .orElseThrow(() -> new RuntimeException("Invalid or expired token"));
+        // Check all resets in database
+        List<Reset> allResets = resetRepository.findAll();
+        log.info("Total resets in database: {}", allResets.size());
+
+        allResets.forEach(r -> {
+            log.info("DB Reset - Code: '{}', ExpiresAt: {}, Expired: {}, User: {}",
+                    r.getCode(),
+                    r.getExpiresAt(),
+                    r.getExpiresAt().isBefore(LocalDateTime.now()),
+                    r.getAuthUser().getEmail());
+        });
+
+        // Try to find the reset token
+        Optional<Reset> resetOpt = resetRepository.findByCodeAndExpiresAtAfter(trimmedToken, LocalDateTime.now());
+        log.info("Found matching reset: {}", resetOpt.isPresent());
+
+        if (resetOpt.isEmpty()) {
+            log.error("Invalid or expired token used for password reset");
+
+            // Additional debug: check if token exists but expired
+            List<Reset> expiredResets = resetRepository.findByCode(trimmedToken);
+            if (!expiredResets.isEmpty()) {
+                log.error("Token exists but is EXPIRED. Expiry time was: {}", expiredResets.get(0).getExpiresAt());
+            } else {
+                log.error("Token does NOT exist in database at all");
+            }
+
+            throw new RuntimeException("Invalid or expired token");
+        }
+
+        Reset reset = resetOpt.get();
+        log.info("Found valid reset token for user: {}", reset.getAuthUser().getEmail());
 
         AuthUser user = reset.getAuthUser();
         user.setPassword(passwordEncoder.encode(newPassword));
 
         resetRepository.delete(reset);
+        log.info("Reset token deleted after successful password reset");
+
         notificationClient.sendNotification(
                 NotificationRequest.builder()
                         .userId(user.getId().toString())
                         .recipientEmail(user.getEmail())
                         .type(NotificationType.EMAIL)
                         .subject("Password reset successful")
-                        .content("Your password has been reset successfully if you did not initiate this change, please contact administration ASAP")
+                        .content("Your password has been reset successfully. If you did not initiate this change, please contact administration ASAP.")
                         .build()
         );
+
+        log.info("=== RESET PASSWORD DEBUG END ===");
         return authUserRepository.save(user);
     }
-
 
 
 

@@ -1,13 +1,11 @@
 package tn.esprim.knowledgehub.user.entity;
 
 
-import com.fasterxml.jackson.annotation.JsonBackReference;
+import com.fasterxml.jackson.annotation.JsonIgnoreProperties;
 import jakarta.persistence.*;
 import lombok.*;
 import lombok.experimental.SuperBuilder;
 
-import java.util.ArrayList;
-import java.util.List;
 @Entity
 @Getter
 @Setter
@@ -20,9 +18,10 @@ public class Student extends UserBase {
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     private Long studentId;
 
-    @ManyToOne
+
     @JoinColumn(name = "classe_id")
-    @JsonBackReference
+    @ManyToOne(fetch = FetchType.LAZY)
+    @JsonIgnoreProperties("students")  // Ignore students list in classe to prevent infinite recursion
     private Classe classe;
 }
 

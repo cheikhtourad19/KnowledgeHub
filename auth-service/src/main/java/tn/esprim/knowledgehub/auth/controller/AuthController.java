@@ -206,20 +206,65 @@ public class AuthController {
                 )
         );
     }
+
+    @PostMapping("/public/verify-reset-token")
+    public ResponseEntity<VerifyResetResponse> verifyResetToken(
+            @Valid @RequestBody VerifyResetRequest request
+    ) {
+        log.info("Verifying reset token for email: {}", request.getEmail());
+
+        try {
+            VerifyResetResponse response = authService.verifyResetToken(request.getEmail(), request.getToken());
+
+            if (response.isValid()) {
+                return ResponseEntity.ok(response);
+            } else {
+                return ResponseEntity.badRequest().body(response);
+            }
+        } catch (Exception e) {
+            log.error("Error verifying reset token", e);
+            return ResponseEntity.badRequest().body(
+                    VerifyResetResponse.builder()
+                            .valid(false)
+                            .token(null)
+                            .message("Error verifying token")
+                            .build()
+            );
+        }
+    }
+
+    @GetMapping("/public/reset-password/{token}")
+    public ResponseEntity<AuthResponse> checkResetToken(@PathVariable String token){
+        boolean isValid = this.authService.checkIfValidResetToken(token);
+        if(isValid){
+            return ResponseEntity.ok(AuthResponse.success(null,"Valid token"));
+        }else{
+            return ResponseEntity.badRequest().body(AuthResponse.error("Invalid token",HttpStatus.BAD_REQUEST));
+        }
+    }
     @PostMapping("/public/reset-password/{token}")
     public ResponseEntity<AuthResponse> resetPassword(
             @PathVariable String token,
-            @RequestBody ResetRequest request
+            @Valid @RequestBody ResetRequest request
     ) {
-        if (!request.getNewPassword().equals(request.getConfirmPassword())) {
-            throw new RuntimeException("Passwords do not match");
+        log.info("Attempting to reset password with token");
+
+        try {
+            authService.resetPassword(token, request.getNewPassword());
+            return ResponseEntity.ok(
+                    AuthResponse.success(null,"Password reset successfully")
+            );
+        } catch (RuntimeException e) {
+            log.error("Error resetting password: {}", e.getMessage());
+            return ResponseEntity.badRequest().body(
+                    AuthResponse.error(e.getMessage(), HttpStatus.BAD_REQUEST)
+            );
+        } catch (Exception e) {
+            log.error("Unexpected error resetting password", e);
+            return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).body(
+                    AuthResponse.error("An error occurred while resetting password", HttpStatus.INTERNAL_SERVER_ERROR)
+            );
         }
-
-        authService.resetPassword(token, request.getNewPassword());
-
-        return ResponseEntity.ok(
-                AuthResponse.success(null,"Password reset successfully")
-        );
     }
 
     @PostMapping("/validate")

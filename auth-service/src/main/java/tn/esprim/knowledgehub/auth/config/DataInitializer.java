@@ -44,10 +44,10 @@ public class DataInitializer implements CommandLineRunner {
     }
 
     private void createTestUser() {
-        if (authUserRepository.findByEmail("gheith@esprim.tn").isEmpty()) {
+        if (authUserRepository.findByEmail("mohamedelgheith.cheikhtourad@esprim.tn").isEmpty()) {
             AuthUser testUser = AuthUser.builder()
 
-                    .email("gheith@esprim.tn")
+                    .email("mohamedelgheith.cheikhtourad@esprim.tn")
                     .password(passwordEncoder.encode("12345678"))
                     .role(Role.STUDENT)
                     .enabled(true)

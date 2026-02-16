@@ -12,9 +12,12 @@ import org.springframework.web.multipart.MultipartFile;
 import tn.esprim.knowledgehub.resource.client.UserServiceClient;
 import tn.esprim.knowledgehub.resource.client.dto.StudentDTO;
 import tn.esprim.knowledgehub.resource.client.dto.TeacherDTO;
+import tn.esprim.knowledgehub.resource.dto.request.CreateDemandePFEFormRequest;
+import tn.esprim.knowledgehub.resource.dto.request.CreateDemandePFERequest;
 import tn.esprim.knowledgehub.resource.dto.request.CreatePFERequest;
 import tn.esprim.knowledgehub.resource.dto.response.ApiResponse;
 import tn.esprim.knowledgehub.resource.dto.response.FileUploadResponse;
+import tn.esprim.knowledgehub.resource.entity.DemandePFE;
 import tn.esprim.knowledgehub.resource.entity.File;
 import tn.esprim.knowledgehub.resource.entity.PFE;
 import tn.esprim.knowledgehub.resource.enums.FileType;
@@ -32,19 +35,101 @@ public class StudentPFEController {
     private final NotificationClient notificationClient;
     private final FileService fileService;
 
+
+    @PostMapping(value = "/demande", consumes = "multipart/form-data")
+    public ResponseEntity<ApiResponse<DemandePFE>> createDemandePFE(
+            @ModelAttribute @Valid CreateDemandePFEFormRequest formRequest,
+            @RequestHeader(value = "X-User-Id") Long userId,
+            @RequestHeader(value = "X-User-Role") String role
+    ) {
+        try {
+
+            if (!role.equals("STUDENT")) {
+                return ResponseEntity.status(HttpStatus.FORBIDDEN).body(
+                        ApiResponse.error("Forbidden", "Only students can create PFE demands")
+                );
+            }
+
+
+            if (formRequest.getFile() == null || formRequest.getFile().isEmpty()) {
+                return ResponseEntity.status(HttpStatus.BAD_REQUEST).body(
+                        ApiResponse.error("Bad Request", "File is required")
+                );
+            }
+
+
+            CreateDemandePFERequest request = formRequest.toServiceRequest();
+
+
+            DemandePFE demande = pfeService.createDemandePFE(request, formRequest.getFile(), userId);
+
+            return ResponseEntity.status(HttpStatus.CREATED).body(
+                    ApiResponse.success(demande, "PFE demand created successfully")
+            );
+
+        } catch (Exception e) {
+            return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).body(
+                    ApiResponse.error("Internal Server Error", "Error creating PFE demand: " + e.getMessage())
+            );
+        }
+    }
+
+
+    @GetMapping("/demandes")
+    public ResponseEntity<ApiResponse<java.util.List<DemandePFE>>> getMyDemandes(
+            @RequestHeader(value = "X-User-Id") Long userId,
+            @RequestHeader(value = "X-User-Role") String role
+    ) {
+        if (!role.equals("STUDENT")) {
+            return ResponseEntity.status(HttpStatus.FORBIDDEN).body(
+                    ApiResponse.error("Forbidden", "Only students can view their demands")
+            );
+        }
+
+        java.util.List<DemandePFE> demandes = pfeService.getDemandePFEByStudent(userId);
+        return ResponseEntity.ok(
+                ApiResponse.success(demandes, "PFE demands retrieved successfully")
+        );
+    }
+
+
+    @GetMapping("/demande/{id}")
+    public ResponseEntity<ApiResponse<DemandePFE>> getDemandePFEById(
+            @PathVariable Long id,
+            @RequestHeader(value = "X-User-Id") Long userId,
+            @RequestHeader(value = "X-User-Role") String role
+    ) {
+        try {
+            DemandePFE demande = pfeService.getDemandePFEById(id);
+
+
+            if (role.equals("STUDENT") && !demande.getStudentId().equals(userId)) {
+                return ResponseEntity.status(HttpStatus.FORBIDDEN).body(
+                        ApiResponse.error("Forbidden", "You are not allowed to access this demand")
+                );
+            }
+
+            return ResponseEntity.ok(
+                    ApiResponse.success(demande, "PFE demand retrieved successfully")
+            );
+        } catch (RuntimeException e) {
+            return ResponseEntity.status(HttpStatus.NOT_FOUND).body(
+                    ApiResponse.error("Not Found", e.getMessage())
+            );
+        }
+    }
+
     @PostMapping("/create")
     public ResponseEntity<ApiResponse> createPFE(
             @RequestBody @Valid CreatePFERequest request,
             @RequestHeader(value = "X-User-Role") String role
     ) {
-        // Fixed: Error message now matches the actual check
         if (!role.equals("ADMIN")) {
             return ResponseEntity.status(HttpStatus.FORBIDDEN).body(
                     ApiResponse.error("Forbidden", "Only admins can create PFE")
             );
         }
 
-        // Fixed: Added null checks for DTOs
         StudentDTO student = userServiceClient.getStudentById(request.getStudentId()).getData();
         if (student == null) {
             return ResponseEntity.status(HttpStatus.NOT_FOUND).body(
@@ -92,6 +177,9 @@ public class StudentPFEController {
             pfe.setRapporteurId(rapporteur.getTeacherId());
             pfe.setRapporteurName(rapporteur.getNom() + " " + rapporteur.getPrenom());
         }
+        pfe.setDate_debut(request.getDateDebut());
+        pfe.setDate_fin(request.getDateFin());
+        pfe.setEntreprise_name(request.getEntrepriseName());
 
         PFE saved = pfeService.savePFE(pfe);
 
@@ -119,7 +207,7 @@ public class StudentPFEController {
             @RequestParam(value = "title", required = false) String title,
             @RequestParam(value = "description", required = false) String description,
             @RequestParam("file") MultipartFile file,
-            @RequestHeader(value = "X-User-Id") Long userId  // Fixed: Changed from String to Long
+            @RequestHeader(value = "X-User-Id") Long userId
     ) {
         PFE pfe = pfeService.getPFEById(idPFE);
         if (pfe == null) {
@@ -128,7 +216,7 @@ public class StudentPFEController {
             );
         }
 
-        // Fixed: Direct Long comparison instead of String conversion
+
         if (!pfe.getStudentId().equals(userId)) {
             return ResponseEntity.status(HttpStatus.FORBIDDEN).body(
                     ApiResponse.error("Forbidden", "You are not allowed to upload files for this PFE")
@@ -141,11 +229,7 @@ public class StudentPFEController {
             );
         }
 
-        if (pfe.getAttestationFile() == null || pfe.getJournalFile() == null) {
-            return ResponseEntity.status(HttpStatus.FORBIDDEN).body(
-                    ApiResponse.error("Forbidden", "Upload is possible only after attestation and journal")
-            );
-        }
+
 
         StudentDTO student = userServiceClient.getStudentById(pfe.getStudentId()).getData();
         if (student == null) {
@@ -196,7 +280,7 @@ public class StudentPFEController {
             @RequestParam(value = "title", required = false) String title,
             @RequestParam(value = "description", required = false) String description,
             @RequestParam("file") MultipartFile file,
-            @RequestHeader(value = "X-User-Id") Long userId  // Fixed: Changed from String to Long
+            @RequestHeader(value = "X-User-Id") Long userId
     ) {
         PFE pfe = pfeService.getPFEById(idPFE);
         if (pfe == null) {
@@ -244,59 +328,7 @@ public class StudentPFEController {
         );
     }
 
-    @PostMapping("/upload-journal/{idPFE}")
-    public ResponseEntity<ApiResponse> uploadJournalFile(
-            @PathVariable Long idPFE,
-            @RequestParam(value = "title", required = false) String title,
-            @RequestParam(value = "description", required = false) String description,
-            @RequestParam("file") MultipartFile file,
-            @RequestHeader(value = "X-User-Id") Long userId  // Fixed: Changed from String to Long
-    ) {
-        PFE pfe = pfeService.getPFEById(idPFE);
-        if (pfe == null) {
-            return ResponseEntity.status(HttpStatus.NOT_FOUND).body(
-                    ApiResponse.error("Not Found", "PFE not found with ID: " + idPFE)
-            );
-        }
 
-
-        if (!pfe.getStudentId().equals(userId)) {
-            return ResponseEntity.status(HttpStatus.FORBIDDEN).body(
-                    ApiResponse.error("Forbidden", "You are not allowed to upload files for this PFE")
-            );
-        }
-
-        if (pfe.getJournalFile() != null) {
-            return ResponseEntity.status(HttpStatus.FORBIDDEN).body(
-                    ApiResponse.error("Forbidden", "Upload is possible only once")
-            );
-        }
-
-        StudentDTO student = userServiceClient.getStudentById(pfe.getStudentId()).getData();
-        if (student == null) {
-            return ResponseEntity.status(HttpStatus.NOT_FOUND).body(
-                    ApiResponse.error("Not Found", "Student not found")
-            );
-        }
-
-        FileUploadResponse response = fileService.uploadFile(
-                file,
-                FileType.SUPPLEMENTARY,
-                userId,  // Fixed: No need to parse
-                student.getEmail(),
-                "journal",
-                title,
-                description
-        );
-
-        File uploadedFile = fileService.getFileById(response.getFileId());
-        pfe.setJournalFile(uploadedFile);
-        pfeService.savePFE(pfe);
-
-        return ResponseEntity.ok(
-                ApiResponse.success(response, "File uploaded successfully")
-        );
-    }
 
     @GetMapping("/student-PFE")
     public ResponseEntity<ApiResponse> getStudentPFE(
@@ -393,4 +425,6 @@ public class StudentPFEController {
                 ApiResponse.success(pfe, "PFE with id: " + id)
         );
     }
+
+
 }

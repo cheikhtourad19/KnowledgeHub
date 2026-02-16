@@ -10,6 +10,7 @@ import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 import org.springframework.web.multipart.MultipartFile;
 import tn.esprim.knowledgehub.auth.dto.BulkUserCreationResult;
+import tn.esprim.knowledgehub.auth.dto.BulkUserCreationResponse;
 import tn.esprim.knowledgehub.auth.dto.UserServiceRequest;
 import tn.esprim.knowledgehub.auth.entity.AuthUser;
 import tn.esprim.knowledgehub.auth.repository.AuthUserRepository;
@@ -32,7 +33,7 @@ public class BulkUserService {
     private final NotificationClient notificationClient;
 
     @Transactional
-    public List<BulkUserCreationResult> processStudentsCsv(MultipartFile file) throws Exception {
+    public BulkUserCreationResponse processStudentsCsv(MultipartFile file) throws Exception {
         // Temporary class to hold all parsed data together
         class StudentData {
             String email;
@@ -42,6 +43,7 @@ public class BulkUserService {
         }
 
         List<StudentData> validStudents = new ArrayList<>();
+        List<StudentData> invalidStudents = new ArrayList<>();
         List<String> allEmails = new ArrayList<>();
 
         // STEP 1: Parse CSV ONCE and collect all emails first
@@ -78,6 +80,11 @@ public class BulkUserService {
                 // Validate email format
                 if (!email.contains("@")) {
                     log.warn("Skipping line {} - invalid email: {}", lineNumber, email);
+                    StudentData invalidData = new StudentData();
+                    invalidData.email = email;
+                    invalidData.nom = nom;
+                    invalidData.prenom = prenom;
+                    invalidStudents.add(invalidData);
                     continue;
                 }
 
@@ -98,17 +105,33 @@ public class BulkUserService {
 
         // STEP 1.5: Batch check for existing emails (ONE query instead of N queries)
         List<String> existingEmails = authUserRepository.findEmailsByEmailIn(allEmails);
+
+        // Separate existing users into not created list
         validStudents.removeIf(data -> {
             if (existingEmails.contains(data.email)) {
                 log.warn("Skipping email already exists: {}", data.email);
+                invalidStudents.add(data);
                 return true;
             }
             return false;
         });
 
+        // Create list for users that weren't created
+        List<BulkUserCreationResult> notCreatedResults = new ArrayList<>();
+        for (StudentData data : invalidStudents) {
+            String reason = existingEmails.contains(data.email) ? "Email already exists" : "Invalid email format";
+            notCreatedResults.add(BulkUserCreationResult.builder()
+                    .email(data.email)
+                    .nom(data.nom)
+                    .prenom(data.prenom)
+                    .notified(false)
+                    .reason(reason)
+                    .build());
+        }
+
         if (validStudents.isEmpty()) {
             log.warn("No valid students found in CSV file");
-            return new ArrayList<>();
+            return BulkUserCreationResponse.of(new ArrayList<>(), notCreatedResults);
         }
 
         // STEP 2: Create and save all AuthUsers at once
@@ -170,6 +193,7 @@ public class BulkUserService {
                     .nom(data.nom)
                     .prenom(data.prenom)
                     .notified(notified)
+                    .reason(null)  // Successfully created, no reason
                     .build();
             results.add(result);
         }
@@ -178,11 +202,11 @@ public class BulkUserService {
         userProfileService.createStudentProfilesAsync(userServiceRequests);
         log.info("Queued {} student profiles for creation", userServiceRequests.size());
 
-        return results;
+        return BulkUserCreationResponse.of(results, notCreatedResults);
     }
 
     @Transactional
-    public List<BulkUserCreationResult> processTeachersCsv(MultipartFile file) throws Exception {
+    public BulkUserCreationResponse processTeachersCsv(MultipartFile file) throws Exception {
         // Temporary class to hold all parsed data together
         class TeacherData {
             String email;
@@ -192,6 +216,7 @@ public class BulkUserService {
         }
 
         List<TeacherData> validTeachers = new ArrayList<>();
+        List<TeacherData> invalidTeachers = new ArrayList<>();
         List<String> allEmails = new ArrayList<>();
 
         // STEP 1: Parse CSV ONCE and collect all emails first
@@ -228,6 +253,11 @@ public class BulkUserService {
                 // Validate email format
                 if (!email.contains("@")) {
                     log.warn("Skipping line {} - invalid email: {}", lineNumber, email);
+                    TeacherData invalidData = new TeacherData();
+                    invalidData.email = email;
+                    invalidData.nom = nom;
+                    invalidData.prenom = prenom;
+                    invalidTeachers.add(invalidData);
                     continue;
                 }
 
@@ -246,17 +276,33 @@ public class BulkUserService {
 
         // STEP 1.5: Batch check for existing emails (ONE query instead of N queries)
         List<String> existingEmails = authUserRepository.findEmailsByEmailIn(allEmails);
+
+        // Separate existing users into not created list
         validTeachers.removeIf(data -> {
             if (existingEmails.contains(data.email)) {
                 log.warn("Skipping email already exists: {}", data.email);
+                invalidTeachers.add(data);
                 return true;
             }
             return false;
         });
 
+        // Create list for users that weren't created
+        List<BulkUserCreationResult> notCreatedResults = new ArrayList<>();
+        for (TeacherData data : invalidTeachers) {
+            String reason = existingEmails.contains(data.email) ? "Email already exists" : "Invalid email format";
+            notCreatedResults.add(BulkUserCreationResult.builder()
+                    .email(data.email)
+                    .nom(data.nom)
+                    .prenom(data.prenom)
+                    .notified(false)
+                    .reason(reason)
+                    .build());
+        }
+
         if (validTeachers.isEmpty()) {
             log.warn("No valid teachers found in CSV file");
-            return new ArrayList<>();
+            return BulkUserCreationResponse.of(new ArrayList<>(), notCreatedResults);
         }
 
         // STEP 2: Create and save all AuthUsers at once
@@ -318,6 +364,7 @@ public class BulkUserService {
                     .nom(data.nom)
                     .prenom(data.prenom)
                     .notified(notified)
+                    .reason(null)  // Successfully created, no reason
                     .build();
             results.add(result);
         }
@@ -326,6 +373,6 @@ public class BulkUserService {
         userProfileService.createTeacherProfilesAsync(userServiceRequests);
         log.info("Queued {} teacher profiles for creation", userServiceRequests.size());
 
-        return results;
+        return BulkUserCreationResponse.of(results, notCreatedResults);
     }
 }

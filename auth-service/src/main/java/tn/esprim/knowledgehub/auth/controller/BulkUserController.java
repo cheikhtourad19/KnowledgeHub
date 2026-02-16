@@ -1,6 +1,5 @@
 package tn.esprim.knowledgehub.auth.controller;
 
-import io.swagger.v3.oas.models.responses.ApiResponse;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.http.HttpStatus;
@@ -8,11 +7,9 @@ import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 import org.springframework.web.multipart.MultipartFile;
 import tn.esprim.knowledgehub.auth.dto.AuthResponse;
-import tn.esprim.knowledgehub.auth.dto.BulkUserCreationResult;
-import tn.esprim.knowledgehub.auth.entity.AuthUser;
+import tn.esprim.knowledgehub.auth.dto.BulkUserCreationResponse;
 import tn.esprim.knowledgehub.auth.service.BulkUserService;
 
-import java.util.List;
 import java.util.Objects;
 
 @RestController
@@ -39,8 +36,8 @@ public class BulkUserController {
         }
 
         try {
-            List<BulkUserCreationResult> results = bulkUserService.processStudentsCsv(file);
-            return ResponseEntity.ok(AuthResponse.success(results,"Users created and notifications sent successfully"));
+            BulkUserCreationResponse response = bulkUserService.processStudentsCsv(file);
+            return ResponseEntity.ok(AuthResponse.success(response,"Users created and notifications sent successfully"));
         } catch (Exception e) {
             log.error("Error processing students CSV: {}", e.getMessage(), e);
             return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR)
@@ -63,9 +60,9 @@ public class BulkUserController {
         }
 
         try {
-            List<BulkUserCreationResult> results = bulkUserService.processTeachersCsv(file);
+            BulkUserCreationResponse response = bulkUserService.processTeachersCsv(file);
             return ResponseEntity.ok(
-                    AuthResponse.success(results,"Users created and notifications sent successfully")
+                    AuthResponse.success(response,"Users created and notifications sent successfully")
             );
         } catch (Exception e) {
             log.error("Error processing teachers CSV: {}", e.getMessage(), e);

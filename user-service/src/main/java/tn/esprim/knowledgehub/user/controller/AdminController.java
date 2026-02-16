@@ -6,6 +6,7 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 import tn.esprim.knowledgehub.user.dto.request.StudentToClassRequest;
+import tn.esprim.knowledgehub.user.dto.request.StudentsToClassRequest;
 import tn.esprim.knowledgehub.user.dto.response.ApiResponse;
 import tn.esprim.knowledgehub.user.entity.Classe;
 import tn.esprim.knowledgehub.user.entity.Student;
@@ -35,7 +36,7 @@ public class AdminController {
         );
     }
 
-    @GetMapping("/classe/")
+    @GetMapping("/classe")
     public ResponseEntity<ApiResponse> getAllClasses(){
         return ResponseEntity.ok(
                 ApiResponse.builder().success(true).data(studentService.getAllClasses()).build()
@@ -87,36 +88,33 @@ public class AdminController {
 
     @PostMapping("/add-students-classes")
     public ResponseEntity<ApiResponse> addStudentsClasses(
-            @RequestBody List<StudentToClassRequest> request,
+            @RequestBody StudentsToClassRequest request,
             @RequestHeader(value="X-User-Role") String role
-    ){
-        if (!role.equals("ADMIN")){
+    ) {
+        if (!role.equals("ADMIN")) {
             return ResponseEntity.status(403).build();
 
         }
-        List<String> non_added_students= new ArrayList<>();
+        Long classId= request.getClassId();
+        List<Long> studentIds = request.getStudentId();
         List<Student> students = new ArrayList<>();
-        for (StudentToClassRequest studentToClassRequest : request) {
+        for (Long studentId : studentIds) {
             try {
-                 students.add(studentService.addStudentToClasse(studentToClassRequest.getStudentId(),studentToClassRequest.getClassId()));
-             }catch (Exception e){
-                 non_added_students.add(e.getMessage());
-             }
-        }
-        boolean success = non_added_students.isEmpty();
+               students.add( studentService.addStudentToClasse(studentId, classId));
 
-        String message = success
-                ? "all students were added to their classe successfully"
-                : "some students were not added to classe: " + non_added_students;
+            } catch (Exception e) {
+                continue;
+            }
+        }
 
         return ResponseEntity.ok(
-                ApiResponse.builder()
-                        .success(success)
-                        .message(message)
+                ApiResponse.builder().success(true)
+                        .message("Students added to classe successfully")
                         .data(students)
                         .build()
-        );}
+        );
 
+    }
 
 
 

@@ -77,10 +77,11 @@ public class StudentController {
 
     @GetMapping("/all")
     public ResponseEntity<ApiResponse> getAllStudents(){
+        List<Student> students = studentService.getAllStudents();
         return ResponseEntity.ok(
                 ApiResponse.builder().success(true)
                         .message("All students retrieved successfully")
-                        .data(studentService.getAllStudents())
+                        .data(students)
                         .build()
         );
     }

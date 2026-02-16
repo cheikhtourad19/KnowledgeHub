@@ -2,7 +2,6 @@ package tn.esprim.knowledgehub.user.entity;
 
 
 import com.fasterxml.jackson.annotation.JsonIgnore;
-import com.fasterxml.jackson.annotation.JsonManagedReference;
 import jakarta.persistence.*;
 import lombok.*;
 
@@ -20,7 +19,7 @@ public class Classe {
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     private Long classeId;
     private String classeName;
-    @OneToMany(mappedBy = "classe", fetch = FetchType.LAZY)
-    @JsonManagedReference
+    @OneToMany(mappedBy = "classe")
+    @JsonIgnore  // Ignore the students list to avoid recursion when fetching Classe
     private List<Student> students;
 }

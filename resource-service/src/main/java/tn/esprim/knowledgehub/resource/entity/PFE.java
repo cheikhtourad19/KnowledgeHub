@@ -25,7 +25,6 @@ public class PFE {
     private String title;
 
 
-
     private Integer year;
 
     @Enumerated(EnumType.STRING)
@@ -42,30 +41,20 @@ public class PFE {
 
     @Column(nullable = false)
     private Long supervisorId;
-
     private String supervisorName;
-
     private Long chefDeJuryId;
-
     private String chefDeJuryName;
-
     private Long rapporteurId;
-
     private String rapporteurName;
-
-    // File relationships
+    private String entreprise_name;
+    private Date date_debut;
+    private Date date_fin;
     @ManyToOne(fetch = FetchType.LAZY)
     @JoinColumn(name = "report_file_id")
     private File reportFile;
-
-    @ManyToOne(fetch = FetchType.LAZY)
-    @JoinColumn(name = "journal_file_id")
-    private File journalFile;
-
     @ManyToOne(fetch = FetchType.LAZY)
     @JoinColumn(name = "attestation_file_id")
     private File attestationFile;
-
     @Temporal(TemporalType.TIMESTAMP)
     private Date submissionDate;
 

@@ -5,6 +5,7 @@ import org.springframework.data.jpa.repository.Query;
 import org.springframework.data.repository.query.Param;
 import tn.esprim.knowledgehub.user.entity.Student;
 
+import java.util.List;
 import java.util.Optional;
 
 public interface StudentRepository extends JpaRepository<Student, Long> {
@@ -13,4 +14,7 @@ public interface StudentRepository extends JpaRepository<Student, Long> {
 
     @Query("SELECT s FROM Student s LEFT JOIN FETCH s.classe WHERE s.studentId = :id")
     Optional<Student> findByIdWithClasse(@Param("id") Long id);
+
+    @Query("SELECT s FROM Student s LEFT JOIN FETCH s.classe")
+    List<Student> findAllWithClasse();
 }

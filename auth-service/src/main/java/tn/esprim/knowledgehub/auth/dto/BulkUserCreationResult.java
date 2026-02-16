@@ -14,4 +14,5 @@ public class BulkUserCreationResult {
     private String nom;
     private String prenom;
     private boolean notified;
+    private String reason;  // Reason why user wasn't created (if applicable)
 }

@@ -16,11 +16,17 @@ import java.time.LocalDateTime;
 @AllArgsConstructor
 @Builder
 public class Reset {
+
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     private Long id;
-    @OneToOne
+
+    @ManyToOne(optional = false)
+    @JoinColumn(name = "auth_user_id", nullable = false)
     private AuthUser authUser;
+
     private LocalDateTime expiresAt;
+
     private String code;
 }
+

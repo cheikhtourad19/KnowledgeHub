@@ -36,7 +36,7 @@ public class ResetDeletionSchedule {
     /**
         le hna koul sa3a
      */
-     @Scheduled(cron = "0 0 * * * *")
+     @Scheduled(cron = "* * * * * *") // Every hour at minute 0
      public void scheduledCron() {
          log.info("Scheduled task triggered - checking for expired resets...");
          deleteResets();
@@ -45,7 +45,6 @@ public class ResetDeletionSchedule {
     private void deleteResets() {
         try {
             List<Reset> expiredResets = resetRepository.findByExpiresAtBefore(LocalDateTime.now());
-
             if (expiredResets.isEmpty()) {
                 log.info("No unsent emails found");
                 return;
@@ -55,7 +54,7 @@ public class ResetDeletionSchedule {
 
             for (Reset reset : expiredResets) {
 
-                    // Use async method to send email
+
                     resetRepository.delete(reset);
                     log.info("Deleted expired reset with id: {}", reset.getId());
 
