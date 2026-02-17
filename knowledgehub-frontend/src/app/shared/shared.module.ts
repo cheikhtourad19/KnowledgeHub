@@ -12,16 +12,13 @@ import { NotFoundComponent } from './components/not-found/not-found.component';
     DateFormatPipe,
     UnauthorizedComponent,
     NotFoundComponent,
-
   ],
-  imports: [
-    CommonModule,
-    RouterModule
-  ],
+  imports: [CommonModule, RouterModule],
   exports: [
     FileSizePipe,
     DateFormatPipe,
-    UnauthorizedComponent
-  ]
+    UnauthorizedComponent,
+    NotFoundComponent,
+  ],
 })
-export class SharedModule { }
+export class SharedModule {}

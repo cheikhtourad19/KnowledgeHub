@@ -24,10 +24,6 @@ const routes: Routes = [
     path: 'reset-password',
     component: ResetPasswordComponent,
   },
-  {
-    path: 'teachers',
-    component: EnseignantComponent,
-  },
 ];
 
 @NgModule({

@@ -1,4 +1,3 @@
-// auth.module.ts
 import { NgModule } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { ReactiveFormsModule } from '@angular/forms';
@@ -9,25 +8,13 @@ import { ForgotPasswordComponent } from './pages/forgot-password/forgot-password
 import { ResetPasswordComponent } from './pages/reset-password/reset-password.component';
 import { AuthRoutingModule } from './auth-routing.module';
 
-
-
-import { MessageService } from 'primeng/api';
 @NgModule({
   declarations: [
     LoginComponent,
     ForgotPasswordComponent,
-    ResetPasswordComponent
+    ResetPasswordComponent,
   ],
-  imports: [
-    CommonModule,
-    ReactiveFormsModule,
-    RouterModule,
-    AuthRoutingModule,
-
-  ],
-  providers: [
-
-  ]
-
+  imports: [CommonModule, ReactiveFormsModule, RouterModule, AuthRoutingModule],
+  providers: [],
 })
-export class AuthModule { }
+export class AuthModule {}

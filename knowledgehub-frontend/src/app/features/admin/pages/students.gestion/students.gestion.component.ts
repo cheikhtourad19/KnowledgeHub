@@ -10,11 +10,11 @@ import { RegisterRequest } from '../../../../shared/models/auth-service/requests
 import { AuthApiService } from '../../../auth/services/auth-api.service';
 
 @Component({
-    selector: 'app-students.gestion',
-    templateUrl: './students.gestion.component.html',
-    styleUrl: './students.gestion.component.scss',
-    providers: [MessageService],
-    standalone: false
+  selector: 'app-students.gestion',
+  templateUrl: './students.gestion.component.html',
+  styleUrl: './students.gestion.component.scss',
+  providers: [MessageService],
+  standalone: false,
 })
 export class StudentsGestionComponent implements OnInit {
   students: Student[] = [];
@@ -28,7 +28,6 @@ export class StudentsGestionComponent implements OnInit {
   displayEditModal: boolean = false;
   displayAssignClassModal: boolean = false;
 
-  // Form data
   studentForm: RegisterRequest = {
     email: '',
     nom: '',
@@ -79,7 +78,7 @@ export class StudentsGestionComponent implements OnInit {
   }
 
   applyFilter(): void {
-    console.log(this.selectedClassFilter)
+    console.log(this.selectedClassFilter);
     switch (this.currentFilter) {
       case 'all':
         this.filteredStudents = this.students;
@@ -90,7 +89,7 @@ export class StudentsGestionComponent implements OnInit {
       case 'class':
         if (this.selectedClassFilter) {
           this.filteredStudents = this.students.filter(
-            (s) => s.classe?.classeId== this.selectedClassFilter,
+            (s) => s.classe?.classeId == this.selectedClassFilter,
           );
         } else {
           this.filteredStudents = this.students;
@@ -110,7 +109,6 @@ export class StudentsGestionComponent implements OnInit {
     return this.students.filter((s) => !s.classe);
   }
 
-  // Update toggleSelectAll to work with filtered students
   toggleSelectAll(): void {
     if (this.isAllSelected()) {
       this.selectedStudents = [];
@@ -119,7 +117,6 @@ export class StudentsGestionComponent implements OnInit {
     }
   }
 
-  // Update isAllSelected to work with filtered students
   isAllSelected(): boolean {
     return (
       this.filteredStudents.length > 0 &&
@@ -160,7 +157,7 @@ export class StudentsGestionComponent implements OnInit {
     console.log('Selected Student:', this.selectedStudent);
     console.log('Selected Class:', this.selectedClass);
     this.selectedStudent = student;
-    this.selectedClass = null; // Always start with null, forcing user to select
+    this.selectedClass = student.classe?.classeId ?? null;
     this.displayAssignClassModal = true;
   }
 

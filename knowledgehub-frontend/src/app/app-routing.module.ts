@@ -4,69 +4,75 @@ import { authGuard } from './core/guards/auth.guard';
 import { roleGuard } from './core/guards/role.guard';
 import { UserRole } from './shared/models/auth-service/entities/auth-user.model';
 import { UnauthorizedComponent } from './shared/components/unauthorized/unauthorized.component';
-import {NotFoundComponent} from "./shared/components/not-found/not-found.component";
-import {AppComponent} from "./app.component";
+import { NotFoundComponent } from './shared/components/not-found/not-found.component';
+import { AppComponent } from './app.component';
 
 const routes: Routes = [
   {
     path: '',
-    component: AppComponent
+    redirectTo: '/auth/login',
+    pathMatch: 'full',
   },
 
   {
     path: 'auth',
-    loadChildren: () => import('./features/auth/auth.module').then(m => m.AuthModule)
+    loadChildren: () =>
+      import('./features/auth/auth.module').then((m) => m.AuthModule),
   },
 
   {
     path: 'student',
-    loadChildren: () => import('./features/student/student.module').then(m => m.StudentModule),
+    loadChildren: () =>
+      import('./features/student/student.module').then((m) => m.StudentModule),
     canActivate: [authGuard, roleGuard],
-    data: { roles: [UserRole.STUDENT, UserRole.ADMIN] }
+    data: { roles: [UserRole.STUDENT, UserRole.ADMIN] },
   },
 
   {
     path: 'teacher',
-    loadChildren: () => import('./features/teacher/teacher.module').then(m => m.TeacherModule),
+    loadChildren: () =>
+      import('./features/teacher/teacher.module').then((m) => m.TeacherModule),
     canActivate: [authGuard, roleGuard],
-    data: { roles: [UserRole.TEACHER, UserRole.ADMIN] }
+    data: { roles: [UserRole.TEACHER, UserRole.ADMIN] },
   },
 
   {
     path: 'admin',
-    loadChildren: () => import('./features/admin/admin.module').then(m => m.AdminModule),
+    loadChildren: () =>
+      import('./features/admin/admin.module').then((m) => m.AdminModule),
     canActivate: [authGuard, roleGuard],
-    data: { roles: [UserRole.ADMIN] }
+    data: { roles: [UserRole.ADMIN] },
   },
 
   {
     path: 'library',
-    loadChildren: () => import('./features/library/library.module').then(m => m.LibraryModule),
-    canActivate: [authGuard]
+    loadChildren: () =>
+      import('./features/library/library.module').then((m) => m.LibraryModule),
+    canActivate: [authGuard],
   },
 
   {
     path: 'notifications',
-    loadChildren: () => import('./features/notification/notification.module').then(m => m.NotificationModule),
-    canActivate: [authGuard]
+    loadChildren: () =>
+      import('./features/notification/notification.module').then(
+        (m) => m.NotificationModule,
+      ),
+    canActivate: [authGuard],
   },
 
   {
     path: 'unauthorized',
-    component: UnauthorizedComponent
+    component: UnauthorizedComponent,
   },
 
   {
     path: '**',
-    component: NotFoundComponent
-  }
+    component: NotFoundComponent,
+  },
 ];
 
 @NgModule({
   imports: [RouterModule.forRoot(routes)],
-  exports: [RouterModule]
+  exports: [RouterModule],
 })
-export class AppRoutingModule { }
-
-
-
+export class AppRoutingModule {}

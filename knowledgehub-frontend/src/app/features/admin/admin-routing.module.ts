@@ -8,6 +8,7 @@ import { PfeDemandeComponent } from './pages/pfe.demande/pfe.demande.component';
 import { StageComponent } from './pages/stage/stage.component';
 import { DocumentsComponent } from './pages/documents/documents.component';
 import { EnseignantComponent } from './pages/enseignant/enseignant.component';
+import { NotFoundComponent } from '../../shared/components/not-found/not-found.component';
 
 const routes: Routes = [
   {
