@@ -2,7 +2,7 @@
  * Create Student Request DTO
  */
 export interface CreateStudentRequest {
-  authId: string;
+  authId?: string;
   email: string;
   nom: string;
   prenom: string;

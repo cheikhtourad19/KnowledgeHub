@@ -1,0 +1,858 @@
+<div class="min-h-screen bg-gray-50">
+  <p-toast></p-toast>
+
+  <!-- Header Section -->
+  <div class="bg-white border-b border-gray-200 mb-6">
+    <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-6">
+      <div
+        class="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4"
+      >
+        <div>
+          <h1 class="text-3xl font-bold text-gray-900">
+            Gestion des Étudiants
+          </h1>
+          <p class="mt-1 text-sm text-gray-600">
+            Gérez les étudiants et leurs classes
+          </p>
+        </div>
+        <div class="flex flex-wrap gap-3">
+          <button
+            (click)="openCreateModal()"
+            class="inline-flex items-center px-4 py-2.5 bg-[#C60C30] text-white text-sm font-medium rounded-lg hover:bg-[#A00A28] focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-[#C60C30] transition-colors shadow-sm"
+          >
+            <i class="pi pi-user-plus mr-2"></i>
+            Créer un utilisateur
+          </button>
+          <button
+            (click)="openBulkCreateModal()"
+            class="inline-flex items-center px-4 py-2.5 bg-gray-800 text-white text-sm font-medium rounded-lg hover:bg-gray-900 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-gray-800 transition-colors shadow-sm"
+          >
+            <i class="pi pi-upload mr-2"></i>
+            Importer CSV
+          </button>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- Filters Section -->
+  <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 mb-6">
+    <div class="bg-white rounded-lg shadow-sm border border-gray-200 p-4">
+      <div class="flex flex-wrap items-center gap-4">
+        <div class="flex items-center gap-2">
+          <i class="pi pi-filter text-gray-500"></i>
+          <span class="text-sm font-semibold text-gray-700">Filtrer par:</span>
+        </div>
+
+        <div class="flex flex-wrap items-center gap-3">
+          <!-- All Students Filter -->
+          <button
+            (click)="setFilter('all')"
+            [class.bg-[#C60C30]]="currentFilter === 'all'"
+            [class.text-white]="currentFilter === 'all'"
+            [class.bg-gray-100]="currentFilter !== 'all'"
+            [class.text-gray-700]="currentFilter !== 'all'"
+            [class.hover:bg-gray-200]="currentFilter !== 'all'"
+            class="inline-flex items-center px-4 py-2 text-sm font-medium rounded-lg border border-gray-300 focus:outline-none focus:ring-2 focus:ring-[#C60C30] transition-colors"
+          >
+            <i class="pi pi-users mr-2"></i>
+            Tous les étudiants
+            <span class="ml-2 px-2 py-0.5 text-xs rounded-full bg-white/20">
+              {{ students.length }}
+            </span>
+          </button>
+
+          <!-- Without Class Filter -->
+          <button
+            (click)="setFilter('no-class')"
+            [class.bg-[#C60C30]]="currentFilter === 'no-class'"
+            [class.text-white]="currentFilter === 'no-class'"
+            [class.bg-gray-100]="currentFilter !== 'no-class'"
+            [class.text-gray-700]="currentFilter !== 'no-class'"
+            [class.hover:bg-gray-200]="currentFilter !== 'no-class'"
+            class="inline-flex items-center px-4 py-2 text-sm font-medium rounded-lg border border-gray-300 focus:outline-none focus:ring-2 focus:ring-[#C60C30] transition-colors"
+          >
+            <i class="pi pi-user-minus mr-2"></i>
+            Sans classe
+            <span class="ml-2 px-2 py-0.5 text-xs rounded-full bg-white/20">
+              {{ getStudentsWithoutClass().length }}
+            </span>
+          </button>
+
+          <!-- Class Dropdown Filter -->
+          <div class="relative">
+            <select
+              [(ngModel)]="selectedClassFilter"
+              (change)="setFilter('class')"
+              class="appearance-none bg-white border border-gray-300 rounded-lg px-4 py-2 pr-10 text-sm text-gray-700 focus:outline-none focus:ring-2 focus:ring-[#C60C30] focus:border-[#C60C30] transition-colors cursor-pointer hover:bg-gray-50"
+              style="width: 16rem"
+            >
+              <option [value]="null">Filtrer par classe</option>
+              <option *ngFor="let classe of classes" [value]="classe.classeId">
+                {{ classe.classeName }}
+              </option>
+            </select>
+            <div
+              class="absolute inset-y-0 right-0 flex items-center pr-3 pointer-events-none"
+            >
+              <i class="pi pi-chevron-down text-gray-400 text-xs"></i>
+            </div>
+            <button
+              *ngIf="selectedClassFilter"
+              (click)="
+                selectedClassFilter = null;
+                setFilter('all');
+                $event.stopPropagation()
+              "
+              class="absolute inset-y-0 right-8 flex items-center px-1 hover:text-gray-700 text-gray-400"
+            >
+              <i class="pi pi-times text-xs"></i>
+            </button>
+          </div>
+        </div>
+
+        <!-- Active Filter Indicator -->
+        <div *ngIf="currentFilter !== 'all'" class="ml-auto">
+          <button
+            (click)="clearFilters()"
+            class="inline-flex items-center px-3 py-1.5 text-sm text-gray-600 hover:text-gray-900 transition-colors"
+          >
+            <i class="pi pi-times mr-1.5"></i>
+            Réinitialiser les filtres
+          </button>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- Table Section -->
+  <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+    <div
+      class="bg-white rounded-lg shadow-sm border border-gray-200 overflow-hidden"
+    >
+      <!-- Bulk Actions Bar -->
+      <div
+        *ngIf="selectedStudents.length > 0"
+        class="bg-blue-50 border-b border-blue-200 px-6 py-4"
+      >
+        <div class="flex items-center justify-between">
+          <div class="flex items-center gap-4">
+            <span class="text-sm font-medium text-blue-900">
+              {{ selectedStudents.length }} étudiant(s) sélectionné(s)
+            </span>
+            <button
+              (click)="clearSelection()"
+              class="text-sm text-blue-600 hover:text-blue-800 font-medium"
+            >
+              Tout désélectionner
+            </button>
+          </div>
+          <div class="flex gap-3">
+            <button
+              (click)="openBulkAssignModal()"
+              [disabled]="classes.length === 0"
+              class="inline-flex items-center px-4 py-2 text-sm font-medium text-white bg-[#C60C30] rounded-lg hover:bg-[#A00A28] focus:outline-none focus:ring-2 focus:ring-[#C60C30] disabled:opacity-50 disabled:cursor-not-allowed transition-colors"
+            >
+              <i class="pi pi-users mr-2"></i>
+              Assigner à une classe
+            </button>
+          </div>
+        </div>
+      </div>
+
+      <!-- Table -->
+      <div class="relative overflow-x-auto">
+        <table class="w-full text-sm text-left">
+          <thead
+            class="text-xs font-semibold text-gray-700 uppercase tracking-wider bg-gray-50 border-b border-gray-200"
+          >
+            <tr>
+              <th scope="col" class="p-4">
+                <div class="flex items-center">
+                  <input
+                    id="select-all-checkbox"
+                    type="checkbox"
+                    [checked]="isAllSelected()"
+                    (change)="toggleSelectAll()"
+                    class="w-4 h-4 border border-gray-300 rounded bg-white focus:ring-2 focus:ring-[#C60C30] cursor-pointer"
+                  />
+                  <label for="select-all-checkbox" class="sr-only"
+                    >Select all</label
+                  >
+                </div>
+              </th>
+              <th scope="col" class="px-6 py-3">ID</th>
+              <th scope="col" class="px-6 py-3">Nom</th>
+              <th scope="col" class="px-6 py-3">Prénom</th>
+              <th scope="col" class="px-6 py-3">Email</th>
+              <th scope="col" class="px-6 py-3">Classe</th>
+              <th scope="col" class="px-6 py-3">Actions</th>
+            </tr>
+          </thead>
+          <tbody>
+            <tr
+              *ngFor="let student of filteredStudents; let i = index"
+              [class.bg-blue-50]="isStudentSelected(student.studentId)"
+              class="bg-white border-b border-gray-200 hover:bg-gray-50 transition-colors"
+            >
+              <td class="w-4 p-4">
+                <div class="flex items-center">
+                  <input
+                    [id]="'student-checkbox-' + student.studentId"
+                    type="checkbox"
+                    [checked]="isStudentSelected(student.studentId)"
+                    (change)="toggleStudentSelection(student.studentId)"
+                    class="w-4 h-4 border border-gray-300 rounded bg-white focus:ring-2 focus:ring-[#C60C30] cursor-pointer"
+                  />
+                  <label
+                    [for]="'student-checkbox-' + student.studentId"
+                    class="sr-only"
+                  >
+                    Select student
+                  </label>
+                </div>
+              </td>
+              <th
+                scope="row"
+                class="px-6 py-4 font-medium text-gray-900 whitespace-nowrap"
+              >
+                {{ student.studentId }}
+              </th>
+              <td class="px-6 py-4 text-gray-900">{{ student.nom }}</td>
+              <td class="px-6 py-4 text-gray-900">{{ student.prenom }}</td>
+              <td class="px-6 py-4 text-gray-600">{{ student.email }}</td>
+              <td class="px-6 py-4">
+                <span
+                  *ngIf="student.classe"
+                  class="inline-flex items-center px-3 py-1 rounded-full text-xs font-medium bg-[#C60C30]/10 text-[#C60C30] border border-[#C60C30]/20"
+                >
+                  {{ student.classe.classeName }}
+                </span>
+                <span
+                  *ngIf="!student.classe"
+                  class="text-sm text-gray-400 italic"
+                >
+                  Non assigné
+                </span>
+              </td>
+              <td class="px-6 py-4">
+                <div class="flex items-center gap-2">
+                  <button
+                    (click)="openAssignClassModal(student)"
+                    [disabled]="classes.length === 0"
+                    class="inline-flex items-center px-3 py-1.5 text-xs font-medium text-[#C60C30] bg-white border border-[#C60C30] rounded-lg hover:bg-[#C60C30]/5 focus:outline-none focus:ring-2 focus:ring-[#C60C30] disabled:opacity-50 disabled:cursor-not-allowed transition-colors"
+                  >
+                    <i class="pi pi-users mr-1.5 text-xs"></i>
+                    Assigner
+                  </button>
+                </div>
+              </td>
+            </tr>
+          </tbody>
+        </table>
+
+        <!-- Empty State -->
+        <div
+          *ngIf="filteredStudents.length === 0 && !loading"
+          class="text-center py-12"
+        >
+          <div class="flex flex-col items-center justify-center">
+            <i class="pi pi-inbox text-6xl text-gray-300 mb-4"></i>
+            <p class="text-gray-500 font-medium">Aucun étudiant trouvé</p>
+            <p class="text-sm text-gray-400 mt-1">
+              {{
+                currentFilter !== "all"
+                  ? "Essayez de changer les filtres"
+                  : "Commencez par créer un nouvel étudiant"
+              }}
+            </p>
+          </div>
+        </div>
+
+        <!-- Loading State -->
+        <div *ngIf="loading" class="text-center py-12">
+          <i class="pi pi-spin pi-spinner text-4xl text-[#C60C30]"></i>
+          <p class="text-gray-500 mt-4">Chargement des étudiants...</p>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <div
+    *ngIf="displayBulkAssignModal"
+    class="fixed inset-0 z-50 flex items-center justify-center p-4 bg-gray-900/50 backdrop-blur-sm"
+    (click)="displayBulkAssignModal = false"
+  >
+    <div
+      class="bg-white rounded-lg shadow-xl max-w-md w-full"
+      (click)="$event.stopPropagation()"
+    >
+      <div
+        class="flex items-center justify-between p-6 border-b border-gray-200"
+      >
+        <h3 class="text-xl font-semibold text-gray-900">
+          Assigner plusieurs étudiants
+        </h3>
+        <button
+          (click)="displayBulkAssignModal = false"
+          class="text-gray-400 hover:text-gray-600 transition-colors"
+        >
+          <i class="pi pi-times text-xl"></i>
+        </button>
+      </div>
+
+      <div class="p-6">
+        <div class="flex flex-col gap-5">
+          <div class="p-4 bg-blue-50 rounded-lg border border-blue-200">
+            <div class="flex items-center">
+              <i class="pi pi-info-circle text-blue-600 text-xl mr-3"></i>
+              <div>
+                <p class="text-sm font-semibold text-blue-900">
+                  {{ selectedStudents.length }} étudiant(s) sélectionné(s)
+                </p>
+                <p class="text-xs text-blue-700 mt-0.5">
+                  Ils seront tous assignés à la classe choisie
+                </p>
+              </div>
+            </div>
+          </div>
+
+          <div class="flex flex-col gap-2">
+            <label
+              for="bulk-assign-classe"
+              class="text-sm font-semibold text-gray-700"
+            >
+              Sélectionnez une classe <span class="text-[#C60C30]">*</span>
+            </label>
+            <div class="relative">
+              <select
+                id="bulk-assign-classe"
+                [(ngModel)]="selectedClass"
+                class="appearance-none w-full bg-white border border-gray-300 rounded-lg px-4 py-2.5 pr-10 text-sm text-gray-700 focus:outline-none focus:ring-2 focus:ring-[#C60C30] focus:border-[#C60C30] transition-colors cursor-pointer hover:bg-gray-50"
+              >
+                <option [value]="null" disabled selected>
+                  Choisir une classe
+                </option>
+                <option
+                  *ngFor="let classe of classes"
+                  [value]="classe.classeId"
+                >
+                  {{ classe.classeName }}
+                </option>
+              </select>
+              <div
+                class="absolute inset-y-0 right-0 flex items-center pr-3 pointer-events-none"
+              >
+                <i class="pi pi-chevron-down text-gray-400 text-xs"></i>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <div class="flex gap-3 p-6 border-t border-gray-200">
+        <button
+          (click)="displayBulkAssignModal = false"
+          class="flex-1 px-4 py-2.5 text-sm font-medium text-gray-700 bg-white border border-gray-300 rounded-lg hover:bg-gray-50 focus:outline-none focus:ring-2 focus:ring-gray-500 transition-colors"
+        >
+          <i class="pi pi-times mr-2"></i>
+          Annuler
+        </button>
+        <button
+          (click)="bulkAssignToClass()"
+          [disabled]="!selectedClass"
+          class="flex-1 px-4 py-2.5 text-sm font-medium text-white bg-[#C60C30] rounded-lg hover:bg-[#A00A28] focus:outline-none focus:ring-2 focus:ring-[#C60C30] disabled:opacity-50 disabled:cursor-not-allowed transition-colors"
+        >
+          <i class="pi pi-check mr-2"></i>
+          Assigner
+        </button>
+      </div>
+    </div>
+  </div>
+
+  <!-- Create Student Modal -->
+  <div
+    *ngIf="displayCreateModal"
+    class="fixed inset-0 z-50 flex items-center justify-center p-4 bg-gray-900/50 backdrop-blur-sm"
+    (click)="displayCreateModal = false"
+  >
+    <div
+      class="bg-white rounded-lg shadow-xl max-w-lg w-full"
+      (click)="$event.stopPropagation()"
+    >
+      <div
+        class="flex items-center justify-between p-6 border-b border-gray-200"
+      >
+        <h3 class="text-xl font-semibold text-gray-900">
+          Créer un nouvel étudiant
+        </h3>
+        <button
+          (click)="displayCreateModal = false"
+          class="text-gray-400 hover:text-gray-600 transition-colors"
+        >
+          <i class="pi pi-times text-xl"></i>
+        </button>
+      </div>
+
+      <div class="p-6">
+        <div class="flex flex-col gap-5">
+          <div class="flex flex-col gap-2">
+            <label for="email" class="text-sm font-semibold text-gray-700"
+              >Email <span class="text-[#C60C30]">*</span></label
+            >
+            <input
+              id="email"
+              type="email"
+              [(ngModel)]="studentForm.email"
+              placeholder="exemple@etudiant.com"
+              class="w-full px-4 py-2.5 border border-gray-300 rounded-lg focus:ring-2 focus:ring-[#C60C30] focus:border-[#C60C30] transition-colors outline-none"
+            />
+          </div>
+
+          <div class="flex flex-col gap-2">
+            <label for="nom" class="text-sm font-semibold text-gray-700"
+              >Nom <span class="text-[#C60C30]">*</span></label
+            >
+            <input
+              id="nom"
+              type="text"
+              [(ngModel)]="studentForm.nom"
+              placeholder="Nom de famille"
+              class="w-full px-4 py-2.5 border border-gray-300 rounded-lg focus:ring-2 focus:ring-[#C60C30] focus:border-[#C60C30] transition-colors outline-none"
+            />
+          </div>
+
+          <div class="flex flex-col gap-2">
+            <label for="prenom" class="text-sm font-semibold text-gray-700"
+              >Prénom <span class="text-[#C60C30]">*</span></label
+            >
+            <input
+              id="prenom"
+              type="text"
+              [(ngModel)]="studentForm.prenom"
+              placeholder="Prénom"
+              class="w-full px-4 py-2.5 border border-gray-300 rounded-lg focus:ring-2 focus:ring-[#C60C30] focus:border-[#C60C30] transition-colors outline-none"
+            />
+          </div>
+
+          <div class="flex flex-col gap-2">
+            <label for="password" class="text-sm font-semibold text-gray-700"
+              >Mot de passe <span class="text-[#C60C30]">*</span></label
+            >
+            <input
+              id="password"
+              type="password"
+              [(ngModel)]="studentForm.password"
+              placeholder="••••••••"
+              class="w-full px-4 py-2.5 border border-gray-300 rounded-lg focus:ring-2 focus:ring-[#C60C30] focus:border-[#C60C30] transition-colors outline-none"
+            />
+          </div>
+        </div>
+      </div>
+
+      <div class="flex gap-3 p-6 border-t border-gray-200">
+        <button
+          (click)="displayCreateModal = false"
+          class="flex-1 px-4 py-2.5 text-sm font-medium text-gray-700 bg-white border border-gray-300 rounded-lg hover:bg-gray-50 focus:outline-none focus:ring-2 focus:ring-gray-500 transition-colors"
+        >
+          <i class="pi pi-times mr-2"></i>
+          Annuler
+        </button>
+        <button
+          (click)="createStudent()"
+          [disabled]="
+            !studentForm.email ||
+            !studentForm.nom ||
+            !studentForm.prenom ||
+            !studentForm.password
+          "
+          class="flex-1 px-4 py-2.5 text-sm font-medium text-white bg-[#C60C30] rounded-lg hover:bg-[#A00A28] focus:outline-none focus:ring-2 focus:ring-[#C60C30] disabled:opacity-50 disabled:cursor-not-allowed transition-colors"
+        >
+          <i class="pi pi-check mr-2"></i>
+          Créer
+        </button>
+      </div>
+    </div>
+  </div>
+
+  <!-- Edit Student Modal -->
+
+  <div
+    *ngIf="displayAssignClassModal"
+    class="fixed inset-0 z-50 flex items-center justify-center p-4 bg-gray-900/50 backdrop-blur-sm"
+    (click)="
+      displayAssignClassModal = false;
+      selectedStudent = null;
+      selectedClass = null
+    "
+  >
+    <div
+      class="bg-white rounded-lg shadow-xl max-w-md w-full"
+      (click)="$event.stopPropagation()"
+    >
+      <div
+        class="flex items-center justify-between p-6 border-b border-gray-200"
+      >
+        <h3 class="text-xl font-semibold text-gray-900">
+          Ajouter à une classe
+        </h3>
+        <button
+          (click)="displayAssignClassModal = false"
+          class="text-gray-400 hover:text-gray-600 transition-colors"
+        >
+          <i class="pi pi-times text-xl"></i>
+        </button>
+      </div>
+
+      <div class="p-6">
+        <div class="flex flex-col gap-5">
+          <div
+            *ngIf="selectedStudent"
+            class="p-4 bg-gray-50 rounded-lg border border-gray-200"
+          >
+            <p class="text-sm text-gray-600">Étudiant sélectionné:</p>
+            <p class="text-base font-semibold text-gray-900 mt-1">
+              {{ selectedStudent.prenom }} {{ selectedStudent.nom }}
+            </p>
+          </div>
+
+          <div class="flex flex-col gap-2">
+            <label
+              for="assign-classe"
+              class="text-sm font-semibold text-gray-700"
+            >
+              Sélectionnez une classe <span class="text-[#C60C30]">*</span>
+            </label>
+            <div class="relative">
+              <select
+                id="assign-classe"
+                [(ngModel)]="selectedClass"
+                class="appearance-none w-full bg-white border border-gray-300 rounded-lg px-4 py-2.5 pr-10 text-sm text-gray-700 focus:outline-none focus:ring-2 focus:ring-[#C60C30] focus:border-[#C60C30] transition-colors cursor-pointer hover:bg-gray-50"
+              >
+                <option [value]="null" disabled selected>
+                  Choisir une classe
+                </option>
+                <option
+                  *ngFor="let classe of classes"
+                  [value]="classe.classeId"
+                >
+                  {{ classe.classeName }}
+                </option>
+              </select>
+              <div
+                class="absolute inset-y-0 right-0 flex items-center pr-3 pointer-events-none"
+              >
+                <i class="pi pi-chevron-down text-gray-400 text-xs"></i>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <div class="flex gap-3 p-6 border-t border-gray-200">
+        <button
+          (click)="displayAssignClassModal = false"
+          class="flex-1 px-4 py-2.5 text-sm font-medium text-gray-700 bg-white border border-gray-300 rounded-lg hover:bg-gray-50 focus:outline-none focus:ring-2 focus:ring-gray-500 transition-colors"
+        >
+          <i class="pi pi-times mr-2"></i>
+          Annuler
+        </button>
+        <button
+          (click)="assignToClass()"
+          [disabled]="!selectedClass"
+          class="flex-1 px-4 py-2.5 text-sm font-medium text-white bg-[#C60C30] rounded-lg hover:bg-[#A00A28] focus:outline-none focus:ring-2 focus:ring-[#C60C30] disabled:opacity-50 disabled:cursor-not-allowed transition-colors"
+        >
+          <i class="pi pi-check mr-2"></i>
+          Assigner
+        </button>
+      </div>
+    </div>
+  </div>
+
+  <!-- Bulk Create Students Modal -->
+  <div
+    *ngIf="displayBulkCreateModal"
+    class="fixed inset-0 z-50 flex items-center justify-center p-4 bg-gray-900/50 backdrop-blur-sm"
+    (click)="displayBulkCreateModal = false"
+  >
+    <div
+      class="bg-white rounded-lg shadow-xl max-w-xl w-full"
+      (click)="$event.stopPropagation()"
+    >
+      <div
+        class="flex items-center justify-between p-6 border-b border-gray-200"
+      >
+        <h3 class="text-xl font-semibold text-gray-900">
+          Créer des étudiants à partir d'un CSV
+        </h3>
+        <button
+          (click)="displayBulkCreateModal = false"
+          class="text-gray-400 hover:text-gray-600 transition-colors"
+        >
+          <i class="pi pi-times text-xl"></i>
+        </button>
+      </div>
+
+      <div class="p-6">
+        <div class="flex flex-col gap-5">
+          <div class="p-4 bg-blue-50 rounded-lg border border-blue-200">
+            <div class="flex">
+              <i class="pi pi-info-circle text-blue-600 mr-3 mt-0.5"></i>
+              <div>
+                <p class="text-sm font-medium text-blue-900 mb-1">
+                  Format du fichier CSV
+                </p>
+                <p class="text-xs text-blue-800">
+                  Le fichier doit contenir les colonnes:
+                  <strong>authId</strong>, <strong>email</strong>,
+                  <strong>nom</strong>, <strong>prenom</strong>,
+                  <strong>classeId</strong> (optionnel).
+                </p>
+              </div>
+            </div>
+          </div>
+
+          <div class="flex flex-col gap-2">
+            <label class="text-sm font-semibold text-gray-700"
+              >Fichier CSV</label
+            >
+            <p-fileUpload
+              mode="basic"
+              chooseLabel="Choisir un fichier CSV"
+              accept=".csv"
+              [maxFileSize]="5000000"
+              (onSelect)="onFileSelect($event)"
+              [auto]="false"
+              styleClass="!bg-white !text-gray-700 !border !border-gray-300 !rounded-md !px-4 !py-2 !text-sm !font-medium hover:!bg-gray-50 w-full"
+            >
+            </p-fileUpload>
+          </div>
+
+          <div
+            *ngIf="selectedFile"
+            class="p-4 bg-green-50 rounded-lg border border-green-200"
+          >
+            <div class="flex items-center">
+              <i class="pi pi-file text-green-600 text-xl mr-3"></i>
+              <div class="flex-1">
+                <p class="text-sm font-medium text-green-900">
+                  {{ selectedFile.name }}
+                </p>
+                <p class="text-xs text-green-700 mt-0.5">Prêt à être importé</p>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <div class="flex gap-3 p-6 border-t border-gray-200">
+        <button
+          (click)="displayBulkCreateModal = false"
+          class="flex-1 px-4 py-2.5 text-sm font-medium text-gray-700 bg-white border border-gray-300 rounded-lg hover:bg-gray-50 focus:outline-none focus:ring-2 focus:ring-gray-500 transition-colors"
+        >
+          <i class="pi pi-times mr-2"></i>
+          Annuler
+        </button>
+        <button
+          (click)="bulkCreateStudents()"
+          [disabled]="!selectedFile"
+          class="flex-1 px-4 py-2.5 text-sm font-medium text-white bg-[#C60C30] rounded-lg hover:bg-[#A00A28] focus:outline-none focus:ring-2 focus:ring-[#C60C30] disabled:opacity-50 disabled:cursor-not-allowed transition-colors"
+        >
+          <i class="pi pi-check mr-2"></i>
+          Créer
+        </button>
+      </div>
+    </div>
+  </div>
+
+  <!-- Bulk Creation Results Modal -->
+  <div
+    *ngIf="displayBulkResultsModal"
+    class="fixed inset-0 z-50 flex items-center justify-center p-4 bg-gray-900/50 backdrop-blur-sm"
+    (click)="displayBulkResultsModal = false"
+  >
+    <div
+      class="bg-white rounded-lg shadow-xl max-w-3xl w-full max-h-[90vh] overflow-hidden flex flex-col"
+      (click)="$event.stopPropagation()"
+    >
+      <div
+        class="flex items-center justify-between p-6 border-b border-gray-200"
+      >
+        <h3 class="text-xl font-semibold text-gray-900">
+          Résultats de la création en masse
+        </h3>
+        <button
+          (click)="displayBulkResultsModal = false"
+          class="text-gray-400 hover:text-gray-600 transition-colors"
+        >
+          <i class="pi pi-times text-xl"></i>
+        </button>
+      </div>
+
+      <div class="p-6 overflow-y-auto">
+        <!-- Summary Cards -->
+        <div class="grid grid-cols-2 gap-4 mb-6">
+          <div class="p-4 bg-green-50 rounded-lg border border-green-200">
+            <div class="flex items-center">
+              <i class="pi pi-check-circle text-green-600 text-2xl mr-3"></i>
+              <div>
+                <p class="text-2xl font-bold text-green-900">
+                  {{ createdUsers.length }}
+                </p>
+                <p class="text-xs text-green-700 mt-0.5">Étudiant(s) créé(s)</p>
+              </div>
+            </div>
+          </div>
+
+          <div class="p-4 bg-red-50 rounded-lg border border-red-200">
+            <div class="flex items-center">
+              <i class="pi pi-times-circle text-red-600 text-2xl mr-3"></i>
+              <div>
+                <p class="text-2xl font-bold text-red-900">
+                  {{ notCreatedUsers.length }}
+                </p>
+                <p class="text-xs text-red-700 mt-0.5">
+                  Étudiant(s) non créé(s)
+                </p>
+              </div>
+            </div>
+          </div>
+        </div>
+
+        <!-- Tabs -->
+        <div class="mb-4">
+          <div class="border-b border-gray-200">
+            <nav class="-mb-px flex space-x-8">
+              <button
+                (click)="activeResultTab = 'created'"
+                [class.border-[#C60C30]]="activeResultTab === 'created'"
+                [class.text-[#C60C30]]="activeResultTab === 'created'"
+                [class.border-transparent]="activeResultTab !== 'created'"
+                [class.text-gray-500]="activeResultTab !== 'created'"
+                class="whitespace-nowrap py-4 px-1 border-b-2 font-medium text-sm hover:text-[#C60C30] hover:border-[#C60C30] transition-colors"
+              >
+                Créés ({{ createdUsers.length }})
+              </button>
+              <button
+                (click)="activeResultTab = 'notCreated'"
+                [class.border-[#C60C30]]="activeResultTab === 'notCreated'"
+                [class.text-[#C60C30]]="activeResultTab === 'notCreated'"
+                [class.border-transparent]="activeResultTab !== 'notCreated'"
+                [class.text-gray-500]="activeResultTab !== 'notCreated'"
+                class="whitespace-nowrap py-4 px-1 border-b-2 font-medium text-sm hover:text-[#C60C30] hover:border-[#C60C30] transition-colors"
+              >
+                Non créés ({{ notCreatedUsers.length }})
+              </button>
+            </nav>
+          </div>
+        </div>
+
+        <!-- Created Users Table -->
+        <div
+          *ngIf="activeResultTab === 'created'"
+          class="bg-white rounded-lg border border-gray-200 overflow-hidden"
+        >
+          <div class="overflow-x-auto">
+            <table class="w-full text-sm text-left">
+              <thead
+                class="text-xs font-semibold text-gray-700 uppercase tracking-wider bg-gray-50 border-b border-gray-200"
+              >
+                <tr>
+                  <th class="px-6 py-3">Email</th>
+                  <th class="px-6 py-3">Nom</th>
+                  <th class="px-6 py-3">Prénom</th>
+                  <th class="px-6 py-3">Notifié</th>
+                </tr>
+              </thead>
+              <tbody>
+                <tr
+                  *ngFor="let result of createdUsers"
+                  class="border-b border-gray-200 hover:bg-gray-50 transition-colors"
+                >
+                  <td class="px-6 py-4 text-gray-900">{{ result.email }}</td>
+                  <td class="px-6 py-4 text-gray-900">{{ result.nom }}</td>
+                  <td class="px-6 py-4 text-gray-900">{{ result.prenom }}</td>
+                  <td class="px-6 py-4">
+                    <span
+                      *ngIf="result.notified"
+                      class="inline-flex items-center px-2.5 py-1 rounded-full text-xs font-medium bg-green-100 text-green-800"
+                    >
+                      <i class="pi pi-check-circle mr-1.5"></i> Oui
+                    </span>
+                    <span
+                      *ngIf="!result.notified"
+                      class="inline-flex items-center px-2.5 py-1 rounded-full text-xs font-medium bg-yellow-100 text-yellow-800"
+                    >
+                      <i class="pi pi-exclamation-circle mr-1.5"></i> Non
+                    </span>
+                  </td>
+                </tr>
+              </tbody>
+            </table>
+          </div>
+
+          <div *ngIf="createdUsers.length === 0" class="text-center py-8">
+            <i class="pi pi-inbox text-4xl text-gray-300 mb-2"></i>
+            <p class="text-gray-500 text-sm">Aucun étudiant créé</p>
+          </div>
+        </div>
+
+        <!-- Not Created Users Table -->
+        <div
+          *ngIf="activeResultTab === 'notCreated'"
+          class="bg-white rounded-lg border border-gray-200 overflow-hidden"
+        >
+          <div class="overflow-x-auto">
+            <table class="w-full text-sm text-left">
+              <thead
+                class="text-xs font-semibold text-gray-700 uppercase tracking-wider bg-gray-50 border-b border-gray-200"
+              >
+                <tr>
+                  <th class="px-6 py-3">Email</th>
+                  <th class="px-6 py-3">Nom</th>
+                  <th class="px-6 py-3">Prénom</th>
+                  <th class="px-6 py-3">Raison</th>
+                </tr>
+              </thead>
+              <tbody>
+                <tr
+                  *ngFor="let result of notCreatedUsers"
+                  class="border-b border-gray-200 hover:bg-gray-50 transition-colors"
+                >
+                  <td class="px-6 py-4 text-gray-900">{{ result.email }}</td>
+                  <td class="px-6 py-4 text-gray-900">{{ result.nom }}</td>
+                  <td class="px-6 py-4 text-gray-900">{{ result.prenom }}</td>
+                  <td class="px-6 py-4">
+                    <span
+                      class="inline-flex items-center px-2.5 py-1 rounded-full text-xs font-medium bg-red-100 text-red-800"
+                    >
+                      <i class="pi pi-info-circle mr-1.5"></i>
+                      {{ result.reason || "Non spécifié" }}
+                    </span>
+                  </td>
+                </tr>
+              </tbody>
+            </table>
+          </div>
+
+          <div *ngIf="notCreatedUsers.length === 0" class="text-center py-8">
+            <i class="pi pi-check-circle text-4xl text-green-300 mb-2"></i>
+            <p class="text-gray-500 text-sm">
+              Tous les étudiants ont été créés avec succès!
+            </p>
+          </div>
+        </div>
+      </div>
+
+      <div class="flex justify-end p-6 border-t border-gray-200">
+        <button
+          (click)="closeBulkResultsModal()"
+          class="px-6 py-2.5 text-sm font-medium text-white bg-gray-800 rounded-lg hover:bg-gray-900 focus:outline-none focus:ring-2 focus:ring-gray-800 transition-colors"
+        >
+          <i class="pi pi-times mr-2"></i>
+          Fermer
+        </button>
+      </div>
+    </div>
+  </div>
+</div>

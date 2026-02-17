@@ -3,43 +3,58 @@ import { FormBuilder, FormGroup, Validators } from '@angular/forms';
 import { Router, ActivatedRoute } from '@angular/router';
 import { AuthApiService } from '../../services/auth-api.service';
 import { ResetRequest } from '../../../../shared/models/auth-service/requests/reset-request.model';
+import { MessageService } from 'primeng/api';
 
 @Component({
   selector: 'app-reset-password',
   templateUrl: './reset-password.component.html',
-  styleUrls: ['./reset-password.component.scss']
+  styleUrls: ['./reset-password.component.scss'],
 })
 export class ResetPasswordComponent implements OnInit {
   resetPasswordForm!: FormGroup;
   loading = false;
-  successMessage = '';
-  errorMessage = '';
-  token: string = '';
+  token = '';
+
+  showPassword = false;
+  showConfirmPassword = false;
 
   constructor(
     private fb: FormBuilder,
     private authApiService: AuthApiService,
     private router: Router,
-    private route: ActivatedRoute
+    private route: ActivatedRoute,
+    private ms: MessageService,
   ) {}
 
   ngOnInit(): void {
-    // Get token from query params
-    this.route.queryParams.subscribe(params => {
-      this.token = params['token'] || '';
-    });
+    this.token = this.route.snapshot.queryParams['token'] || '';
 
-    this.resetPasswordForm = this.fb.group({
-      newPassword: ['', [Validators.required, Validators.minLength(8)]],
-      confirmPassword: ['', [Validators.required]]
-    }, { validators: this.passwordMatchValidator });
+    if (!this.token) {
+      this.ms.add({
+        severity: 'error',
+        summary: 'Erreur',
+        detail: 'Token manquant. Veuillez recommencer.',
+      });
+    }
+
+    this.resetPasswordForm = this.fb.group(
+      {
+        newPassword: ['', [Validators.required, Validators.minLength(8)]],
+        confirmPassword: ['', [Validators.required]],
+      },
+      { validators: this.passwordMatchValidator },
+    );
   }
 
   passwordMatchValidator(form: FormGroup) {
     const password = form.get('newPassword');
     const confirmPassword = form.get('confirmPassword');
 
-    if (password && confirmPassword && password.value !== confirmPassword.value) {
+    if (
+      password &&
+      confirmPassword &&
+      password.value !== confirmPassword.value
+    ) {
       confirmPassword.setErrors({ passwordMismatch: true });
       return { passwordMismatch: true };
     }
@@ -52,30 +67,48 @@ export class ResetPasswordComponent implements OnInit {
     }
 
     this.loading = true;
-    this.errorMessage = '';
-    this.successMessage = '';
 
     const request: ResetRequest = {
       token: this.token,
-      newPassword: this.resetPasswordForm.value.newPassword
+      newPassword: this.resetPasswordForm.value.newPassword,
     };
 
     this.authApiService.resetPassword(request).subscribe({
       next: (response) => {
         if (response.success) {
-          this.successMessage = 'Password reset successfully';
+          this.ms.add({
+            severity: 'success',
+            summary: 'Succès',
+            detail: 'Mot de passe réinitialisé avec succès!',
+          });
           setTimeout(() => {
             this.router.navigate(['/auth/login']);
           }, 2000);
         } else {
-          this.errorMessage = response.error || 'Failed to reset password';
+          this.ms.add({
+            severity: 'error',
+            summary: 'Erreur',
+            detail: response.error || "Une erreur s'est produite",
+          });
         }
         this.loading = false;
       },
       error: (error) => {
-        this.errorMessage = error.message || 'An error occurred';
+        this.ms.add({
+          severity: 'error',
+          summary: 'Erreur',
+          detail: error.message || "Une erreur s'est produite",
+        });
         this.loading = false;
-      }
+      },
     });
+  }
+
+  togglePasswordVisibility(): void {
+    this.showPassword = !this.showPassword;
+  }
+
+  toggleConfirmPasswordVisibility(): void {
+    this.showConfirmPassword = !this.showConfirmPassword;
   }
 }

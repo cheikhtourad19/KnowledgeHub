@@ -11,8 +11,20 @@ import { AuthResponse } from '../../../shared/models/auth-service/responses/auth
 import { AuthUser } from '../../../shared/models/auth-service/entities/auth-user.model';
 import { BulkUserCreationResult } from '../../../shared/models/auth-service/responses/bulk-user-creation-result.model';
 
+// Add these new interfaces
+export interface VerifyResetRequest {
+  email: string;
+  token: string;
+}
+
+export interface VerifyResetResponse {
+  valid: boolean;
+  token: string | null;
+  message: string;
+}
+
 @Injectable({
-  providedIn: 'root'
+  providedIn: 'root',
 })
 export class AuthApiService {
   private readonly baseUrl = `${environment.apiUrl}/auth-service`;
@@ -25,7 +37,7 @@ export class AuthApiService {
   login(request: LoginRequest): Observable<AuthResponse<AuthUser>> {
     return this.http.post<AuthResponse<AuthUser>>(
       `${this.baseUrl}/api/public/login`,
-      request
+      request,
     );
   }
 
@@ -35,30 +47,47 @@ export class AuthApiService {
   register(request: RegisterRequest): Observable<AuthResponse<AuthUser>> {
     return this.http.post<AuthResponse<AuthUser>>(
       `${this.baseUrl}/api/register`,
-      request
+      request,
     );
   }
 
   /**
    * Update password
    */
-  updatePassword(authId: number, request: AuthRequest): Observable<AuthResponse<AuthUser>> {
+  updatePassword(
+    authId: number,
+    request: AuthRequest,
+  ): Observable<AuthResponse<AuthUser>> {
     return this.http.put<AuthResponse<AuthUser>>(
       `${this.baseUrl}/api/edit-password`,
       request,
       {
-        headers: { 'X-Auth-Id': authId.toString() }
-      }
+        headers: { 'X-Auth-Id': authId.toString() },
+      },
     );
   }
 
   /**
    * Request password reset
    */
-  requestPasswordReset(request: CreateResetRequest): Observable<AuthResponse<any>> {
+  requestPasswordReset(
+    request: CreateResetRequest,
+  ): Observable<AuthResponse<any>> {
     return this.http.post<AuthResponse<any>>(
       `${this.baseUrl}/api/public/reset-password`,
-      request
+      request,
+    );
+  }
+
+  /**
+   * Verify reset token
+   */
+  verifyResetToken(
+    request: VerifyResetRequest,
+  ): Observable<VerifyResetResponse> {
+    return this.http.post<VerifyResetResponse>(
+      `${this.baseUrl}/api/public/verify-reset-token`,
+      request,
     );
   }
 
@@ -67,21 +96,23 @@ export class AuthApiService {
    */
   resetPassword(request: ResetRequest): Observable<AuthResponse<any>> {
     return this.http.post<AuthResponse<any>>(
-      `${this.baseUrl}/api/public/reset-password/confirm`,
-      request
+      `${this.baseUrl}/api/public/reset-password/${request.token}`,
+      { newPassword: request.newPassword },
     );
   }
 
   /**
    * Bulk create users from CSV (Admin only)
    */
-  bulkCreateUsers(file: File): Observable<AuthResponse<BulkUserCreationResult>> {
+  bulkCreateUsers(
+    file: File,
+  ): Observable<AuthResponse<BulkUserCreationResult>> {
     const formData = new FormData();
     formData.append('file', file);
 
     return this.http.post<AuthResponse<BulkUserCreationResult>>(
       `${this.baseUrl}/api/admin/bulk-create`,
-      formData
+      formData,
     );
   }
 
@@ -90,7 +121,7 @@ export class AuthApiService {
    */
   getAllUsers(): Observable<AuthResponse<AuthUser[]>> {
     return this.http.get<AuthResponse<AuthUser[]>>(
-      `${this.baseUrl}/api/admin/users`
+      `${this.baseUrl}/api/admin/users`,
     );
   }
 
@@ -99,7 +130,7 @@ export class AuthApiService {
    */
   getUserById(id: number): Observable<AuthResponse<AuthUser>> {
     return this.http.get<AuthResponse<AuthUser>>(
-      `${this.baseUrl}/api/admin/users/${id}`
+      `${this.baseUrl}/api/admin/users/${id}`,
     );
   }
 
@@ -108,7 +139,7 @@ export class AuthApiService {
    */
   deleteUser(id: number): Observable<AuthResponse<any>> {
     return this.http.delete<AuthResponse<any>>(
-      `${this.baseUrl}/api/admin/users/${id}`
+      `${this.baseUrl}/api/admin/users/${id}`,
     );
   }
 }

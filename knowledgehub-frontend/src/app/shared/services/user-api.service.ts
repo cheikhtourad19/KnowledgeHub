@@ -8,11 +8,24 @@ import { Teacher } from '../../shared/models/user-service/entities/teacher.model
 import { Classe } from '../../shared/models/user-service/entities/classe.model';
 import { CreateStudentRequest } from '../../shared/models/user-service/requests/create-student-request.model';
 import { StudentToClassRequest } from '../../shared/models/user-service/requests/student-to-class-request.model';
+import { BulkUserCreationResponse } from '../../shared/models/user-service/responses/bulk-user-creation-response.model';
 
 @Injectable({
-  providedIn: 'root'
+  providedIn: 'root',
 })
 export class UserApiService {
+  bulkAssignStudentsToClass(arg0: {
+    studentIds: number[];
+    classId: number;
+  }): Observable<ApiResponse<Student[]>> {
+    return this.http.post<ApiResponse<Student[]>>(
+      `${this.baseUrl}/api/admin/add-students-classes`,
+      {
+        studentId: arg0.studentIds,
+        classId: arg0.classId,
+      },
+    );
+  }
   private readonly baseUrl = `${environment.apiUrl}/user-service`;
 
   constructor(private http: HttpClient) {}
@@ -24,7 +37,7 @@ export class UserApiService {
    */
   getAllStudents(): Observable<ApiResponse<Student[]>> {
     return this.http.get<ApiResponse<Student[]>>(
-      `${this.baseUrl}/api/students`
+      `${this.baseUrl}/api/students/all`,
     );
   }
 
@@ -33,27 +46,34 @@ export class UserApiService {
    */
   getStudentById(id: number): Observable<ApiResponse<Student>> {
     return this.http.get<ApiResponse<Student>>(
-      `${this.baseUrl}/api/students/${id}`
+      `${this.baseUrl}/api/students/${id}`,
     );
   }
 
   /**
-   * Create student (Admin only)
+   * Bulk create students from CSV (Admin only)
    */
-  createStudent(request: CreateStudentRequest): Observable<ApiResponse<Student>> {
-    return this.http.post<ApiResponse<Student>>(
-      `${this.baseUrl}/api/students`,
-      request
+  bulkCreateStudents(
+    file: File,
+  ): Observable<ApiResponse<BulkUserCreationResponse>> {
+    const formData = new FormData();
+    formData.append('file', file);
+    return this.http.post<ApiResponse<BulkUserCreationResponse>>(
+      `${environment.apiUrl}/auth-service/api/students/upload`,
+      formData,
     );
   }
 
   /**
    * Update student (Admin only)
    */
-  updateStudent(id: number, request: CreateStudentRequest): Observable<ApiResponse<Student>> {
+  updateStudent(
+    id: number,
+    request: CreateStudentRequest,
+  ): Observable<ApiResponse<Student>> {
     return this.http.put<ApiResponse<Student>>(
       `${this.baseUrl}/api/students/${id}`,
-      request
+      request,
     );
   }
 
@@ -62,17 +82,19 @@ export class UserApiService {
    */
   deleteStudent(id: number): Observable<ApiResponse<void>> {
     return this.http.delete<ApiResponse<void>>(
-      `${this.baseUrl}/api/students/${id}`
+      `${this.baseUrl}/api/students/${id}`,
     );
   }
 
   /**
    * Assign student to class (Admin only)
    */
-  assignStudentToClass(request: StudentToClassRequest): Observable<ApiResponse<Student>> {
+  assignStudentToClass(
+    request: StudentToClassRequest,
+  ): Observable<ApiResponse<Student>> {
     return this.http.post<ApiResponse<Student>>(
-      `${this.baseUrl}/api/students/assign-class`,
-      request
+      `${this.baseUrl}/api/admin/add-student-classe`,
+      request,
     );
   }
 
@@ -81,7 +103,7 @@ export class UserApiService {
    */
   getStudentsByClassId(classId: number): Observable<ApiResponse<Student[]>> {
     return this.http.get<ApiResponse<Student[]>>(
-      `${this.baseUrl}/api/classes/${classId}/students`
+      `${this.baseUrl}/api/classes/${classId}/students`,
     );
   }
 
@@ -92,7 +114,7 @@ export class UserApiService {
    */
   getAllTeachers(): Observable<ApiResponse<Teacher[]>> {
     return this.http.get<ApiResponse<Teacher[]>>(
-      `${this.baseUrl}/api/teachers`
+      `${this.baseUrl}/api/teachers`,
     );
   }
 
@@ -101,7 +123,7 @@ export class UserApiService {
    */
   getTeacherById(id: number): Observable<ApiResponse<Teacher>> {
     return this.http.get<ApiResponse<Teacher>>(
-      `${this.baseUrl}/api/teachers/${id}`
+      `${this.baseUrl}/api/teachers/${id}`,
     );
   }
 
@@ -111,7 +133,7 @@ export class UserApiService {
   createTeacher(request: any): Observable<ApiResponse<Teacher>> {
     return this.http.post<ApiResponse<Teacher>>(
       `${this.baseUrl}/api/teachers`,
-      request
+      request,
     );
   }
 
@@ -121,7 +143,7 @@ export class UserApiService {
   updateTeacher(id: number, request: any): Observable<ApiResponse<Teacher>> {
     return this.http.put<ApiResponse<Teacher>>(
       `${this.baseUrl}/api/teachers/${id}`,
-      request
+      request,
     );
   }
 
@@ -130,7 +152,7 @@ export class UserApiService {
    */
   deleteTeacher(id: number): Observable<ApiResponse<void>> {
     return this.http.delete<ApiResponse<void>>(
-      `${this.baseUrl}/api/teachers/${id}`
+      `${this.baseUrl}/api/teachers/${id}`,
     );
   }
 
@@ -141,7 +163,7 @@ export class UserApiService {
    */
   getAllClasses(): Observable<ApiResponse<Classe[]>> {
     return this.http.get<ApiResponse<Classe[]>>(
-      `${this.baseUrl}/api/classes`
+      `${this.baseUrl}/api/admin/classe`,
     );
   }
 
@@ -150,7 +172,7 @@ export class UserApiService {
    */
   getClassById(id: number): Observable<ApiResponse<Classe>> {
     return this.http.get<ApiResponse<Classe>>(
-      `${this.baseUrl}/api/classes/${id}`
+      `${this.baseUrl}/api/classes/${id}`,
     );
   }
 
@@ -158,10 +180,9 @@ export class UserApiService {
    * Create class (Admin only)
    */
   createClass(className: string): Observable<ApiResponse<Classe>> {
-    return this.http.post<ApiResponse<Classe>>(
-      `${this.baseUrl}/api/classes`,
-      { classeName: className }
-    );
+    return this.http.post<ApiResponse<Classe>>(`${this.baseUrl}/api/classes`, {
+      classeName: className,
+    });
   }
 
   /**
@@ -170,7 +191,7 @@ export class UserApiService {
   updateClass(id: number, className: string): Observable<ApiResponse<Classe>> {
     return this.http.put<ApiResponse<Classe>>(
       `${this.baseUrl}/api/classes/${id}`,
-      { classeName: className }
+      { classeName: className },
     );
   }
 
@@ -179,7 +200,7 @@ export class UserApiService {
    */
   deleteClass(id: number): Observable<ApiResponse<void>> {
     return this.http.delete<ApiResponse<void>>(
-      `${this.baseUrl}/api/classes/${id}`
+      `${this.baseUrl}/api/classes/${id}`,
     );
   }
 }

@@ -3,5 +3,5 @@
  */
 export interface StudentToClassRequest {
   studentId: number;
-  classeId: number;
+  classId: number; // Changed from classeId to classId
 }

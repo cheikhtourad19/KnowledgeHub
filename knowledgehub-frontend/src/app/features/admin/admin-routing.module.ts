@@ -1,8 +1,13 @@
 import { NgModule } from '@angular/core';
 import { RouterModule, Routes } from '@angular/router';
 import { AdminLayoutComponent } from './admin-layout/admin-layout.component';
-
-import {AdminHomeComponent} from "./pages/home/home.component";
+import { StudentsClasseComponent } from './pages/students.classe/students.classe.component';
+import { StudentsGestionComponent } from './pages/students.gestion/students.gestion.component';
+import { PfeGestionComponent } from './pages/pfe.gestion/pfe.gestion.component';
+import { PfeDemandeComponent } from './pages/pfe.demande/pfe.demande.component';
+import { StageComponent } from './pages/stage/stage.component';
+import { DocumentsComponent } from './pages/documents/documents.component';
+import { EnseignantComponent } from './pages/enseignant/enseignant.component';
 
 const routes: Routes = [
   {
@@ -10,18 +15,44 @@ const routes: Routes = [
     component: AdminLayoutComponent,
     children: [
       {
-        path: '',redirectTo:'home',pathMatch:'full'
+        path: '',
+        redirectTo: 'students/gestion',
+        pathMatch: 'full',
       },
       {
-        path:'home',component:AdminHomeComponent
-      }
-
-    ]
-  }
+        path: 'students/gestion',
+        component: StudentsGestionComponent,
+      },
+      {
+        path: 'students/classes',
+        component: StudentsClasseComponent,
+      },
+      {
+        path: 'pfe/gestion',
+        component: PfeGestionComponent,
+      },
+      {
+        path: 'pfe/demandes',
+        component: PfeDemandeComponent,
+      },
+      {
+        path: 'stage',
+        component: StageComponent,
+      },
+      {
+        path: 'documents',
+        component: DocumentsComponent,
+      },
+      {
+        path: 'teachers',
+        component: EnseignantComponent,
+      },
+    ],
+  },
 ];
 
 @NgModule({
   imports: [RouterModule.forChild(routes)],
-  exports: [RouterModule]
+  exports: [RouterModule],
 })
-export class AdminRoutingModule { }
+export class AdminRoutingModule {}

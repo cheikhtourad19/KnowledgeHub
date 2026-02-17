@@ -1,28 +1,37 @@
 import { NgModule } from '@angular/core';
 import { RouterModule, Routes } from '@angular/router';
-import {LoginComponent} from "./pages/login/login.component";
-import {ForgotPasswordComponent} from "./pages/forgot-password/forgot-password.component";
-import {ResetPasswordComponent} from "./pages/reset-password/reset-password.component";
+import { LoginComponent } from './pages/login/login.component';
+import { ForgotPasswordComponent } from './pages/forgot-password/forgot-password.component';
+import { ResetPasswordComponent } from './pages/reset-password/reset-password.component';
+import { EnseignantComponent } from '../admin/pages/enseignant/enseignant.component';
 
 const routes: Routes = [
   {
-    path:'',redirectTo:'/auth/login',pathMatch:'full'
+    path: '',
+    redirectTo: '/auth/login',
+    pathMatch: 'full',
   },
   {
-    path:'login',component:LoginComponent
+    path: 'login',
+    component: LoginComponent,
   },
 
   {
-    path:'forgot-password', component: ForgotPasswordComponent
+    path: 'forgot-password',
+    component: ForgotPasswordComponent,
   },
   {
-    path:'reset-password',component:ResetPasswordComponent
-  }
-
+    path: 'reset-password',
+    component: ResetPasswordComponent,
+  },
+  {
+    path: 'teachers',
+    component: EnseignantComponent,
+  },
 ];
 
 @NgModule({
   imports: [RouterModule.forChild(routes)],
-  exports: [RouterModule]
+  exports: [RouterModule],
 })
-export class AuthRoutingModule { }
+export class AuthRoutingModule {}

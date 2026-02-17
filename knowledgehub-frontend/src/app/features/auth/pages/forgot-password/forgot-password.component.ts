@@ -7,28 +7,45 @@ import { CreateResetRequest } from '../../../../shared/models/auth-service/reque
 @Component({
   selector: 'app-forgot-password',
   templateUrl: './forgot-password.component.html',
-  styleUrls: ['./forgot-password.component.scss']
+  styleUrls: ['./forgot-password.component.scss'],
 })
 export class ForgotPasswordComponent implements OnInit {
-  forgotPasswordForm!: FormGroup;
+  emailForm!: FormGroup;
+  codeForm!: FormGroup;
   loading = false;
   successMessage = '';
   errorMessage = '';
+  emailSent = false;
+  userEmail = '';
 
   constructor(
     private fb: FormBuilder,
     private authApiService: AuthApiService,
-    private router: Router
+    private router: Router,
   ) {}
 
   ngOnInit(): void {
-    this.forgotPasswordForm = this.fb.group({
-      email: ['', [Validators.required, Validators.email]]
+    // Step 1: Email form
+    this.emailForm = this.fb.group({
+      email: ['', [Validators.required, Validators.email]],
+    });
+
+    // Step 2: Code verification form
+    this.codeForm = this.fb.group({
+      code: [
+        '',
+        [
+          Validators.required,
+          Validators.pattern(
+            /^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/i,
+          ),
+        ],
+      ],
     });
   }
 
-  onSubmit(): void {
-    if (this.forgotPasswordForm.invalid) {
+  onSubmitEmail(): void {
+    if (this.emailForm.invalid) {
       return;
     }
 
@@ -36,24 +53,67 @@ export class ForgotPasswordComponent implements OnInit {
     this.errorMessage = '';
     this.successMessage = '';
 
-    const request: CreateResetRequest = this.forgotPasswordForm.value;
+    const request: CreateResetRequest = this.emailForm.value;
 
     this.authApiService.requestPasswordReset(request).subscribe({
       next: (response) => {
         if (response.success) {
-          this.successMessage = 'Password reset link sent to your email';
-          setTimeout(() => {
-            this.router.navigate(['/auth/login']);
-          }, 3000);
+          this.userEmail = this.emailForm.value.email;
+          this.emailSent = true;
+          this.successMessage =
+            'Code de réinitialisation envoyé! Vérifiez votre email.';
         } else {
-          this.errorMessage = response.error || 'Failed to send reset link';
+          this.errorMessage = response.error || "Échec de l'envoi du code";
         }
         this.loading = false;
       },
       error: (error) => {
-        this.errorMessage = error.message || 'An error occurred';
+        this.errorMessage = error.message || "Une erreur s'est produite";
         this.loading = false;
-      }
+      },
     });
+  }
+
+  onVerifyCode(): void {
+    if (this.codeForm.invalid) {
+      return;
+    }
+
+    this.loading = true;
+    this.errorMessage = '';
+    this.successMessage = '';
+
+    const verifyRequest = {
+      email: this.userEmail,
+      token: this.codeForm.value.code.trim(),
+    };
+
+    this.authApiService.verifyResetToken(verifyRequest).subscribe({
+      next: (response) => {
+        if (response.valid && response.token) {
+          this.successMessage = 'Code vérifié! Redirection...';
+          setTimeout(() => {
+            // Navigate to reset password with token as query param
+            this.router.navigate(['/auth/reset-password'], {
+              queryParams: { token: response.token },
+            });
+          }, 1000);
+        } else {
+          this.errorMessage = response.message || 'Code invalide ou expiré';
+        }
+        this.loading = false;
+      },
+      error: (error) => {
+        this.errorMessage = error.error?.message || 'Code invalide ou expiré';
+        this.loading = false;
+      },
+    });
+  }
+
+  resendCode(): void {
+    this.emailSent = false;
+    this.codeForm.reset();
+    this.errorMessage = '';
+    this.successMessage = '';
   }
 }
