@@ -5,9 +5,10 @@ import { AuthApiService } from '../../services/auth-api.service';
 import { CreateResetRequest } from '../../../../shared/models/auth-service/requests/create-reset-request.model';
 
 @Component({
-  selector: 'app-forgot-password',
-  templateUrl: './forgot-password.component.html',
-  styleUrls: ['./forgot-password.component.scss'],
+    selector: 'app-forgot-password',
+    templateUrl: './forgot-password.component.html',
+    styleUrls: ['./forgot-password.component.scss'],
+    standalone: false
 })
 export class ForgotPasswordComponent implements OnInit {
   emailForm!: FormGroup;

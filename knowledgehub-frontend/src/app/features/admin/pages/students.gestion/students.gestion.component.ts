@@ -10,10 +10,11 @@ import { RegisterRequest } from '../../../../shared/models/auth-service/requests
 import { AuthApiService } from '../../../auth/services/auth-api.service';
 
 @Component({
-  selector: 'app-students.gestion',
-  templateUrl: './students.gestion.component.html',
-  styleUrl: './students.gestion.component.scss',
-  providers: [MessageService],
+    selector: 'app-students.gestion',
+    templateUrl: './students.gestion.component.html',
+    styleUrl: './students.gestion.component.scss',
+    providers: [MessageService],
+    standalone: false
 })
 export class StudentsGestionComponent implements OnInit {
   students: Student[] = [];

@@ -5,9 +5,10 @@ import { AuthService } from '../../../core/services/auth.service';
 import { initFlowbite } from 'flowbite';
 
 @Component({
-  selector: 'app-admin-layout',
-  templateUrl: './admin-layout.component.html',
-  styleUrls: ['./admin-layout.component.scss'],
+    selector: 'app-admin-layout',
+    templateUrl: './admin-layout.component.html',
+    styleUrls: ['./admin-layout.component.scss'],
+    standalone: false
 })
 export class AdminLayoutComponent implements OnInit {
   isDrawerOpen = false;

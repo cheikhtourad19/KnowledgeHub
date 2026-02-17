@@ -3,9 +3,10 @@ import { Router } from '@angular/router';
 import { AuthService } from '../../../core/services/auth.service';
 
 @Component({
-  selector: 'app-student-layout',
-  templateUrl: './student-layout.component.html',
-  styleUrls: ['./student-layout.component.scss']
+    selector: 'app-student-layout',
+    templateUrl: './student-layout.component.html',
+    styleUrls: ['./student-layout.component.scss'],
+    standalone: false
 })
 export class StudentLayoutComponent implements OnInit {
 
