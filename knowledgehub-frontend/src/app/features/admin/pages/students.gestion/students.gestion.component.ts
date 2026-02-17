@@ -78,6 +78,7 @@ export class StudentsGestionComponent implements OnInit {
   }
 
   applyFilter(): void {
+    console.log(this.selectedClassFilter)
     switch (this.currentFilter) {
       case 'all':
         this.filteredStudents = this.students;
@@ -88,7 +89,7 @@ export class StudentsGestionComponent implements OnInit {
       case 'class':
         if (this.selectedClassFilter) {
           this.filteredStudents = this.students.filter(
-            (s) => s.classe?.classeId === this.selectedClassFilter,
+            (s) => s.classe?.classeId== this.selectedClassFilter,
           );
         } else {
           this.filteredStudents = this.students;
