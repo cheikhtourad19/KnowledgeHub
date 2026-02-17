@@ -7,76 +7,57 @@ import { NotificationRequest } from '../models/notification-service/requests/not
 import { NotificationResponse } from '../models/notification-service/responses/notification-response.model';
 
 @Injectable({
-  providedIn: 'root'
+  providedIn: 'root',
 })
 export class NotificationApiService {
   private readonly baseUrl = `${environment.apiUrl}/notification-service`;
 
   constructor(private http: HttpClient) {}
 
-  /**
-   * Send notification (Admin/System)
-   */
-  sendNotification(request: NotificationRequest): Observable<NotificationResponse> {
+  sendNotification(
+    request: NotificationRequest,
+  ): Observable<NotificationResponse> {
     return this.http.post<NotificationResponse>(
       `${this.baseUrl}/api/notifications/send`,
-      request
+      request,
     );
   }
 
-  /**
-   * Get notifications for a user
-   */
   getNotificationsByUserId(userId: string): Observable<Notification[]> {
     return this.http.get<Notification[]>(
-      `${this.baseUrl}/api/notifications/user/${userId}`
+      `${this.baseUrl}/api/notifications/user/${userId}`,
     );
   }
 
-  /**
-   * Get unread notifications for a user
-   */
   getUnreadNotifications(userId: string): Observable<Notification[]> {
     return this.http.get<Notification[]>(
-      `${this.baseUrl}/api/notifications/user/${userId}/unread`
+      `${this.baseUrl}/api/notifications/user/${userId}/unread`,
     );
   }
 
-  /**
-   * Mark notification as read
-   */
   markAsRead(notificationId: string): Observable<Notification> {
     return this.http.put<Notification>(
       `${this.baseUrl}/api/notifications/${notificationId}/read`,
-      null
+      null,
     );
   }
 
-  /**
-   * Mark all notifications as read for a user
-   */
   markAllAsRead(userId: string): Observable<void> {
     return this.http.put<void>(
       `${this.baseUrl}/api/notifications/user/${userId}/read-all`,
-      null
+      null,
     );
   }
 
-  /**
-   * Delete notification
-   */
   deleteNotification(notificationId: string): Observable<void> {
     return this.http.delete<void>(
-      `${this.baseUrl}/api/notifications/${notificationId}`
+      `${this.baseUrl}/api/notifications/${notificationId}`,
     );
   }
 
-  /**
-   * Get notification count for user
-   */
   getUnreadCount(userId: string): Observable<number> {
     return this.http.get<number>(
-      `${this.baseUrl}/api/notifications/user/${userId}/unread-count`
+      `${this.baseUrl}/api/notifications/user/${userId}/unread-count`,
     );
   }
 }

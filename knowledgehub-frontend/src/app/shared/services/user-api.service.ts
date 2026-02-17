@@ -30,29 +30,18 @@ export class UserApiService {
 
   constructor(private http: HttpClient) {}
 
-  // ==================== Student Endpoints ====================
-
-  /**
-   * Get all students (Admin/Teacher)
-   */
   getAllStudents(): Observable<ApiResponse<Student[]>> {
     return this.http.get<ApiResponse<Student[]>>(
       `${this.baseUrl}/api/students/all`,
     );
   }
 
-  /**
-   * Get student by ID
-   */
   getStudentById(id: number): Observable<ApiResponse<Student>> {
     return this.http.get<ApiResponse<Student>>(
       `${this.baseUrl}/api/students/${id}`,
     );
   }
 
-  /**
-   * Bulk create students from CSV (Admin only)
-   */
   bulkCreateStudents(
     file: File,
   ): Observable<ApiResponse<BulkUserCreationResponse>> {
@@ -64,9 +53,6 @@ export class UserApiService {
     );
   }
 
-  /**
-   * Update student (Admin only)
-   */
   updateStudent(
     id: number,
     request: CreateStudentRequest,
@@ -77,18 +63,12 @@ export class UserApiService {
     );
   }
 
-  /**
-   * Delete student (Admin only)
-   */
   deleteStudent(id: number): Observable<ApiResponse<void>> {
     return this.http.delete<ApiResponse<void>>(
       `${this.baseUrl}/api/students/${id}`,
     );
   }
 
-  /**
-   * Assign student to class (Admin only)
-   */
   assignStudentToClass(
     request: StudentToClassRequest,
   ): Observable<ApiResponse<Student>> {
@@ -98,38 +78,24 @@ export class UserApiService {
     );
   }
 
-  /**
-   * Get students by class ID
-   */
   getStudentsByClassId(classId: number): Observable<ApiResponse<Student[]>> {
     return this.http.get<ApiResponse<Student[]>>(
       `${this.baseUrl}/api/classes/${classId}/students`,
     );
   }
 
-  // ==================== Teacher Endpoints ====================
-
-  /**
-   * Get all teachers
-   */
   getAllTeachers(): Observable<ApiResponse<Teacher[]>> {
     return this.http.get<ApiResponse<Teacher[]>>(
       `${this.baseUrl}/api/teachers`,
     );
   }
 
-  /**
-   * Get teacher by ID
-   */
   getTeacherById(id: number): Observable<ApiResponse<Teacher>> {
     return this.http.get<ApiResponse<Teacher>>(
       `${this.baseUrl}/api/teachers/${id}`,
     );
   }
 
-  /**
-   * Create teacher (Admin only)
-   */
   createTeacher(request: any): Observable<ApiResponse<Teacher>> {
     return this.http.post<ApiResponse<Teacher>>(
       `${this.baseUrl}/api/teachers`,
@@ -137,9 +103,6 @@ export class UserApiService {
     );
   }
 
-  /**
-   * Update teacher (Admin only)
-   */
   updateTeacher(id: number, request: any): Observable<ApiResponse<Teacher>> {
     return this.http.put<ApiResponse<Teacher>>(
       `${this.baseUrl}/api/teachers/${id}`,
@@ -147,47 +110,30 @@ export class UserApiService {
     );
   }
 
-  /**
-   * Delete teacher (Admin only)
-   */
   deleteTeacher(id: number): Observable<ApiResponse<void>> {
     return this.http.delete<ApiResponse<void>>(
       `${this.baseUrl}/api/teachers/${id}`,
     );
   }
 
-  // ==================== Class Endpoints ====================
-
-  /**
-   * Get all classes
-   */
   getAllClasses(): Observable<ApiResponse<Classe[]>> {
     return this.http.get<ApiResponse<Classe[]>>(
       `${this.baseUrl}/api/admin/classe`,
     );
   }
 
-  /**
-   * Get class by ID
-   */
   getClassById(id: number): Observable<ApiResponse<Classe>> {
     return this.http.get<ApiResponse<Classe>>(
       `${this.baseUrl}/api/classes/${id}`,
     );
   }
 
-  /**
-   * Create class (Admin only)
-   */
   createClass(className: string): Observable<ApiResponse<Classe>> {
     return this.http.post<ApiResponse<Classe>>(`${this.baseUrl}/api/classes`, {
       classeName: className,
     });
   }
 
-  /**
-   * Update class (Admin only)
-   */
   updateClass(id: number, className: string): Observable<ApiResponse<Classe>> {
     return this.http.put<ApiResponse<Classe>>(
       `${this.baseUrl}/api/classes/${id}`,
@@ -195,9 +141,6 @@ export class UserApiService {
     );
   }
 
-  /**
-   * Delete class (Admin only)
-   */
   deleteClass(id: number): Observable<ApiResponse<void>> {
     return this.http.delete<ApiResponse<void>>(
       `${this.baseUrl}/api/classes/${id}`,
