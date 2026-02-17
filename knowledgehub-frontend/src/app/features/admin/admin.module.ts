@@ -17,7 +17,7 @@ import { TableModule } from 'primeng/table';
 import { ButtonModule } from 'primeng/button';
 import { DialogModule } from 'primeng/dialog';
 import { InputTextModule } from 'primeng/inputtext';
-import { DropdownModule } from 'primeng/dropdown';
+import { SelectModule } from 'primeng/select';
 import { ToastModule } from 'primeng/toast';
 import { FileUploadModule } from 'primeng/fileupload';
 
@@ -41,7 +41,7 @@ import { FileUploadModule } from 'primeng/fileupload';
     ButtonModule,
     DialogModule,
     InputTextModule,
-    DropdownModule,
+    SelectModule,
     ToastModule,
     FileUploadModule,
   ],
