@@ -3,8 +3,6 @@
 @tailwind components;
 @tailwind utilities;
 /* src/styles.scss */
-@import "primeng/resources/themes/lara-light-blue/theme.css";
-@import "primeng/resources/primeng.min.css";
 @import "primeicons/primeicons.css";
 
 /* Your custom styles */
@@ -16,15 +14,22 @@
   box-sizing: border-box;
 }
 
-html, body {
+html,
+body {
   height: 100%;
 }
 
 body {
-  font-family: system-ui, -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, 'Helvetica Neue', Arial, sans-serif;
+  font-family:
+    system-ui,
+    -apple-system,
+    BlinkMacSystemFont,
+    "Segoe UI",
+    Roboto,
+    "Helvetica Neue",
+    Arial,
+    sans-serif;
 }
-
-
 
 .p-toast {
   opacity: 1;
@@ -120,5 +125,5 @@ body {
 
 /* Make error toast match college red color */
 .p-toast .p-toast-message.p-toast-message-error {
-  background: #C60C30 !important;
+  background: #c60c30 !important;
 }
