@@ -20,6 +20,10 @@ public class TeacherService {
     public Teacher saveTeacher(Teacher teacher){
         return teacherRepository.save(teacher);
     }
+    public void deleteTeacher(Long id){
+        Teacher teacher = teacherRepository.findByAuthId(String.valueOf(id)).orElseThrow(()->new RuntimeException("Teacher not found with id: "+id));
+        teacherRepository.deleteById(teacher.getTeacherId());
+    }
 
     public List<Teacher> saveTeachers(List<Teacher> teachers){
         return teacherRepository.saveAll(teachers);

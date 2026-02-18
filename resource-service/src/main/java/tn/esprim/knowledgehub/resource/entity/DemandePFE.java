@@ -21,23 +21,59 @@ public class DemandePFE {
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     private Long id;
 
+    // Student info - extracted from UserService via X-User-Id header
+    @Column(nullable = false)
     private Long studentId;
+
+    @Column(nullable = false)
     private String studentName;
+
+    @Column(nullable = false)
     private String studentEmail;
+
+    private String studentClasse;
+
+    // Student info - provided by student in form
+    @Column(nullable = false)
+    private String studentCin;
+
+    @Column(nullable = false)
     private String studentPhone;
-    private String student_classe;
-    private String student_identifiant;
-    private String student_cin;
+
+    // PFE details
+    @Column(nullable = false)
     private String pfeTitle;
+
+    @Column(columnDefinition = "TEXT", nullable = false)
     private String pfeDescription;
-    private String mot_cles;
-    private String entreprise_domaine;
-    private String entreprise_name;
-    private String entreprise_encadrant_name;
-    private String entreprise_encadrant_email;
-    private String entreprise_encadrant_phone;
-    private Date date_debut;
-    private Date date_fin;
+
+    @Column(nullable = false)
+    private String motCles;
+
+    // Company/Entreprise details
+    @Column(nullable = false)
+    private String entrepriseDomaine;
+
+    @Column(nullable = false)
+    private String entrepriseName;
+
+    @Column(nullable = false)
+    private String entrepriseEncadrantName;
+
+    @Column(nullable = false)
+    private String entrepriseEncadrantEmail;
+
+    @Column(nullable = false)
+    private String entrepriseEncadrantPhone;
+
+    // Dates
+    @Temporal(TemporalType.DATE)
+    @Column(nullable = false)
+    private Date dateDebut;
+
+    @Temporal(TemporalType.DATE)
+    @Column(nullable = false)
+    private Date dateFin;
 
     @Enumerated(EnumType.STRING)
     @Column(nullable = false)
@@ -57,6 +93,10 @@ public class DemandePFE {
     @Temporal(TemporalType.TIMESTAMP)
     @Column(nullable = false, updatable = false)
     private Date createdAt;
+
+    @OneToOne
+    @JoinColumn(name = "attestation_file_id", referencedColumnName = "id")
+    private File attestationFile;
 
     @UpdateTimestamp
     @Temporal(TemporalType.TIMESTAMP)

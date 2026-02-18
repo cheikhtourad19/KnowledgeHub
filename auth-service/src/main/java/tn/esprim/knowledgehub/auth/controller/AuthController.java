@@ -274,4 +274,18 @@ public class AuthController {
         String token = authHeader.replace("Bearer ", "");
         return ResponseEntity.ok(authService.validateToken(token));
     }
+
+    @DeleteMapping("/delete/{id}")
+    public ResponseEntity<AuthResponse> deleteUser(
+            @PathVariable Long id,
+            @RequestHeader(value = "X-User-Role", required = false) String role
+    ) {
+        if (!Objects.equals(role, "ADMIN")) {
+            return ResponseEntity.status(HttpStatus.FORBIDDEN).body(AuthResponse.error("Only admins can delete users", HttpStatus.FORBIDDEN));
+        }
+
+        authService.deleteUser(id);
+
+        return ResponseEntity.ok(AuthResponse.success(null, "User deleted successfully"));
+    }
 }

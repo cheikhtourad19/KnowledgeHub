@@ -66,6 +66,27 @@ public class UserProfileService {
      * dima asynchrone 5err
      */
     @Async("userProfileTaskExecutor")
+    public void createAdminProfileAsync(String authId) {
+        try {
+            log.info("Async creating admin profile for authId: {}", authId);
+
+            UserServiceRequest request = UserServiceRequest.builder()
+                    .authId(authId)
+                    .build();
+
+            userServiceClient.createAdmin(request);
+            log.info("Admin profile created successfully for authId: {}", authId);
+
+        } catch (Exception e) {
+            log.error("Failed to create admin profile for authId: {}", authId, e);
+            // TODO: Could implement retry logic or save to a retry queue
+        }
+    }
+
+    /**
+     * dima asynchrone 5err
+     */
+    @Async("userProfileTaskExecutor")
     public void createStudentProfilesAsync(List<UserServiceRequest> requests) {
         try {
             log.info("Async creating {} student profiles", requests.size());

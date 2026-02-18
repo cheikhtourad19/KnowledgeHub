@@ -59,26 +59,30 @@ public class PFEService {
 
     /**
      * Create a DemandePFE with file upload
-     * @param request The demand request data
+     * @param request The demand request data (only fields student needs to provide)
      * @param file The file to upload (convention de stage, etc.)
-     * @param userId The user ID from X-User-Id header
+     * @param userId The user ID from X-User-Id header (JWT token)
      * @return The created DemandePFE
      */
     public DemandePFE createDemandePFE(CreateDemandePFERequest request, MultipartFile file, Long userId) {
         log.info("Creating DemandePFE for user ID: {}", userId);
 
-        // Fetch student details from UserService using X-User-Id
+        // Fetch student details from UserService using X-User-Id from JWT
         StudentDTO student = userServiceClient.getStudentById(userId).getData();
         if (student == null) {
             throw new RuntimeException("Student not found with ID: " + userId);
         }
+
+        // Build student name from UserService data
+        String studentName = student.getNom() + " " + student.getPrenom();
+        String studentClasse = (student.getClasse() != null) ? student.getClasse().getClasseName() : null;
 
         // Upload the file first
         FileUploadResponse fileUploadResponse = fileService.uploadFile(
                 file,
                 FileType.DEMANDE,
                 userId,
-                student.getNom() + " " + student.getPrenom(),
+                studentName,
                 "pfe",
                 request.getPfeTitle(),
                 "Demande PFE - " + request.getPfeTitle()
@@ -86,25 +90,34 @@ public class PFEService {
 
         log.info("File uploaded successfully: {}", fileUploadResponse.getFileName());
 
-        // Build DemandePFE entity with student data from UserService
+        // Retrieve the File entity to set the relationship
+        File uploadedFile = fileService.getFileById(fileUploadResponse.getFileId());
+
+        // Build DemandePFE entity with data from UserService (JWT) and form request
         DemandePFE demande = DemandePFE.builder()
+                // Student info from UserService (extracted via X-User-Id)
                 .studentId(student.getStudentId())
-                .studentName(student.getNom() + " " + student.getPrenom())
+                .studentName(studentName)
                 .studentEmail(student.getEmail())
+                .studentClasse(studentClasse)
+                // Student info from form (not available in UserService)
+                .studentCin(request.getStudentCin())
                 .studentPhone(request.getStudentPhone())
-                .student_classe(student.getClasse() != null ? student.getClasse().getClasseName() : null)
-                .student_identifiant(student.getStudentId().toString())
-                .student_cin(request.getStudentCin())
+                // PFE details from form
                 .pfeTitle(request.getPfeTitle())
                 .pfeDescription(request.getPfeDescription())
-                .mot_cles(request.getMotCles())
-                .entreprise_domaine(request.getEntrepriseDomaine())
-                .entreprise_name(request.getEntrepriseName())
-                .entreprise_encadrant_name(request.getEntrepriseEncadrantName())
-                .entreprise_encadrant_email(request.getEntrepriseEncadrantEmail())
-                .entreprise_encadrant_phone(request.getEntrepriseEncadrantPhone())
-                .date_debut(request.getDateDebut())
-                .date_fin(request.getDateFin())
+                .motCles(request.getMotCles())
+                // Company details from form
+                .entrepriseDomaine(request.getEntrepriseDomaine())
+                .entrepriseName(request.getEntrepriseName())
+                .entrepriseEncadrantName(request.getEntrepriseEncadrantName())
+                .entrepriseEncadrantEmail(request.getEntrepriseEncadrantEmail())
+                .entrepriseEncadrantPhone(request.getEntrepriseEncadrantPhone())
+                // Dates from form
+                .dateDebut(request.getDateDebut())
+                .dateFin(request.getDateFin())
+                // File relationship
+                .attestationFile(uploadedFile)
                 .build();
 
         DemandePFE saved = demandePFERepository.save(demande);
@@ -142,19 +155,25 @@ public class PFEService {
             (request.getAdminFeedback() == null || request.getAdminFeedback().trim().isEmpty())) {
             throw new IllegalArgumentException("Admin feedback is required when rejecting a demand");
         }
+
+        // Send notification if rejected
         if (request.getStatus() == DemandStatus.REJECTED ) {
             notificationClient.sendNotificationAsync(
                     NotificationRequest.builder()
                             .recipientEmail(demande.getStudentEmail())
                             .type(NotificationType.EMAIL)
-                            .content("Votre demande de PFE a été rejeter veillez consulter votre espace pour voir la raison et rectifier le plus vite possible")
-                            .subject("Demande de PFE Rejeter")
+                            .content("Votre demande de PFE a été rejetée. Veuillez consulter votre espace pour voir la raison et rectifier le plus vite possible")
+                            .subject("Demande de PFE Rejetée")
                             .userId(demande.getStudentId().toString())
                             .build()
             );
         }
 
+        // Update demand with status and admin review information
         demande.setStatus(request.getStatus());
+        demande.setAdminFeedback(request.getAdminFeedback());
+        demande.setReviewedByAdminId(adminId);
+        // Note: reviewedByAdminName should be fetched from UserService if needed
         demande.setReviewedAt(new Date());
 
         DemandePFE updated = demandePFERepository.save(demande);

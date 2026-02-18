@@ -114,5 +114,12 @@ public class TeacherController {
         );
     }
 
+    @DeleteMapping("/delete/{id}")
+    public ResponseEntity<ApiResponse> delete(@PathVariable Long id){
+        this.teacherService.deleteTeacher(id);
+        return ResponseEntity.ok(ApiResponse.builder().success(true).message("Teacher deleted successfully").build());
+    }
+
+
 
 }

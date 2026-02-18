@@ -7,10 +7,13 @@ import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 import tn.esprim.knowledgehub.user.dto.request.StudentToClassRequest;
 import tn.esprim.knowledgehub.user.dto.request.StudentsToClassRequest;
+import tn.esprim.knowledgehub.user.dto.request.UserServiceRequest;
 import tn.esprim.knowledgehub.user.dto.response.ApiResponse;
+import tn.esprim.knowledgehub.user.entity.Admin;
 import tn.esprim.knowledgehub.user.entity.Classe;
 import tn.esprim.knowledgehub.user.entity.Student;
 import tn.esprim.knowledgehub.user.repository.AdminRepository;
+import tn.esprim.knowledgehub.user.service.AdminService;
 import tn.esprim.knowledgehub.user.service.StudentService;
 import tn.esprim.knowledgehub.user.service.TeacherService;
 
@@ -28,6 +31,8 @@ public class AdminController {
     private StudentService studentService;
     @Autowired
     private AdminRepository adminRepository;
+    @Autowired
+    private AdminService adminService;
 
     @GetMapping("/by-Authid/{authId}")
     public ResponseEntity<ApiResponse> getAdminById(@PathVariable String authId){
@@ -36,12 +41,38 @@ public class AdminController {
         );
     }
 
+    @PostMapping("/create")
+    public ResponseEntity<ApiResponse> createAdmin(@RequestBody UserServiceRequest request) {
+        try {
+            Admin admin = adminService.createAdmin(request.getAuthId());
+            return ResponseEntity.ok(
+                    ApiResponse.builder()
+                            .success(true)
+                            .message("Admin created successfully")
+                            .data(admin)
+                            .build()
+            );
+        } catch (Exception e) {
+            return ResponseEntity.badRequest().body(
+                    ApiResponse.builder()
+                            .success(false)
+                            .message(e.getMessage())
+                            .build()
+            );
+        }
+    }
+
     @GetMapping("/classe")
     public ResponseEntity<ApiResponse> getAllClasses(){
         return ResponseEntity.ok(
                 ApiResponse.builder().success(true).data(studentService.getAllClasses()).build()
         );
 
+    }
+    @DeleteMapping("/delete-classe/{id}")
+    public ResponseEntity<ApiResponse> deleteClasse(@PathVariable Long id){
+        studentService.deleteClasse(id);
+        return ResponseEntity.ok(ApiResponse.builder().success(true).message("Classe deleted successfully").build());
     }
 
 
@@ -116,10 +147,32 @@ public class AdminController {
 
     }
 
+    @PostMapping("/classes")
+    public ResponseEntity<ApiResponse> createClasse(@RequestParam String name,@RequestHeader(value="X-User-Role") String role){
+        if(!role.equals("ADMIN"))
+        {
+            return ResponseEntity.status(403).build();
+        }
+        Classe classe = Classe.builder()
+                .classeName(name)
+                .build();
+        try {
+            return ResponseEntity.ok(
+                    ApiResponse.builder().success(true)
+                            .message("Classe created successfully")
+                            .data(studentService.createClasse(classe))
+                            .build()
+            );
+        }catch (Exception e){
+            return ResponseEntity.badRequest().body(
+                    ApiResponse.builder().success(false).message(e.getMessage()).build()
+            );
+        }
 
 
 
 
 
 
-    }
+
+    }}

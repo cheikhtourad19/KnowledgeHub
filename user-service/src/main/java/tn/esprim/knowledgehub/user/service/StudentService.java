@@ -29,6 +29,16 @@ public class StudentService {
     public List<Student> saveStudents(List<Student> students){
         return studentRepository.saveAll(students);
     }
+    public void deleteClasse(Long id){
+        List<Student> students = getStudentsInClasse(id);
+        students.forEach(student -> student.setClasse(null));
+        studentRepository.saveAll(students);
+        classeRepository.deleteById(id);
+    }
+    public void deleteStudent(Long id){
+        Student student = studentRepository.findByAuthId(String.valueOf(id)).orElseThrow(()->new RuntimeException("Student not found with id: "+id));
+        studentRepository.deleteById(student.getStudentId());
+    }
     public List<Student> getAllStudents(){
         return studentRepository.findAllWithClasse();
     }

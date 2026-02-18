@@ -122,6 +122,15 @@ public class StudentController {
     }
 
 
+    @DeleteMapping("/delete/{id}")
+    public ResponseEntity<ApiResponse> delete(@PathVariable Long id)
+    {
+        this.studentService.deleteStudent(id);
+        return ResponseEntity.ok(ApiResponse.builder().success(true).message("Student deleted successfully").build());
+
+    }
+
+
 
 
 }

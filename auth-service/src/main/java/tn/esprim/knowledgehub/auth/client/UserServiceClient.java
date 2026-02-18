@@ -55,10 +55,28 @@ public class UserServiceClient {
 
             ResponseEntity<String> response = restTemplate.postForEntity(url, entity, String.class);
 
-            log.info("Student created in user-service: {}", response.getBody());
+            log.info("Teacher created in user-service: {}", response.getBody());
         } catch (Exception e) {
-            log.error("Error creating student in user-service: {}", e.getMessage(), e);
-            throw new RuntimeException("Failed to create student in user-service: " + e.getMessage());
+            log.error("Error creating teacher in user-service: {}", e.getMessage(), e);
+            throw new RuntimeException("Failed to create teacher in user-service: " + e.getMessage());
+        }
+    }
+
+    public void createAdmin(UserServiceRequest request) {
+        try {
+            String url = userServiceUrl + "/api/admin/create";
+
+            HttpHeaders headers = new HttpHeaders();
+            headers.setContentType(MediaType.APPLICATION_JSON);
+
+            HttpEntity<UserServiceRequest> entity = new HttpEntity<>(request, headers);
+
+            ResponseEntity<String> response = restTemplate.postForEntity(url, entity, String.class);
+
+            log.info("Admin created in user-service: {}", response.getBody());
+        } catch (Exception e) {
+            log.error("Error creating admin in user-service: {}", e.getMessage(), e);
+            throw new RuntimeException("Failed to create admin in user-service: " + e.getMessage());
         }
     }
     public void createStudents(List<UserServiceRequest> requests) {
@@ -157,6 +175,26 @@ public class UserServiceClient {
         } catch (Exception e) {
             log.error("Error fetching teacher by authId: {}", e.getMessage());
             return null;
+        }
+    }
+
+    public void deleteStudent(Long userId) {
+
+        try {
+            String url = userServiceUrl + "/api/students/delete/" + userId;
+            restTemplate.delete(url, String.class);
+        } catch (Exception e) {
+            log.error("Error deleting user: {}", e.getMessage());
+        }
+    }
+
+    public void deleteTeacher(Long userId) {
+
+        try {
+            String url = userServiceUrl + "/api/teachers/delete/" + userId;
+            restTemplate.delete(url, String.class);
+        }catch (Exception e) {
+            log.error("Error deleting user: {}", e.getMessage());
         }
     }
 

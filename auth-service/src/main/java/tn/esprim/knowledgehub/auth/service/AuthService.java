@@ -133,6 +133,11 @@ public class AuthService {
                     request.getNom()
             );
             log.info("Teacher profile creation queued for authId: {}", authUser.getId());
+        } else if (request.getRole() == AuthUser.Role.ADMIN) {
+            userProfileService.createAdminProfileAsync(
+                    authUser.getId().toString()
+            );
+            log.info("Admin profile creation queued for authId: {}", authUser.getId());
         }
 
         return AuthResponse.success(authUser, "User registered successfully");
@@ -373,5 +378,15 @@ public class AuthService {
         }
 
         authUserRepository.save(authUser);
+    }
+
+    public void deleteUser(Long id) {
+        AuthUser user = authUserRepository.findById(id).orElseThrow(()->new RuntimeException("User not found with id: "+id));
+        this.authUserRepository.deleteById(id);
+        if (user.getRole().equals(AuthUser.Role.STUDENT)) {
+            userServiceClient.deleteStudent(user.getId());
+        }else if (user.getRole().equals(AuthUser.Role.TEACHER)){
+            userServiceClient.deleteTeacher(user.getId());
+        }
     }
 }
