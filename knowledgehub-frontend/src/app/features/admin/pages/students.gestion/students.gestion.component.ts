@@ -5,7 +5,7 @@ import { Classe } from '../../../../shared/models/user-service/entities/classe.m
 import { CreateStudentRequest } from '../../../../shared/models/user-service/requests/create-student-request.model';
 import { BulkUserCreationResponse } from '../../../../shared/models/user-service/responses/bulk-user-creation-response.model';
 import { BulkUserCreationResult } from '../../../../shared/models/user-service/responses/bulk-user-creation-result.model';
-import { MessageService } from 'primeng/api';
+import { ConfirmationService, MessageService } from 'primeng/api';
 import { RegisterRequest } from '../../../../shared/models/auth-service/requests/register-request.model';
 import { AuthApiService } from '../../../auth/services/auth-api.service';
 
@@ -19,7 +19,7 @@ import { AuthApiService } from '../../../auth/services/auth-api.service';
 export class StudentsGestionComponent implements OnInit {
   students: Student[] = [];
   classes: Classe[] = [];
-  loading: boolean = false;
+
   currentFilter: 'all' | 'no-class' | 'class' = 'all';
   selectedClassFilter: number | null = null;
   filteredStudents: Student[] = [];
@@ -47,20 +47,20 @@ export class StudentsGestionComponent implements OnInit {
     private userApiService: UserApiService,
     private messageService: MessageService,
     private authApiService: AuthApiService,
+    private confirmationService: ConfirmationService,
+    private userService: UserApiService,
   ) {}
-
+  selectedTeacherId: number | null = null;
   ngOnInit(): void {
     this.loadStudents();
     this.loadClasses();
   }
 
   loadStudents(): void {
-    this.loading = true;
     this.userApiService.getAllStudents().subscribe({
       next: (response) => {
         this.students = response.data ?? [];
         this.applyFilter();
-        this.loading = false;
       },
       error: (error) => {
         this.messageService.add({
@@ -68,7 +68,6 @@ export class StudentsGestionComponent implements OnInit {
           summary: 'Erreur',
           detail: 'Impossible de charger les étudiants',
         });
-        this.loading = false;
       },
     });
   }
@@ -133,7 +132,7 @@ export class StudentsGestionComponent implements OnInit {
         this.classes = response.data ?? [];
       },
       error: (error) => {
-        console.error('Error loading classes', error);
+        console.error('Error  classes', error);
       },
     });
   }
@@ -350,5 +349,55 @@ export class StudentsGestionComponent implements OnInit {
     this.createdUsers = [];
     this.notCreatedUsers = [];
     this.activeResultTab = 'created';
+  }
+
+  deleteTeacher(event: Event, id: String): void {
+    event.stopPropagation();
+
+    this.selectedTeacherId = Number(id);
+    console.log('Selected teacher ID for deletion:', this.selectedTeacherId); // Now this should show correctly
+
+    this.confirmationService.confirm({
+      target: event.target as EventTarget,
+      message: 'Êtes-vous sûr de vouloir supprimer cet etudiant ?',
+      icon: 'pi pi-exclamation-triangle',
+      acceptLabel: 'Oui, supprimer',
+      rejectLabel: 'Non, annuler',
+      acceptButtonStyleClass: 'p-button-danger',
+      accept: () => {
+        const teacherIdToDelete = this.selectedTeacherId;
+        console.log('Accept - Deleting teacher ID:', teacherIdToDelete);
+
+        if (teacherIdToDelete) {
+          this.userService.deleteUser(teacherIdToDelete).subscribe({
+            next: (response) => {
+              this.messageService.add({
+                severity: 'success',
+                summary: 'Succès',
+                detail: 'Enseignant supprimé avec succès',
+              });
+              this.loadStudents();
+              this.selectedTeacherId = null;
+              console.log('Delete successful for teacher ID:', response);
+            },
+            error: (err) => {
+              console.error('Delete error:', err);
+              this.messageService.add({
+                severity: 'error',
+                summary: 'Erreur',
+                detail: "Impossible de supprimer l'enseignant.",
+              });
+              this.selectedTeacherId = null;
+            },
+          });
+        } else {
+          console.error('No teacher ID found for deletion');
+        }
+      },
+      reject: () => {
+        console.log('Delete rejected for teacher ID:', this.selectedTeacherId); // Debug log
+        this.selectedTeacherId = null;
+      },
+    });
   }
 }

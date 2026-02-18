@@ -1,5 +1,5 @@
 import { Injectable } from '@angular/core';
-import { HttpClient } from '@angular/common/http';
+import { HttpClient, HttpParams } from '@angular/common/http';
 import { Observable } from 'rxjs';
 import { environment } from '../../../environments/environment';
 import { ApiResponse } from '../../shared/models/common/api-response.model';
@@ -27,7 +27,7 @@ export class UserApiService {
     );
   }
   private readonly baseUrl = `${environment.apiUrl}/user-service`;
-
+  private readonly authBaseUrl = `${environment.apiUrl}/auth-service`;
   constructor(private http: HttpClient) {}
 
   getAllStudents(): Observable<ApiResponse<Student[]>> {
@@ -49,6 +49,17 @@ export class UserApiService {
     formData.append('file', file);
     return this.http.post<ApiResponse<BulkUserCreationResponse>>(
       `${environment.apiUrl}/auth-service/api/students/upload`,
+      formData,
+    );
+  }
+
+  bulkCreateTeachers(
+    file: File,
+  ): Observable<ApiResponse<BulkUserCreationResponse>> {
+    const formData = new FormData();
+    formData.append('file', file);
+    return this.http.post<ApiResponse<BulkUserCreationResponse>>(
+      `${environment.apiUrl}/auth-service/api/teachers/upload`,
       formData,
     );
   }
@@ -86,7 +97,7 @@ export class UserApiService {
 
   getAllTeachers(): Observable<ApiResponse<Teacher[]>> {
     return this.http.get<ApiResponse<Teacher[]>>(
-      `${this.baseUrl}/api/teachers`,
+      `${this.baseUrl}/api/teachers/all`,
     );
   }
 
@@ -98,7 +109,7 @@ export class UserApiService {
 
   createTeacher(request: any): Observable<ApiResponse<Teacher>> {
     return this.http.post<ApiResponse<Teacher>>(
-      `${this.baseUrl}/api/teachers`,
+      `${this.authBaseUrl}/api/register`,
       request,
     );
   }
@@ -110,9 +121,9 @@ export class UserApiService {
     );
   }
 
-  deleteTeacher(id: number): Observable<ApiResponse<void>> {
+  deleteUser(id: number): Observable<ApiResponse<void>> {
     return this.http.delete<ApiResponse<void>>(
-      `${this.baseUrl}/api/teachers/${id}`,
+      `${this.authBaseUrl}/api/delete/${id}`,
     );
   }
 
@@ -129,21 +140,24 @@ export class UserApiService {
   }
 
   createClass(className: string): Observable<ApiResponse<Classe>> {
-    return this.http.post<ApiResponse<Classe>>(`${this.baseUrl}/api/classes`, {
-      classeName: className,
-    });
+    const params = new HttpParams().set('name', className);
+    return this.http.post<ApiResponse<Classe>>(
+      `${this.baseUrl}/api/admin/classes`,
+      {},
+      { params },
+    );
+  }
+
+  deleteClass(id: number): Observable<ApiResponse<void>> {
+    return this.http.delete<ApiResponse<void>>(
+      `${this.baseUrl}/api/admin/delete-classe/${id}`,
+    );
   }
 
   updateClass(id: number, className: string): Observable<ApiResponse<Classe>> {
     return this.http.put<ApiResponse<Classe>>(
       `${this.baseUrl}/api/classes/${id}`,
       { classeName: className },
-    );
-  }
-
-  deleteClass(id: number): Observable<ApiResponse<void>> {
-    return this.http.delete<ApiResponse<void>>(
-      `${this.baseUrl}/api/classes/${id}`,
     );
   }
 }

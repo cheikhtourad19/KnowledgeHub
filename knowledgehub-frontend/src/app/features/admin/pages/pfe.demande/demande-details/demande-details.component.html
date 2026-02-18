@@ -1,0 +1,332 @@
+<div class="p-6">
+  <!-- Demande Details -->
+  <div *ngIf="demande" class="max-w-5xl mx-auto">
+    <!-- Header -->
+    <div class="flex items-center justify-between mb-6">
+      <div class="flex items-center gap-4">
+        <button
+          pButton
+          type="button"
+          icon="pi pi-arrow-left"
+          class="p-button-text p-button-rounded"
+          (click)="goBack()"
+          pTooltip="Retour"
+          tooltipPosition="top"
+        ></button>
+        <h2 class="text-2xl font-bold text-gray-800">
+          Détails de la Demande PFE
+        </h2>
+      </div>
+      <span
+        class="px-4 py-2 rounded-full text-sm font-semibold"
+        [ngClass]="getStatusClass(demande.status)"
+      >
+        {{ getStatusLabel(demande.status) }}
+      </span>
+    </div>
+
+    <!-- Admin Actions -->
+    <div
+      *ngIf="demande.status === DemandStatus.UPLOADED"
+      class="flex justify-end gap-3 mb-6"
+    >
+      <button
+        pButton
+        type="button"
+        label="Rejeter"
+        icon="pi pi-times"
+        class="p-button-danger"
+        (click)="showRejectDialog()"
+      ></button>
+      <button
+        pButton
+        type="button"
+        label="Valider et Créer PFE"
+        icon="pi pi-check"
+        class="p-button-success"
+        (click)="showApproveDialog()"
+      ></button>
+    </div>
+
+    <!-- Details Card -->
+    <div class="bg-white shadow-lg rounded-lg overflow-hidden">
+      <!-- Student Information -->
+      <div class="border-b border-gray-200 bg-gray-50 px-6 py-4">
+        <h3 class="text-lg font-semibold text-gray-700 flex items-center gap-2">
+          <i class="pi pi-user"></i>
+          Informations de l'Étudiant
+        </h3>
+      </div>
+      <div class="grid grid-cols-1 md:grid-cols-2 gap-6 p-6">
+        <div>
+          <label class="block text-sm font-medium text-gray-600 mb-1"
+            >Nom</label
+          >
+          <p class="text-gray-900">{{ demande.studentName || "N/A" }}</p>
+        </div>
+        <div>
+          <label class="block text-sm font-medium text-gray-600 mb-1"
+            >Email</label
+          >
+          <p class="text-gray-900">{{ demande.studentEmail || "N/A" }}</p>
+        </div>
+        <div>
+          <label class="block text-sm font-medium text-gray-600 mb-1"
+            >CIN</label
+          >
+          <p class="text-gray-900">{{ demande.studentCin }}</p>
+        </div>
+        <div>
+          <label class="block text-sm font-medium text-gray-600 mb-1"
+            >Téléphone</label
+          >
+          <p class="text-gray-900">{{ demande.studentPhone }}</p>
+        </div>
+      </div>
+
+      <!-- PFE Information -->
+      <div class="border-b border-gray-200 bg-gray-50 px-6 py-4">
+        <h3 class="text-lg font-semibold text-gray-700 flex items-center gap-2">
+          <i class="pi pi-file"></i>
+          Informations du PFE
+        </h3>
+      </div>
+      <div class="grid grid-cols-1 gap-6 p-6">
+        <div>
+          <label class="block text-sm font-medium text-gray-600 mb-1"
+            >Titre du PFE</label
+          >
+          <p class="text-gray-900 font-semibold">{{ demande.pfeTitle }}</p>
+        </div>
+        <div>
+          <label class="block text-sm font-medium text-gray-600 mb-1"
+            >Description</label
+          >
+          <p class="text-gray-900 whitespace-pre-wrap">
+            {{ demande.pfeDescription }}
+          </p>
+        </div>
+        <div>
+          <label class="block text-sm font-medium text-gray-600 mb-1"
+            >Mots Clés</label
+          >
+          <p class="text-gray-900">{{ demande.motCles }}</p>
+        </div>
+        <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
+          <div>
+            <label class="block text-sm font-medium text-gray-600 mb-1"
+              >Date de Début</label
+            >
+            <p class="text-gray-900">
+              {{ demande.dateDebut | date: "dd/MM/yyyy" }}
+            </p>
+          </div>
+          <div>
+            <label class="block text-sm font-medium text-gray-600 mb-1"
+              >Date de Fin</label
+            >
+            <p class="text-gray-900">
+              {{ demande.dateFin | date: "dd/MM/yyyy" }}
+            </p>
+          </div>
+        </div>
+      </div>
+
+      <!-- Company Information -->
+      <div class="border-b border-gray-200 bg-gray-50 px-6 py-4">
+        <h3 class="text-lg font-semibold text-gray-700 flex items-center gap-2">
+          <i class="pi pi-building"></i>
+          Informations de l'Entreprise
+        </h3>
+      </div>
+      <div class="grid grid-cols-1 md:grid-cols-2 gap-6 p-6">
+        <div>
+          <label class="block text-sm font-medium text-gray-600 mb-1"
+            >Nom de l'Entreprise</label
+          >
+          <p class="text-gray-900">{{ demande.entrepriseName }}</p>
+        </div>
+        <div>
+          <label class="block text-sm font-medium text-gray-600 mb-1"
+            >Domaine</label
+          >
+          <p class="text-gray-900">{{ demande.entrepriseDomaine }}</p>
+        </div>
+        <div>
+          <label class="block text-sm font-medium text-gray-600 mb-1"
+            >Encadrant</label
+          >
+          <p class="text-gray-900">{{ demande.entrepriseEncadrantName }}</p>
+        </div>
+        <div>
+          <label class="block text-sm font-medium text-gray-600 mb-1"
+            >Email de l'Encadrant</label
+          >
+          <p class="text-gray-900">{{ demande.entrepriseEncadrantEmail }}</p>
+        </div>
+        <div>
+          <label class="block text-sm font-medium text-gray-600 mb-1">
+            Téléphone de l'Encadrant
+          </label>
+          <p class="text-gray-900">{{ demande.entrepriseEncadrantPhone }}</p>
+        </div>
+      </div>
+
+      <!-- File Information -->
+      <div class="border-b border-gray-200 bg-gray-50 px-6 py-4">
+        <h3 class="text-lg font-semibold text-gray-700 flex items-center gap-2">
+          <i class="pi pi-paperclip"></i>
+          Document Joint
+        </h3>
+      </div>
+      <div class="p-6">
+        <div
+          *ngIf="demande.attestationFile"
+          class="flex items-center gap-3 p-4 bg-blue-50 rounded-lg"
+        >
+          <i class="pi pi-file text-2xl text-blue-600"></i>
+          <div>
+            <p class="font-medium text-gray-900">
+              {{ demande.attestationFile.originalFileName }}
+            </p>
+            <p class="text-sm text-gray-600">
+              {{ demande.attestationFile.fileSize | number }} octets
+            </p>
+          </div>
+        </div>
+        <div *ngIf="!demande.attestationFile" class="text-gray-500 italic">
+          Aucun fichier joint
+        </div>
+      </div>
+
+      <!-- Metadata -->
+      <div class="border-t border-gray-200 bg-gray-50 p-6">
+        <div
+          class="grid grid-cols-1 md:grid-cols-2 gap-4 text-sm text-gray-600"
+        >
+          <div>
+            <span class="font-medium">Date de création:</span>
+            {{ demande.createdAt | date: "dd/MM/yyyy HH:mm" }}
+          </div>
+          <div *ngIf="demande.updatedAt">
+            <span class="font-medium">Dernière modification:</span>
+            {{ demande.updatedAt | date: "dd/MM/yyyy HH:mm" }}
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- Error State -->
+  <div *ngIf="!demande" class="text-center py-12">
+    <i class="pi pi-exclamation-triangle text-5xl text-gray-400 mb-4"></i>
+    <p class="text-gray-600">Demande introuvable</p>
+  </div>
+</div>
+
+<!-- Approve Dialog -->
+<p-dialog
+  header="Valider et Créer PFE"
+  [(visible)]="displayApproveDialog"
+  [modal]="true"
+  [style]="{ width: '500px' }"
+  [draggable]="false"
+  [resizable]="false"
+>
+  <div class="space-y-4">
+    <p class="text-gray-700">
+      Voulez-vous approuver cette demande et créer automatiquement un PFE ?
+    </p>
+    <div class="flex flex-col gap-2">
+      <label for="approveFeedback" class="font-semibold text-gray-700">
+        Commentaire (optionnel)
+      </label>
+      <textarea
+        id="approveFeedback"
+        [(ngModel)]="adminFeedback"
+        rows="4"
+        pInputTextarea
+        placeholder="Ajoutez un commentaire pour l'étudiant..."
+        class="w-full"
+      ></textarea>
+    </div>
+  </div>
+
+  <ng-template pTemplate="footer">
+    <div class="flex justify-end gap-2">
+      <button
+        pButton
+        type="button"
+        label="Annuler"
+        icon="pi pi-times"
+        class="p-button-text"
+        (click)="hideApproveDialog()"
+      ></button>
+      <button
+        pButton
+        type="button"
+        label="Valider"
+        icon="pi pi-check"
+        class="p-button-success"
+        (click)="approveDemand()"
+      ></button>
+    </div>
+  </ng-template>
+</p-dialog>
+
+<!-- Reject Dialog -->
+<p-dialog
+  header="Rejeter la Demande"
+  [(visible)]="displayRejectDialog"
+  [modal]="true"
+  [style]="{ width: '500px' }"
+  [draggable]="false"
+  [resizable]="false"
+>
+  <div class="space-y-4">
+    <p class="text-gray-700">
+      Êtes-vous sûr de vouloir rejeter cette demande ?
+    </p>
+    <div class="flex flex-col gap-2">
+      <label for="rejectFeedback" class="font-semibold text-gray-700">
+        Raison du rejet <span class="text-red-500">*</span>
+      </label>
+      <textarea
+        id="rejectFeedback"
+        [(ngModel)]="adminFeedback"
+        rows="4"
+        pInputTextarea
+        placeholder="Expliquez pourquoi cette demande est rejetée..."
+        class="w-full"
+      ></textarea>
+      <small class="text-gray-600">
+        Le feedback sera envoyé à l'étudiant
+      </small>
+    </div>
+  </div>
+
+  <ng-template pTemplate="footer">
+    <div class="flex justify-end gap-2">
+      <button
+        pButton
+        type="button"
+        label="Annuler"
+        icon="pi pi-times"
+        class="p-button-text"
+        (click)="hideRejectDialog()"
+      ></button>
+      <button
+        pButton
+        type="button"
+        label="Rejeter"
+        icon="pi pi-ban"
+        class="p-button-danger"
+        (click)="rejectDemand()"
+        [disabled]="!adminFeedback || adminFeedback.trim() === ''"
+      ></button>
+    </div>
+  </ng-template>
+</p-dialog>
+
+<!-- Toast Messages -->
+<p-toast></p-toast>

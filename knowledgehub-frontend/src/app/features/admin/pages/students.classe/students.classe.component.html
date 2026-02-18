@@ -1,1 +1,122 @@
-<p>students.classe works!</p>
+<div class="p-6">
+  <!-- Header Section -->
+  <div class="flex justify-between items-center mb-6">
+    <h2 class="text-2xl font-bold text-gray-800">Gestion des Classes</h2>
+    <button
+      pButton
+      type="button"
+      label="Créer une Classe"
+      icon="pi pi-plus"
+      class="p-button-success"
+      (click)="showCreateDialog()"
+    ></button>
+  </div>
+
+  <!-- Classes Table -->
+  <p-table
+    [value]="classes"
+    [loading]="loading"
+    styleClass="p-datatable-striped"
+    [tableStyle]="{ 'min-width': '50rem' }"
+    class="shadow-md rounded-lg"
+  >
+    <ng-template pTemplate="header">
+      <tr>
+        <th class="bg-blue-50 text-left px-4 py-3">Classe</th>
+        <th class="bg-blue-50 text-center px-4 py-3">Actions</th>
+      </tr>
+    </ng-template>
+    <ng-template pTemplate="body" let-classe>
+      <tr class="hover:bg-gray-50">
+        <td class="px-4 py-3 font-medium">{{ classe.classeName }}</td>
+
+        <td class="px-4 py-3 text-center">
+          <button
+            pButton
+            type="button"
+            icon="pi pi-trash"
+            class="p-button-rounded p-button-danger p-button-text"
+            (click)="confirmDelete(classe)"
+            pTooltip="Supprimer"
+            tooltipPosition="top"
+          ></button>
+        </td>
+      </tr>
+    </ng-template>
+    <ng-template pTemplate="emptymessage">
+      <tr>
+        <td colspan="4" class="text-center py-8 text-gray-500">
+          <i class="pi pi-inbox text-4xl mb-3 block"></i>
+          <p>Aucune classe trouvée</p>
+        </td>
+      </tr>
+    </ng-template>
+  </p-table>
+</div>
+
+<!-- Create Class Dialog -->
+<p-dialog
+  header="Créer une Classe"
+  [(visible)]="displayDialog"
+  [modal]="true"
+  [style]="{ width: '450px' }"
+  [draggable]="false"
+  [resizable]="false"
+>
+  <form [formGroup]="classeForm" (ngSubmit)="createClass()" class="space-y-4">
+    <div class="flex flex-col gap-2">
+      <label for="className" class="font-semibold text-gray-700">
+        Nom de la Classe <span class="text-red-500">*</span>
+      </label>
+      <input
+        id="className"
+        type="text"
+        pInputText
+        formControlName="className"
+        placeholder="Ex: 3A pas de 3A1, 3A2, etc."
+        class="w-full"
+        [class.ng-invalid]="
+          classeForm.get('className')?.invalid &&
+          classeForm.get('className')?.touched
+        "
+      />
+      <small
+        *ngIf="
+          classeForm.get('className')?.invalid &&
+          classeForm.get('className')?.touched
+        "
+        class="text-red-500"
+      >
+        Le nom de la classe est requis (minimum 2 caractères)
+      </small>
+    </div>
+  </form>
+
+  <ng-template pTemplate="footer">
+    <div class="flex justify-end gap-2">
+      <button
+        pButton
+        type="button"
+        label="Annuler"
+        icon="pi pi-times"
+        class="p-button-text"
+        (click)="hideDialog()"
+      ></button>
+      <button
+        pButton
+        type="button"
+        label="Créer"
+        icon="pi pi-check"
+        class="p-button-success"
+        (click)="createClass()"
+        [disabled]="classeForm.invalid"
+      ></button>
+    </div>
+  </ng-template>
+</p-dialog>
+
+<!-- Confirm Dialog -->
+<p-confirmDialog></p-confirmDialog>
+
+<!-- Toast Messages -->
+<p-toast></p-toast>

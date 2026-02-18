@@ -1,1 +1,87 @@
-<p>pfe.demande works!</p>
+<div class="p-6">
+  <!-- Header Section -->
+  <div class="flex justify-between items-center mb-6">
+    <h2 class="text-2xl font-bold text-gray-800">Demandes de PFE</h2>
+  </div>
+
+  <!-- Demandes Table -->
+  <p-table
+    [value]="demandes"
+    styleClass="p-datatable-striped"
+    [tableStyle]="{ 'min-width': '70rem' }"
+    class="shadow-md rounded-lg"
+  >
+    <ng-template pTemplate="header">
+      <tr>
+        <th class="bg-blue-50 text-left px-4 py-3">ID</th>
+        <th class="bg-blue-50 text-left px-4 py-3">Étudiant</th>
+        <th class="bg-blue-50 text-left px-4 py-3">Titre du PFE</th>
+        <th class="bg-blue-50 text-left px-4 py-3">Entreprise</th>
+        <th class="bg-blue-50 text-left px-4 py-3">Date de Début</th>
+        <th class="bg-blue-50 text-left px-4 py-3">Statut</th>
+        <th class="bg-blue-50 text-center px-4 py-3">Date de Création</th>
+      </tr>
+    </ng-template>
+    <ng-template pTemplate="body" let-demande>
+      <tr
+        class="hover:bg-gray-50 cursor-pointer"
+        (click)="viewDetails(demande)"
+      >
+        <td class="px-4 py-3">{{ demande.id }}</td>
+        <td class="px-4 py-3">
+          <div>
+            <p class="font-medium">{{ demande.studentName || "N/A" }}</p>
+            <p class="text-sm text-gray-600">
+              {{ demande.studentEmail || "" }}
+            </p>
+          </div>
+        </td>
+        <td class="px-4 py-3 font-medium">
+          <div class="max-w-xs">
+            <p
+              class="truncate"
+              [pTooltip]="demande.pfeTitle"
+              tooltipPosition="top"
+            >
+              {{ demande.pfeTitle }}
+            </p>
+          </div>
+        </td>
+        <td class="px-4 py-3">{{ demande.entrepriseName }}</td>
+        <td class="px-4 py-3">{{ demande.dateDebut | date: "dd/MM/yyyy" }}</td>
+        <td class="px-4 py-3">
+          <span
+            class="px-3 py-1 rounded-full text-sm font-semibold"
+            [ngClass]="getStatusClass(demande.status)"
+          >
+            {{ getStatusLabel(demande.status) }}
+          </span>
+        </td>
+        <td class="px-4 py-3 text-center">
+          {{ demande.createdAt | date: "dd/MM/yyyy" }}
+        </td>
+      </tr>
+    </ng-template>
+    <ng-template pTemplate="emptymessage">
+      <tr>
+        <td colspan="7" class="text-center py-8 text-gray-500">
+          <i class="pi pi-inbox text-4xl mb-3 block"></i>
+          <p>Aucune demande trouvée</p>
+        </td>
+      </tr>
+    </ng-template>
+  </p-table>
+
+  <!-- Info Message -->
+  <div
+    class="mt-4 p-4 bg-blue-50 border border-blue-200 rounded-lg flex items-start gap-3"
+  >
+    <i class="pi pi-info-circle text-blue-600 text-xl"></i>
+    <p class="text-sm text-blue-800">
+      Cliquez sur une demande pour voir ses détails complets.
+    </p>
+  </div>
+</div>
+
+<!-- Toast Messages -->
+<p-toast></p-toast>

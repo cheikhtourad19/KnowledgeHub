@@ -11,7 +11,7 @@ import { AuthResponse } from '../../../shared/models/auth-service/responses/auth
 import { AuthUser } from '../../../shared/models/auth-service/entities/auth-user.model';
 import { BulkUserCreationResult } from '../../../shared/models/auth-service/responses/bulk-user-creation-result.model';
 
-// Add these new interfaces
+
 export interface VerifyResetRequest {
   email: string;
   token: string;
@@ -31,9 +31,7 @@ export class AuthApiService {
 
   constructor(private http: HttpClient) {}
 
-  /**
-   * Login user
-   */
+  
   login(request: LoginRequest): Observable<AuthResponse<AuthUser>> {
     return this.http.post<AuthResponse<AuthUser>>(
       `${this.baseUrl}/api/public/login`,
@@ -41,9 +39,7 @@ export class AuthApiService {
     );
   }
 
-  /**
-   * Register new user (Admin only)
-   */
+  
   register(request: RegisterRequest): Observable<AuthResponse<AuthUser>> {
     return this.http.post<AuthResponse<AuthUser>>(
       `${this.baseUrl}/api/register`,
@@ -51,9 +47,7 @@ export class AuthApiService {
     );
   }
 
-  /**
-   * Update password
-   */
+  
   updatePassword(
     authId: number,
     request: AuthRequest,
@@ -67,9 +61,7 @@ export class AuthApiService {
     );
   }
 
-  /**
-   * Request password reset
-   */
+ 
   requestPasswordReset(
     request: CreateResetRequest,
   ): Observable<AuthResponse<any>> {
@@ -79,9 +71,7 @@ export class AuthApiService {
     );
   }
 
-  /**
-   * Verify reset token
-   */
+  
   verifyResetToken(
     request: VerifyResetRequest,
   ): Observable<VerifyResetResponse> {
@@ -91,9 +81,7 @@ export class AuthApiService {
     );
   }
 
-  /**
-   * Reset password with token
-   */
+  
   resetPassword(request: ResetRequest): Observable<AuthResponse<any>> {
     return this.http.post<AuthResponse<any>>(
       `${this.baseUrl}/api/public/reset-password/${request.token}`,
@@ -101,9 +89,7 @@ export class AuthApiService {
     );
   }
 
-  /**
-   * Bulk create users from CSV (Admin only)
-   */
+  
   bulkCreateUsers(
     file: File,
   ): Observable<AuthResponse<BulkUserCreationResult>> {
@@ -116,27 +102,21 @@ export class AuthApiService {
     );
   }
 
-  /**
-   * Get all users (Admin only)
-   */
+  
   getAllUsers(): Observable<AuthResponse<AuthUser[]>> {
     return this.http.get<AuthResponse<AuthUser[]>>(
       `${this.baseUrl}/api/admin/users`,
     );
   }
 
-  /**
-   * Get user by ID (Admin only)
-   */
+  
   getUserById(id: number): Observable<AuthResponse<AuthUser>> {
     return this.http.get<AuthResponse<AuthUser>>(
       `${this.baseUrl}/api/admin/users/${id}`,
     );
   }
 
-  /**
-   * Delete user (Admin only)
-   */
+ 
   deleteUser(id: number): Observable<AuthResponse<any>> {
     return this.http.delete<AuthResponse<any>>(
       `${this.baseUrl}/api/admin/users/${id}`,

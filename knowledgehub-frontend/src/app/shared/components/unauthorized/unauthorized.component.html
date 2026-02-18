@@ -2,10 +2,56 @@
   <div class="max-w-md w-full bg-white shadow-lg rounded-lg p-8 text-center">
     <div class="text-6xl mb-4">🚫</div>
     <h1 class="text-4xl font-bold text-red-600 mb-4">403</h1>
-    <h2 class="text-2xl font-semibold text-gray-800 mb-4">Unauthorized Access</h2>
-    <p class="text-gray-600 mb-6">You don't have permission to access this page.</p>
-    <a routerLink="/auth/login" class="bg-primary-600 text-white px-6 py-2 rounded-lg hover:bg-primary-700 transition inline-block">
-      Go to Login
-    </a>
+    <h2 class="text-2xl font-semibold text-gray-800 mb-4">
+      Unauthorized Access
+    </h2>
+    <p class="text-gray-600 mb-6">
+      You don't have permission to access this page.
+    </p>
+    <div class="flex flex-col sm:flex-row gap-4 justify-center items-center">
+      <button
+        (click)="goBack()"
+        class="inline-flex items-center px-6 py-3 text-sm font-medium text-gray-900 bg-white border border-gray-300 rounded-lg hover:bg-gray-100 focus:ring-4 focus:outline-none focus:ring-gray-200 transition-colors"
+      >
+        <svg
+          class="w-4 h-4 me-2"
+          aria-hidden="true"
+          xmlns="http://www.w3.org/2000/svg"
+          fill="none"
+          viewBox="0 0 24 24"
+          stroke="currentColor"
+        >
+          <path
+            stroke-linecap="round"
+            stroke-linejoin="round"
+            stroke-width="2"
+            d="M10 19l-7-7m0 0l7-7m-7 7h18"
+          />
+        </svg>
+        Retour à la page précédente
+      </button>
+
+      <button
+        (click)="goHome()"
+        class="inline-flex items-center px-6 py-3 text-sm font-medium text-white bg-primary-700 rounded-lg hover:bg-primary-800 focus:ring-4 focus:outline-none focus:ring-primary-300 transition-colors"
+      >
+        <svg
+          class="w-4 h-4 me-2"
+          aria-hidden="true"
+          xmlns="http://www.w3.org/2000/svg"
+          fill="none"
+          viewBox="0 0 24 24"
+          stroke="currentColor"
+        >
+          <path
+            stroke-linecap="round"
+            stroke-linejoin="round"
+            stroke-width="2"
+            d="M3 12l2-2m0 0l7-7 7 7M5 10v10a1 1 0 001 1h3m10-11l2 2m-2-2v10a1 1 0 01-1 1h-3m-6 0a1 1 0 001-1v-4a1 1 0 011-1h2a1 1 0 011 1v4a1 1 0 001 1m-6 0h6"
+          />
+        </svg>
+        Aller a la page d'accueil
+      </button>
+    </div>
   </div>
 </div>

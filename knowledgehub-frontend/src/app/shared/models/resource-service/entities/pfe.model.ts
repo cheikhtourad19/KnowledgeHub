@@ -2,7 +2,7 @@ import { SubmissionStatus } from '../enums/submission-status.enum';
 import { File } from './file.model';
 
 /**
- * PFE Entity
+ * PFE Entity - matches backend entity structure
  */
 export interface PFE {
   id: number;
@@ -18,8 +18,10 @@ export interface PFE {
   chefDeJuryName?: string;
   rapporteurId?: number;
   rapporteurName?: string;
+  entreprise_name?: string;
+  date_debut?: Date;
+  date_fin?: Date;
   reportFile?: File;
-  journalFile?: File;
   attestationFile?: File;
   submissionDate?: Date;
   supervisorFeedback?: string;

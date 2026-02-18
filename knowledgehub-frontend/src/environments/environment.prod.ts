@@ -1,7 +1,7 @@
 // Production environment configuration (Docker)
 export const environment = {
   production: true,
-  apiUrl: '', // Empty = same origin, nginx proxies all API requests to api-gateway
+  apiUrl: '', // nefss l origine mta3 nginx li howa localhost:80, w nginx ydir reverse proxy l api gateway
   apiTimeout: 30000,
-  enableDebugLogs: false
+  enableDebugLogs: false,
 };

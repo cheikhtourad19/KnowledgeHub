@@ -7,6 +7,7 @@ import { LoginComponent } from './pages/login/login.component';
 import { ForgotPasswordComponent } from './pages/forgot-password/forgot-password.component';
 import { ResetPasswordComponent } from './pages/reset-password/reset-password.component';
 import { AuthRoutingModule } from './auth-routing.module';
+import { PasswordModule } from 'primeng/password';
 
 @NgModule({
   declarations: [
@@ -14,7 +15,13 @@ import { AuthRoutingModule } from './auth-routing.module';
     ForgotPasswordComponent,
     ResetPasswordComponent,
   ],
-  imports: [CommonModule, ReactiveFormsModule, RouterModule, AuthRoutingModule],
+  imports: [
+    CommonModule,
+    ReactiveFormsModule,
+    RouterModule,
+    AuthRoutingModule,
+    PasswordModule,
+  ],
   providers: [],
 })
 export class AuthModule {}

@@ -1,1 +1,500 @@
-<p>enseignant works!</p>
+<div class="card">
+  <div class="flex flex-wrap gap-3">
+    <button
+      label="Ajouter un enseignant"
+      class="inline-flex items-center px-4 py-2.5 bg-[#C60C30] text-white text-sm font-medium rounded-lg hover:bg-[#A00A28] focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-[#C60C30] transition-colors shadow-sm"
+      (click)="openCreateTeacherDialog()"
+    >
+      <i class="pi pi-plus"></i>creer un enseignant
+    </button>
+    <button
+      class="inline-flex items-center px-4 py-2.5 bg-gray-800 text-white text-sm font-medium rounded-lg hover:bg-gray-900 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-gray-800 transition-colors shadow-sm"
+      (click)="openBulkCreateModal()"
+    >
+      <i class="pi pi-upload"></i>
+      Importer a partir d'un fichier CSV
+    </button>
+  </div>
+  <p-confirmdialog />
+  <p-table [value]="teachers" [tableStyle]="{ 'min-width': '50rem' }">
+    <ng-template #header>
+      <tr>
+        <th>Nom</th>
+        <th>Prénom</th>
+        <th>Email</th>
+        <th>Actions</th>
+      </tr>
+    </ng-template>
+    <ng-template #body let-teacher>
+      <tr>
+        <td>{{ teacher.nom }}</td>
+        <td>{{ teacher.prenom }}</td>
+        <td>{{ teacher.email }}</td>
+        <td>
+          <button
+            class="p-button p-button-text p-button-sm p-button-danger"
+            (click)="deleteTeacher($event, teacher.authId)"
+          >
+            <i class="pi pi-trash"></i>
+          </button>
+        </td>
+      </tr>
+    </ng-template>
+  </p-table>
+</div>
+
+<p-dialog
+  header="Créer un enseignant"
+  [modal]="true"
+  [(visible)]="createVisible"
+  [style]="{ width: '25rem' }"
+>
+  <form [formGroup]="teacherForm" (ngSubmit)="onSubmit()">
+    <span class="p-text-secondary block mb-8">Créer un enseignant</span>
+
+    <div class="flex items-center gap-4 mb-4">
+      <label for="prenom" class="font-semibold w-24">Prénom</label>
+      <div class="flex-auto">
+        <input
+          pInputText
+          id="prenom"
+          formControlName="prenom"
+          class="w-full"
+          autocomplete="off"
+        />
+        <small
+          class="text-red-500"
+          *ngIf="
+            teacherForm.get('prenom')?.invalid &&
+            teacherForm.get('prenom')?.touched
+          "
+        >
+          Le prénom est requis.
+        </small>
+      </div>
+    </div>
+
+    <div class="flex items-center gap-4 mb-4">
+      <label for="nom" class="font-semibold w-24">Nom</label>
+      <div class="flex-auto">
+        <input
+          pInputText
+          id="nom"
+          formControlName="nom"
+          class="w-full"
+          autocomplete="off"
+        />
+        <small
+          class="text-red-500"
+          *ngIf="
+            teacherForm.get('nom')?.invalid && teacherForm.get('nom')?.touched
+          "
+        >
+          Le nom est requis.
+        </small>
+      </div>
+    </div>
+
+    <div class="flex items-center gap-4 mb-4">
+      <label for="email" class="font-semibold w-24">Email</label>
+      <div class="flex-auto">
+        <input
+          pInputText
+          id="email"
+          formControlName="email"
+          class="w-full"
+          autocomplete="off"
+        />
+        <small
+          class="text-red-500"
+          *ngIf="
+            teacherForm.get('email')?.hasError('required') &&
+            teacherForm.get('email')?.touched
+          "
+        >
+          L'email est requis.
+        </small>
+        <small
+          class="text-red-500"
+          *ngIf="
+            teacherForm.get('email')?.hasError('email') &&
+            teacherForm.get('email')?.touched
+          "
+        >
+          L'email est invalide.
+        </small>
+      </div>
+    </div>
+
+    <div class="flex items-center gap-4 mb-8">
+      <label for="password" class="font-semibold w-24">Password</label>
+      <div class="flex-auto">
+        <input
+          pInputText
+          id="password"
+          formControlName="password"
+          type="password"
+          class="w-full"
+          autocomplete="off"
+        />
+        <small
+          class="text-red-500"
+          *ngIf="
+            teacherForm.get('password')?.hasError('required') &&
+            teacherForm.get('password')?.touched
+          "
+        >
+          Le mot de passe est requis.
+        </small>
+        <small
+          class="text-red-500"
+          *ngIf="
+            teacherForm.get('password')?.hasError('minlength') &&
+            teacherForm.get('password')?.touched
+          "
+        >
+          Minimum 6 caractères.
+        </small>
+      </div>
+    </div>
+
+    <div class="flex justify-end gap-2">
+      <p-button
+        label="Annuler"
+        severity="secondary"
+        type="button"
+        (click)="createVisible = false"
+      />
+      <p-button
+        label="Enregistrer"
+        type="submit"
+        [disabled]="teacherForm.invalid"
+      />
+    </div>
+  </form>
+</p-dialog>
+
+<p-dialog
+  [(visible)]="displayBulkCreateModal"
+  [modal]="true"
+  [style]="{ width: '40rem' }"
+>
+  <ng-template #header>
+    <h2 class="text-lg font-semibold">
+      Créer des enseignants à partir d'un CSV
+    </h2>
+  </ng-template>
+
+  <p-toast />
+  <p-fileupload
+    name="csvFile"
+    [auto]="false"
+    accept=".csv"
+    [maxFileSize]="5000000"
+    [multiple]="false"
+    (onSelect)="onCsvSelected($event)"
+  >
+    <ng-template
+      #header
+      let-files
+      let-chooseCallback="chooseCallback"
+      let-clearCallback="clearCallback"
+      let-uploadCallback="uploadCallback"
+    >
+      <div class="flex gap-2 items-center">
+        <p-button
+          (onClick)="chooseCallback()"
+          icon="pi pi-file"
+          [rounded]="true"
+          [outlined]="true"
+          [disabled]="files?.length > 0"
+        />
+        <p-button
+          (onClick)="uploadCallback()"
+          icon="pi pi-cloud-upload"
+          [rounded]="true"
+          [outlined]="true"
+          severity="success"
+          [disabled]="!files || files.length === 0"
+        />
+        <p-button
+          (onClick)="clearCallback()"
+          icon="pi pi-times"
+          [rounded]="true"
+          [outlined]="true"
+          severity="danger"
+          [disabled]="!files || files.length === 0"
+        />
+      </div>
+    </ng-template>
+
+    <ng-template #content let-files let-removeFileCallback="removeFileCallback">
+      <div class="pt-4">
+        <div *ngIf="files?.length > 0">
+          <div
+            class="flex items-center justify-between p-4 border border-surface rounded-border"
+          >
+            <div class="flex items-center gap-3">
+              <i class="pi pi-file-excel text-green-500 text-2xl"></i>
+              <div>
+                <p
+                  class="font-semibold text-ellipsis max-w-60 whitespace-nowrap overflow-hidden"
+                >
+                  {{ files[0].name }}
+                </p>
+                <p class="text-sm text-muted-color">
+                  {{ formatSize(files[0].size) }}
+                </p>
+              </div>
+            </div>
+            <div class="flex items-center gap-3">
+              <p-badge value="En attente" severity="warn" />
+              <p-button
+                icon="pi pi-times"
+                (click)="removeFileCallback($event, 0)"
+                [outlined]="true"
+                [rounded]="true"
+                severity="danger"
+                size="small"
+              />
+            </div>
+          </div>
+        </div>
+      </div>
+    </ng-template>
+
+    <ng-template #empty>
+      <div class="flex items-center justify-center flex-col py-8">
+        <i class="pi pi-cloud-upload text-4xl text-muted-color mb-4"></i>
+        <p class="text-muted-color">Glissez-déposez votre fichier CSV ici.</p>
+        <p class="text-sm text-muted-color mt-1">
+          Un seul fichier .csv accepté (max 5MB)
+        </p>
+      </div>
+    </ng-template>
+  </p-fileupload>
+
+  <ng-template #footer>
+    <p-button
+      label="Annuler"
+      [text]="true"
+      severity="secondary"
+      (click)="displayBulkCreateModal = false"
+    />
+    <p-button
+      label="Importer"
+      [outlined]="true"
+      severity="primary"
+      [disabled]="!selectedCsvFile"
+      (click)="submitCsv()"
+    />
+  </ng-template>
+</p-dialog>
+
+@if (displayBulkResultsModal) {
+  <div
+    class="fixed inset-0 z-50 flex items-center justify-center p-4 bg-gray-900/50 backdrop-blur-sm"
+    (click)="displayBulkResultsModal = false"
+  >
+    <div
+      class="bg-white rounded-lg shadow-xl max-w-3xl w-full max-h-[90vh] overflow-hidden flex flex-col"
+      (click)="$event.stopPropagation()"
+    >
+      <div
+        class="flex items-center justify-between p-6 border-b border-gray-200"
+      >
+        <h3 class="text-xl font-semibold text-gray-900">
+          Résultats de la création en masse
+        </h3>
+        <button
+          (click)="displayBulkResultsModal = false"
+          class="text-gray-400 hover:text-gray-600 transition-colors"
+        >
+          <i class="pi pi-times text-xl"></i>
+        </button>
+      </div>
+      <div class="p-6 overflow-y-auto">
+        <!-- Summary Cards -->
+        <div class="grid grid-cols-2 gap-4 mb-6">
+          <div class="p-4 bg-green-50 rounded-lg border border-green-200">
+            <div class="flex items-center">
+              <i class="pi pi-check-circle text-green-600 text-2xl mr-3"></i>
+              <div>
+                <p class="text-2xl font-bold text-green-900">
+                  {{ createdUsers.length }}
+                </p>
+                <p class="text-xs text-green-700 mt-0.5">
+                  enseignant(s) créé(s)
+                </p>
+              </div>
+            </div>
+          </div>
+          <div class="p-4 bg-red-50 rounded-lg border border-red-200">
+            <div class="flex items-center">
+              <i class="pi pi-times-circle text-red-600 text-2xl mr-3"></i>
+              <div>
+                <p class="text-2xl font-bold text-red-900">
+                  {{ notCreatedUsers.length }}
+                </p>
+                <p class="text-xs text-red-700 mt-0.5">
+                  enseignant(s) non créé(s)
+                </p>
+              </div>
+            </div>
+          </div>
+        </div>
+        <!-- Tabs -->
+        <div class="mb-4">
+          <div class="border-b border-gray-200">
+            <nav class="-mb-px flex space-x-8">
+              <button
+                (click)="activeResultTab = 'created'"
+                [class.border-[#C60C30]]="activeResultTab === 'created'"
+                [class.text-[#C60C30]]="activeResultTab === 'created'"
+                [class.border-transparent]="activeResultTab !== 'created'"
+                [class.text-gray-500]="activeResultTab !== 'created'"
+                class="whitespace-nowrap py-4 px-1 border-b-2 font-medium text-sm hover:text-[#C60C30] hover:border-[#C60C30] transition-colors"
+              >
+                Créés ({{ createdUsers.length }})
+              </button>
+              <button
+                (click)="activeResultTab = 'notCreated'"
+                [class.border-[#C60C30]]="activeResultTab === 'notCreated'"
+                [class.text-[#C60C30]]="activeResultTab === 'notCreated'"
+                [class.border-transparent]="activeResultTab !== 'notCreated'"
+                [class.text-gray-500]="activeResultTab !== 'notCreated'"
+                class="whitespace-nowrap py-4 px-1 border-b-2 font-medium text-sm hover:text-[#C60C30] hover:border-[#C60C30] transition-colors"
+              >
+                Non créés ({{ notCreatedUsers.length }})
+              </button>
+            </nav>
+          </div>
+        </div>
+        <!-- Created Users Table -->
+        @if (activeResultTab === "created") {
+          <div
+            class="bg-white rounded-lg border border-gray-200 overflow-hidden"
+          >
+            <div class="overflow-x-auto">
+              <table class="w-full text-sm text-left">
+                <thead
+                  class="text-xs font-semibold text-gray-700 uppercase tracking-wider bg-gray-50 border-b border-gray-200"
+                >
+                  <tr>
+                    <th class="px-6 py-3">Email</th>
+                    <th class="px-6 py-3">Nom</th>
+                    <th class="px-6 py-3">Prénom</th>
+                    <th class="px-6 py-3">Notifié</th>
+                  </tr>
+                </thead>
+                <tbody>
+                  @for (result of createdUsers; track result) {
+                    <tr
+                      class="border-b border-gray-200 hover:bg-gray-50 transition-colors"
+                    >
+                      <td class="px-6 py-4 text-gray-900">
+                        {{ result.email }}
+                      </td>
+                      <td class="px-6 py-4 text-gray-900">
+                        {{ result.nom }}
+                      </td>
+                      <td class="px-6 py-4 text-gray-900">
+                        {{ result.prenom }}
+                      </td>
+                      <td class="px-6 py-4">
+                        @if (result.notified) {
+                          <span
+                            class="inline-flex items-center px-2.5 py-1 rounded-full text-xs font-medium bg-green-100 text-green-800"
+                          >
+                            <i class="pi pi-check-circle mr-1.5"></i> Oui
+                          </span>
+                        }
+                        @if (!result.notified) {
+                          <span
+                            class="inline-flex items-center px-2.5 py-1 rounded-full text-xs font-medium bg-yellow-100 text-yellow-800"
+                          >
+                            <i class="pi pi-exclamation-circle mr-1.5"></i>
+                            Non
+                          </span>
+                        }
+                      </td>
+                    </tr>
+                  }
+                </tbody>
+              </table>
+            </div>
+            @if (createdUsers.length === 0) {
+              <div class="text-center py-8">
+                <i class="pi pi-inbox text-4xl text-gray-300 mb-2"></i>
+                <p class="text-gray-500 text-sm">Aucun enseignant créé</p>
+              </div>
+            }
+          </div>
+        }
+        <!-- Not Created Users Table -->
+        @if (activeResultTab === "notCreated") {
+          <div
+            class="bg-white rounded-lg border border-gray-200 overflow-hidden"
+          >
+            <div class="overflow-x-auto">
+              <table class="w-full text-sm text-left">
+                <thead
+                  class="text-xs font-semibold text-gray-700 uppercase tracking-wider bg-gray-50 border-b border-gray-200"
+                >
+                  <tr>
+                    <th class="px-6 py-3">Email</th>
+                    <th class="px-6 py-3">Nom</th>
+                    <th class="px-6 py-3">Prénom</th>
+                    <th class="px-6 py-3">Raison</th>
+                  </tr>
+                </thead>
+                <tbody>
+                  @for (result of notCreatedUsers; track result) {
+                    <tr
+                      class="border-b border-gray-200 hover:bg-gray-50 transition-colors"
+                    >
+                      <td class="px-6 py-4 text-gray-900">
+                        {{ result.email }}
+                      </td>
+                      <td class="px-6 py-4 text-gray-900">
+                        {{ result.nom }}
+                      </td>
+                      <td class="px-6 py-4 text-gray-900">
+                        {{ result.prenom }}
+                      </td>
+                      <td class="px-6 py-4">
+                        <span
+                          class="inline-flex items-center px-2.5 py-1 rounded-full text-xs font-medium bg-red-100 text-red-800"
+                        >
+                          <i class="pi pi-info-circle mr-1.5"></i>
+                          {{ result.reason || "Non spécifié" }}
+                        </span>
+                      </td>
+                    </tr>
+                  }
+                </tbody>
+              </table>
+            </div>
+            @if (notCreatedUsers.length === 0) {
+              <div class="text-center py-8">
+                <i class="pi pi-check-circle text-4xl text-green-300 mb-2"></i>
+                <p class="text-gray-500 text-sm">
+                  Tous les enseignant ont été créés avec succès!
+                </p>
+              </div>
+            }
+          </div>
+        }
+      </div>
+      <div class="flex justify-end p-6 border-t border-gray-200">
+        <button
+          (click)="closeBulkResultsModal()"
+          class="px-6 py-2.5 text-sm font-medium text-white bg-gray-800 rounded-lg hover:bg-gray-900 focus:outline-none focus:ring-2 focus:ring-gray-800 transition-colors"
+        >
+          <i class="pi pi-times mr-2"></i>
+          Fermer
+        </button>
+      </div>
+    </div>
+  </div>
+}

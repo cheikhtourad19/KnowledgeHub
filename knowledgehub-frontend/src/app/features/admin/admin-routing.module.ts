@@ -5,6 +5,7 @@ import { StudentsClasseComponent } from './pages/students.classe/students.classe
 import { StudentsGestionComponent } from './pages/students.gestion/students.gestion.component';
 import { PfeGestionComponent } from './pages/pfe.gestion/pfe.gestion.component';
 import { PfeDemandeComponent } from './pages/pfe.demande/pfe.demande.component';
+import { DemandeDetailsComponent } from './pages/pfe.demande/demande-details/demande-details.component';
 import { StageComponent } from './pages/stage/stage.component';
 import { DocumentsComponent } from './pages/documents/documents.component';
 import { EnseignantComponent } from './pages/enseignant/enseignant.component';
@@ -35,6 +36,10 @@ const routes: Routes = [
       {
         path: 'pfe/demandes',
         component: PfeDemandeComponent,
+      },
+      {
+        path: 'pfe/demandes/:id',
+        component: DemandeDetailsComponent,
       },
       {
         path: 'stage',
