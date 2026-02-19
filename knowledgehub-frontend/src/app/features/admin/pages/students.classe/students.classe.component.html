@@ -3,13 +3,13 @@
   <div class="flex justify-between items-center mb-6">
     <h2 class="text-2xl font-bold text-gray-800">Gestion des Classes</h2>
     <button
-      pButton
-      type="button"
-      label="Créer une Classe"
       icon="pi pi-plus"
-      class="p-button-success"
+      class="inline-flex items-center px-4 py-2.5 bg-[#C60C30] text-white text-sm font-medium rounded-lg hover:bg-[#A00A28] focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-[#C60C30] transition-colors shadow-sm"
       (click)="showCreateDialog()"
-    ></button>
+    >
+      <i class="pi pi-plus mr-2"></i>
+      Créer une Classe
+    </button>
   </div>
 
   <!-- Classes Table -->
@@ -103,14 +103,13 @@
         (click)="hideDialog()"
       ></button>
       <button
-        pButton
-        type="button"
-        label="Créer"
-        icon="pi pi-check"
-        class="p-button-success"
+        class="inline-flex items-center px-4 py-2.5 bg-[#C60C30] text-white text-sm font-medium rounded-lg hover:bg-[#A00A28] focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-[#C60C30] transition-colors shadow-sm"
         (click)="createClass()"
         [disabled]="classeForm.invalid"
-      ></button>
+      >
+        <i class="pi pi-check mr-2"></i>
+        créer
+      </button>
     </div>
   </ng-template>
 </p-dialog>
