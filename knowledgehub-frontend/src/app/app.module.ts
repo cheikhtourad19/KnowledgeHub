@@ -17,6 +17,8 @@ import { ProgressSpinnerModule } from 'primeng/progressspinner';
 import { HTTP_INTERCEPTORS } from '@angular/common/http';
 import { loadingInterceptor } from './core/interceptors/loading.interceptor';
 import { LoadingOverlayComponent } from './shared/components/loading-overlay/loading-overlay.component';
+import { NgxExtendedPdfViewerModule } from 'ngx-extended-pdf-viewer';
+
 @NgModule({
   declarations: [AppComponent],
   imports: [
@@ -28,6 +30,7 @@ import { LoadingOverlayComponent } from './shared/components/loading-overlay/loa
     ToastModule,
     ProgressSpinnerModule,
     LoadingOverlayComponent,
+    NgxExtendedPdfViewerModule,
   ],
   providers: [
     provideHttpClient(

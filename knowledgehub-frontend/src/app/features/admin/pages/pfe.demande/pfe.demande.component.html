@@ -1,87 +1,286 @@
-<div class="p-6">
-  <!-- Header Section -->
-  <div class="flex justify-between items-center mb-6">
-    <h2 class="text-2xl font-bold text-gray-800">Demandes de PFE</h2>
-  </div>
-
-  <!-- Demandes Table -->
-  <p-table
-    [value]="demandes"
-    styleClass="p-datatable-striped"
-    [tableStyle]="{ 'min-width': '70rem' }"
-    class="shadow-md rounded-lg"
-  >
-    <ng-template pTemplate="header">
-      <tr>
-        <th class="bg-blue-50 text-left px-4 py-3">ID</th>
-        <th class="bg-blue-50 text-left px-4 py-3">Étudiant</th>
-        <th class="bg-blue-50 text-left px-4 py-3">Titre du PFE</th>
-        <th class="bg-blue-50 text-left px-4 py-3">Entreprise</th>
-        <th class="bg-blue-50 text-left px-4 py-3">Date de Début</th>
-        <th class="bg-blue-50 text-left px-4 py-3">Statut</th>
-        <th class="bg-blue-50 text-center px-4 py-3">Date de Création</th>
-      </tr>
-    </ng-template>
-    <ng-template pTemplate="body" let-demande>
-      <tr
-        class="hover:bg-gray-50 cursor-pointer"
-        (click)="viewDetails(demande)"
+<!-- ── Page Header ── -->
+<div
+  class="flex items-center justify-between mb-5 pb-5 border-b border-gray-200 dark:border-gray-700"
+>
+  <div>
+    <h2 class="text-lg font-bold text-gray-900 dark:text-white">
+      Demandes de PFE
+    </h2>
+    <p class="text-xs text-gray-500 dark:text-gray-400 mt-0.5">
+      {{ demandes.length }} demande{{ demandes.length !== 1 ? "s" : "" }}
+      <span
+        *ngIf="allDemandes.length !== demandes.length"
+        class="text-[#C60C30]"
       >
-        <td class="px-4 py-3">{{ demande.id }}</td>
-        <td class="px-4 py-3">
-          <div>
-            <p class="font-medium">{{ demande.studentName || "N/A" }}</p>
-            <p class="text-sm text-gray-600">
-              {{ demande.studentEmail || "" }}
-            </p>
-          </div>
-        </td>
-        <td class="px-4 py-3 font-medium">
-          <div class="max-w-xs">
-            <p
-              class="truncate"
-              [pTooltip]="demande.pfeTitle"
-              tooltipPosition="top"
-            >
-              {{ demande.pfeTitle }}
-            </p>
-          </div>
-        </td>
-        <td class="px-4 py-3">{{ demande.entrepriseName }}</td>
-        <td class="px-4 py-3">{{ demande.dateDebut | date: "dd/MM/yyyy" }}</td>
-        <td class="px-4 py-3">
-          <span
-            class="px-3 py-1 rounded-full text-sm font-semibold"
-            [ngClass]="getStatusClass(demande.status)"
-          >
-            {{ getStatusLabel(demande.status) }}
-          </span>
-        </td>
-        <td class="px-4 py-3 text-center">
-          {{ demande.createdAt | date: "dd/MM/yyyy" }}
-        </td>
-      </tr>
-    </ng-template>
-    <ng-template pTemplate="emptymessage">
-      <tr>
-        <td colspan="7" class="text-center py-8 text-gray-500">
-          <i class="pi pi-inbox text-4xl mb-3 block"></i>
-          <p>Aucune demande trouvée</p>
-        </td>
-      </tr>
-    </ng-template>
-  </p-table>
-
-  <!-- Info Message -->
-  <div
-    class="mt-4 p-4 bg-blue-50 border border-blue-200 rounded-lg flex items-start gap-3"
-  >
-    <i class="pi pi-info-circle text-blue-600 text-xl"></i>
-    <p class="text-sm text-blue-800">
-      Cliquez sur une demande pour voir ses détails complets.
+        (filtrées sur {{ allDemandes.length }})
+      </span>
     </p>
   </div>
 </div>
 
-<!-- Toast Messages -->
-<p-toast></p-toast>
+<!-- ── Filter Bar ── -->
+<div class="flex flex-wrap items-center gap-3 mb-4">
+  <!-- Year filter -->
+  <div class="flex flex-col gap-1">
+    <label
+      class="text-[10px] font-bold uppercase tracking-widest text-gray-400 dark:text-gray-500 px-0.5"
+      >Année</label
+    >
+    <p-select
+      [options]="yearOptions"
+      [ngModel]="selectedYear"
+      (ngModelChange)="onYearChange($event)"
+      optionLabel="label"
+      optionValue="value"
+      appendTo="body"
+      [style]="{ width: '160px' }"
+    ></p-select>
+  </div>
+
+  <!-- Status filter -->
+  <div class="flex flex-col gap-1">
+    <label
+      class="text-[10px] font-bold uppercase tracking-widest text-gray-400 dark:text-gray-500 px-0.5"
+      >Statut</label
+    >
+    <p-select
+      [options]="statusOptions"
+      [ngModel]="selectedStatus"
+      (ngModelChange)="onStatusChange($event)"
+      optionLabel="label"
+      optionValue="value"
+      appendTo="body"
+      [style]="{ width: '185px' }"
+    ></p-select>
+  </div>
+
+  <!-- Clear filters button — only shown when non-default filters active -->
+  <div class="flex flex-col gap-1" *ngIf="activeFilterCount > 0">
+    <label
+      class="text-[10px] font-bold uppercase tracking-widest text-transparent px-0.5 select-none"
+      >·</label
+    >
+    <button
+      type="button"
+      (click)="clearFilters()"
+      class="inline-flex items-center gap-1.5 px-3 py-2 text-xs font-semibold rounded-lg border border-[#C60C30] text-[#C60C30] hover:bg-[#C60C30] hover:text-white transition-all duration-150"
+    >
+      <svg
+        class="w-3 h-3"
+        fill="none"
+        viewBox="0 0 24 24"
+        stroke="currentColor"
+        stroke-width="2.5"
+      >
+        <path
+          stroke-linecap="round"
+          stroke-linejoin="round"
+          d="M6 18L18 6M6 6l12 12"
+        />
+      </svg>
+      Réinitialiser
+      <span
+        class="w-4 h-4 rounded-full bg-[#C60C30] text-white text-[10px] font-bold flex items-center justify-center group-hover:bg-white group-hover:text-[#C60C30]"
+      >
+        {{ activeFilterCount }}
+      </span>
+    </button>
+  </div>
+</div>
+
+<!-- ── Table ── -->
+<div
+  class="rounded-lg border border-gray-200 dark:border-gray-700 overflow-hidden"
+>
+  <!-- Table Header -->
+  <div
+    class="grid grid-cols-[80px_1fr_1.4fr_1fr_120px_130px_120px] bg-[#333333] border-l-[4px] border-[#C60C30]"
+  >
+    <div
+      class="px-4 py-3 text-[10px] font-bold text-gray-400 uppercase tracking-widest"
+    >
+      #
+    </div>
+    <div
+      class="px-4 py-3 text-[10px] font-bold text-white uppercase tracking-widest"
+    >
+      Étudiant
+    </div>
+    <div
+      class="px-4 py-3 text-[10px] font-bold text-white uppercase tracking-widest"
+    >
+      Titre du PFE
+    </div>
+    <div
+      class="px-4 py-3 text-[10px] font-bold text-white uppercase tracking-widest"
+    >
+      Entreprise
+    </div>
+    <div
+      class="px-4 py-3 text-[10px] font-bold text-white uppercase tracking-widest"
+    >
+      Début
+    </div>
+    <div
+      class="px-4 py-3 text-[10px] font-bold text-white uppercase tracking-widest"
+    >
+      Statut
+    </div>
+    <div
+      class="px-4 py-3 text-[10px] font-bold text-white uppercase tracking-widest text-right"
+    >
+      Créé le
+    </div>
+  </div>
+
+  <!-- Table Body -->
+  <div
+    class="divide-y divide-gray-100 dark:divide-gray-800 bg-white dark:bg-gray-900"
+  >
+    <div
+      *ngFor="let demande of demandes"
+      (click)="viewDetails(demande)"
+      class="grid grid-cols-[80px_1fr_1.4fr_1fr_120px_130px_120px] items-center cursor-pointer hover:bg-[#fef6f7] dark:hover:bg-red-900/10 hover:border-l-[3px] hover:border-[#C60C30] transition-all duration-150 group"
+    >
+      <!-- ID -->
+      <div class="px-4 py-3.5">
+        <span class="text-xs font-mono text-gray-400 dark:text-gray-500">{{
+          demande.id
+        }}</span>
+      </div>
+
+      <!-- Student -->
+      <div class="px-4 py-3.5 flex items-center gap-3 min-w-0">
+        <div
+          class="w-8 h-8 rounded-full bg-[#C60C30] flex items-center justify-center text-white text-xs font-bold flex-shrink-0 group-hover:scale-110 transition-transform duration-150"
+        >
+          {{ (demande.studentName || "N")[0] }}
+        </div>
+        <div class="min-w-0">
+          <p
+            class="text-sm font-semibold text-gray-900 dark:text-white truncate"
+          >
+            {{ demande.studentName || "N/A" }}
+          </p>
+          <p class="text-xs text-gray-500 dark:text-gray-400 truncate">
+            {{ demande.studentEmail || "" }}
+          </p>
+        </div>
+      </div>
+
+      <!-- PFE Title -->
+      <div class="px-4 py-3.5 min-w-0">
+        <p
+          class="text-sm text-gray-800 dark:text-gray-200 font-medium truncate"
+          [pTooltip]="demande.pfeTitle"
+          tooltipPosition="top"
+        >
+          {{ demande.pfeTitle }}
+        </p>
+      </div>
+
+      <!-- Company -->
+      <div class="px-4 py-3.5">
+        <p class="text-sm text-gray-700 dark:text-gray-300 truncate">
+          {{ demande.entrepriseName }}
+        </p>
+      </div>
+
+      <!-- Start Date -->
+      <div class="px-4 py-3.5">
+        <p class="text-sm text-gray-700 dark:text-gray-300 tabular-nums">
+          {{ demande.dateDebut | date: "dd/MM/yyyy" }}
+        </p>
+      </div>
+
+      <!-- Status -->
+      <div class="px-4 py-3.5">
+        <span
+          class="inline-flex px-2.5 py-0.5 rounded-full text-[11px] font-bold tracking-wide uppercase"
+          [ngClass]="getStatusClass(demande.status)"
+          >{{ getStatusLabel(demande.status) }}</span
+        >
+      </div>
+
+      <!-- Created At + Arrow -->
+      <div class="px-4 py-3.5 text-right">
+        <p class="text-xs text-gray-500 dark:text-gray-400 tabular-nums">
+          {{ demande.createdAt | date: "dd/MM/yyyy" }}
+        </p>
+        <svg
+          class="w-3.5 h-3.5 text-gray-300 dark:text-gray-600 group-hover:text-[#C60C30] transition-colors ml-auto mt-1"
+          fill="none"
+          viewBox="0 0 24 24"
+          stroke="currentColor"
+          stroke-width="2.5"
+        >
+          <path
+            stroke-linecap="round"
+            stroke-linejoin="round"
+            d="M9 5l7 7-7 7"
+          />
+        </svg>
+      </div>
+    </div>
+
+    <!-- Empty State -->
+    <div *ngIf="demandes.length === 0" class="py-16 text-center">
+      <div
+        class="w-14 h-14 rounded-full bg-gray-100 dark:bg-gray-800 flex items-center justify-center mx-auto mb-4"
+      >
+        <svg
+          class="w-7 h-7 text-gray-300 dark:text-gray-600"
+          fill="none"
+          viewBox="0 0 24 24"
+          stroke="currentColor"
+          stroke-width="1.5"
+        >
+          <path
+            stroke-linecap="round"
+            stroke-linejoin="round"
+            d="M20 13V6a2 2 0 00-2-2H6a2 2 0 00-2 2v7m16 0v5a2 2 0 01-2 2H6a2 2 0 01-2-2v-5m16 0h-2.586a1 1 0 00-.707.293l-2.414 2.414a1 1 0 01-.707.293h-3.172a1 1 0 01-.707-.293l-2.414-2.414A1 1 0 006.586 13H4"
+          />
+        </svg>
+      </div>
+      <p class="text-sm font-semibold text-gray-500 dark:text-gray-400">
+        Aucune demande trouvée
+      </p>
+      <p class="text-xs text-gray-400 dark:text-gray-500 mt-1">
+        <ng-container *ngIf="activeFilterCount > 0">
+          Aucun résultat pour les filtres sélectionnés.
+          <button
+            (click)="clearFilters()"
+            class="text-[#C60C30] underline ml-1 hover:no-underline"
+          >
+            Réinitialiser
+          </button>
+        </ng-container>
+        <ng-container *ngIf="activeFilterCount === 0">
+          Les demandes soumises par les étudiants apparaîtront ici.
+        </ng-container>
+      </p>
+    </div>
+  </div>
+</div>
+
+<!-- ── Info Note ── -->
+<div
+  class="mt-4 flex items-center gap-2.5 px-4 py-3 bg-gray-50 dark:bg-gray-800 border border-gray-200 dark:border-gray-700 rounded-lg"
+>
+  <svg
+    class="w-4 h-4 text-gray-400 flex-shrink-0"
+    fill="none"
+    viewBox="0 0 24 24"
+    stroke="currentColor"
+    stroke-width="2"
+  >
+    <path
+      stroke-linecap="round"
+      stroke-linejoin="round"
+      d="M13 16h-1v-4h-1m1-4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z"
+    />
+  </svg>
+  <p class="text-xs text-gray-500 dark:text-gray-400">
+    Cliquez sur une ligne pour consulter les détails complets de la demande.
+  </p>
+</div>

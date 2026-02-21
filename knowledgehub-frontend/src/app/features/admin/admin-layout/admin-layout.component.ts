@@ -5,12 +5,14 @@ import { AuthService } from '../../../core/services/auth.service';
 import { initFlowbite } from 'flowbite';
 
 @Component({
-    selector: 'app-admin-layout',
-    templateUrl: './admin-layout.component.html',
-    styleUrls: ['./admin-layout.component.scss'],
-    standalone: false
+  selector: 'app-admin-layout',
+  templateUrl: './admin-layout.component.html',
+  styleUrls: ['./admin-layout.component.scss'],
+  standalone: false,
 })
 export class AdminLayoutComponent implements OnInit {
+  isDarkMode = false;
+
   isDrawerOpen = false;
   currentUser: any = null;
   userInitials = '';
@@ -27,8 +29,27 @@ export class AdminLayoutComponent implements OnInit {
   ) {}
 
   ngOnInit(): void {
+    const savedTheme = localStorage.getItem('theme');
+    if (
+      savedTheme === 'dark' ||
+      (!savedTheme && window.matchMedia('(prefers-color-scheme: dark)').matches)
+    ) {
+      this.isDarkMode = true;
+      document.documentElement.classList.add('dark');
+    }
     initFlowbite();
     this.loadUserData();
+  }
+  toggleDarkMode(): void {
+    this.isDarkMode = !this.isDarkMode;
+
+    if (this.isDarkMode) {
+      document.documentElement.classList.add('dark');
+      localStorage.setItem('theme', 'dark');
+    } else {
+      document.documentElement.classList.remove('dark');
+      localStorage.setItem('theme', 'light');
+    }
   }
 
   loadUserData(): void {

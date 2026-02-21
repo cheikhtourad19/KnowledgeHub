@@ -14,16 +14,36 @@ import { LoadingService } from '../../../core/services/loading.service';
         class="fixed inset-0 z-[9999] flex items-center justify-center bg-black/40 backdrop-blur-sm"
       >
         <div
-          class="bg-white rounded-2xl p-8 flex flex-col items-center space-y-4 shadow-2xl"
+          class="bg-white dark:bg-gray-900 rounded-lg shadow-2xl overflow-hidden flex flex-col items-center border border-gray-200 dark:border-gray-700 min-w-[160px]"
         >
-          <p-progress-spinner
-            strokeWidth="4"
-            fill="transparent"
-            animationDuration=".8s"
-            [style]="{ width: '60px', height: '60px' }"
-            ariaLabel="loading"
-          />
-          <span class="text-sm font-medium text-[#333333]">Chargement...</span>
+          <!-- Red accent top bar -->
+          <div class="w-full h-1 bg-[#C60C30]"></div>
+
+          <div class="px-8 py-7 flex flex-col items-center gap-4">
+            <p-progress-spinner
+              strokeWidth="3"
+              fill="transparent"
+              animationDuration=".8s"
+              [style]="{ width: '48px', height: '48px' }"
+              ariaLabel="loading"
+            />
+            <div class="flex items-center gap-2">
+              <span
+                class="w-1.5 h-1.5 rounded-full bg-[#C60C30] animate-bounce [animation-delay:0ms]"
+              ></span>
+              <span
+                class="w-1.5 h-1.5 rounded-full bg-[#C60C30] animate-bounce [animation-delay:150ms]"
+              ></span>
+              <span
+                class="w-1.5 h-1.5 rounded-full bg-[#C60C30] animate-bounce [animation-delay:300ms]"
+              ></span>
+            </div>
+            <span
+              class="text-xs font-bold uppercase tracking-widest text-[#333333] dark:text-gray-300"
+            >
+              Chargement
+            </span>
+          </div>
         </div>
       </div>
     }

@@ -12,6 +12,7 @@ import { DemandeDetailsComponent } from './pages/pfe.demande/demande-details/dem
 import { StageComponent } from './pages/stage/stage.component';
 import { EnseignantComponent } from './pages/enseignant/enseignant.component';
 import { DocumentsComponent } from './pages/documents/documents.component';
+import { PdfViewerModule } from 'ng2-pdf-viewer';
 
 import { TableModule } from 'primeng/table';
 import { ButtonModule } from 'primeng/button';
@@ -42,9 +43,9 @@ import { TooltipModule } from 'primeng/tooltip';
     TableModule,
     ButtonModule,
     DialogModule,
-
     InputTextModule,
     SelectModule,
+    PdfViewerModule,
     ToastModule,
     Badge,
     FileUploadModule,

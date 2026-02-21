@@ -175,9 +175,10 @@ export class ResourceApiService {
   updateDemandStatus(
     id: number,
     request: UpdateDemandStatusRequest,
+    teacherId?: number,
   ): Observable<ApiResponse<DemandePFE>> {
     return this.http.put<ApiResponse<DemandePFE>>(
-      `${this.baseUrl}/api/admin/pfe/demande/${id}/status`,
+      `${this.baseUrl}/api/admin/pfe/demande/${id}/status?teacherId=${teacherId}`,
       request,
     );
   }
@@ -397,6 +398,12 @@ export class ResourceApiService {
     return this.http.post<ApiResponse<Stage>>(
       `${this.baseUrl}/api/teacher/stage/${stageId}/feedback`,
       { feedback },
+    );
+  }
+
+  viewpdf(fileId: number): Observable<ApiResponse<string>> {
+    return this.http.get<ApiResponse<string>>(
+      `${this.baseUrl}/api/admin/documents/view/${fileId}`,
     );
   }
 }

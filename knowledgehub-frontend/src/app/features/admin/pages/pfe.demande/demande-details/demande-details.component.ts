@@ -5,7 +5,8 @@ import { DemandePFE } from '../../../../../shared/models/resource-service/entiti
 import { ResourceApiService } from '../../../../../shared/services/resource-api.service';
 import { DemandStatus } from '../../../../../shared/models/resource-service/enums/demand-status.enum';
 import { UpdateDemandStatusRequest } from '../../../../../shared/models/resource-service/requests/update-demand-status-request.model';
-
+import { Teacher } from '../../../../../shared/models/user-service/entities/teacher.model';
+import { UserApiService } from '../../../../../shared/services/user-api.service';
 @Component({
   selector: 'app-demande-details',
   templateUrl: './demande-details.component.html',
@@ -17,17 +18,18 @@ export class DemandeDetailsComponent implements OnInit {
   demande: DemandePFE | null = null;
   demandeId: number | null = null;
   DemandStatus = DemandStatus;
-
-  // Dialog states
+  pdf_presigned_url: string = '';
   displayApproveDialog: boolean = false;
   displayRejectDialog: boolean = false;
   adminFeedback: string = '';
-
+  teachers: Teacher[] = [];
+  selectedTeacherId: number | null = null;
   constructor(
     private route: ActivatedRoute,
     private router: Router,
     private resourceApiService: ResourceApiService,
     private messageService: MessageService,
+    private userService: UserApiService,
   ) {}
 
   ngOnInit(): void {
@@ -37,6 +39,50 @@ export class DemandeDetailsComponent implements OnInit {
         this.loadDemandeDetails();
       }
     });
+    this.fetchteachers();
+  }
+
+  fetchteachers() {
+    this.userService.getAllTeachers().subscribe({
+      next: (response) => {
+        this.teachers = (response.data ?? []).map((t: Teacher) => ({
+          ...t,
+          fullName:
+            `${t.prenom ?? ''} ${t.nom ?? ''}`.trim() || t.email || 'Sans nom',
+        }));
+      },
+      error: () => {
+        this.messageService.add({
+          severity: 'error',
+          summary: 'Erreur',
+          detail: 'Impossible de charger les enseignants.',
+        });
+      },
+    });
+  }
+
+  loadDemandePdf(): void {
+    if (!this.demande || !this.demande.attestationFile) {
+      this.messageService.add({
+        severity: 'warn',
+        summary: 'Avertissement',
+        detail: "Le fichier d'attestation n'est pas disponible",
+      });
+      return;
+    }
+    this.resourceApiService.viewpdf(this.demande.attestationFile.id).subscribe({
+      next: (response) => {
+        this.pdf_presigned_url = response.data ?? '';
+        console.log('PDF URL:', this.pdf_presigned_url);
+      },
+      error: (error) => {
+        this.messageService.add({
+          severity: 'error',
+          summary: 'Erreur',
+          detail: "Erreur lors du chargement du PDF de l'attestation",
+        });
+      },
+    });
   }
 
   loadDemandeDetails(): void {
@@ -45,6 +91,7 @@ export class DemandeDetailsComponent implements OnInit {
     this.resourceApiService.getDemandePFEById(this.demandeId).subscribe({
       next: (response) => {
         this.demande = response.data || null;
+        this.loadDemandePdf();
       },
       error: (error) => {
         this.messageService.add({
@@ -85,12 +132,16 @@ export class DemandeDetailsComponent implements OnInit {
     if (!this.demandeId) return;
 
     const request: UpdateDemandStatusRequest = {
-      status: DemandStatus.APPROVED,
+      status: DemandStatus.ACCEPTED,
       adminFeedback: this.adminFeedback || undefined,
     };
 
     this.resourceApiService
-      .updateDemandStatus(this.demandeId, request)
+      .updateDemandStatus(
+        this.demandeId,
+        request,
+        this.selectedTeacherId || undefined,
+      )
       .subscribe({
         next: (response) => {
           this.messageService.add({
@@ -154,9 +205,7 @@ export class DemandeDetailsComponent implements OnInit {
     switch (status) {
       case DemandStatus.UPLOADED:
         return 'bg-blue-100 text-blue-800';
-      case DemandStatus.PENDING:
-        return 'bg-yellow-100 text-yellow-800';
-      case DemandStatus.APPROVED:
+      case DemandStatus.ACCEPTED:
         return 'bg-green-100 text-green-800';
       case DemandStatus.REJECTED:
         return 'bg-red-100 text-red-800';
@@ -169,10 +218,8 @@ export class DemandeDetailsComponent implements OnInit {
     switch (status) {
       case DemandStatus.UPLOADED:
         return 'Téléchargée';
-      case DemandStatus.PENDING:
-        return 'En Attente';
-      case DemandStatus.APPROVED:
-        return 'Approuvée';
+      case DemandStatus.ACCEPTED:
+        return 'Acceptée';
       case DemandStatus.REJECTED:
         return 'Rejetée';
       default:

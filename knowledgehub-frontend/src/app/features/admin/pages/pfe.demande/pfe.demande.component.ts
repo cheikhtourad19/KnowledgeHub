@@ -13,8 +13,22 @@ import { DemandStatus } from '../../../../shared/models/resource-service/enums/d
   providers: [MessageService],
 })
 export class PfeDemandeComponent implements OnInit {
+  allDemandes: DemandePFE[] = [];
   demandes: DemandePFE[] = [];
   DemandStatus = DemandStatus;
+
+  // Filters
+  selectedYear: number = new Date().getFullYear();
+  selectedStatus: DemandStatus | null = null;
+
+  // Dropdown options
+  yearOptions: { label: string; value: number | null }[] = [];
+  statusOptions: { label: string; value: DemandStatus | null }[] = [
+    { label: 'Tous les statuts', value: null },
+    { label: 'Téléchargée', value: DemandStatus.UPLOADED },
+    { label: 'Acceptée', value: DemandStatus.ACCEPTED },
+    { label: 'Rejetée', value: DemandStatus.REJECTED },
+  ];
 
   constructor(
     private resourceApiService: ResourceApiService,
@@ -29,9 +43,11 @@ export class PfeDemandeComponent implements OnInit {
   loadDemandes(): void {
     this.resourceApiService.getAllDemandes().subscribe({
       next: (response) => {
-        this.demandes = response.data || [];
+        this.allDemandes = response.data || [];
+        this.buildYearOptions();
+        this.applyFilters();
       },
-      error: (error) => {
+      error: () => {
         this.messageService.add({
           severity: 'error',
           summary: 'Erreur',
@@ -41,6 +57,62 @@ export class PfeDemandeComponent implements OnInit {
     });
   }
 
+  buildYearOptions(): void {
+    const years = [
+      ...new Set(
+        this.allDemandes.map((d) => new Date(d.createdAt).getFullYear()),
+      ),
+    ].sort((a, b) => b - a); // descending
+
+    this.yearOptions = [
+      { label: 'Toutes les années', value: null },
+      ...years.map((y) => ({ label: y.toString(), value: y })),
+    ];
+
+    // Ensure current year is available even if no data yet
+    const currentYear = new Date().getFullYear();
+    if (!years.includes(currentYear)) {
+      this.yearOptions.splice(1, 0, {
+        label: currentYear.toString(),
+        value: currentYear,
+      });
+    }
+  }
+
+  applyFilters(): void {
+    this.demandes = this.allDemandes.filter((d) => {
+      const matchYear =
+        this.selectedYear === null ||
+        new Date(d.createdAt).getFullYear() === this.selectedYear;
+      const matchStatus =
+        this.selectedStatus === null || d.status === this.selectedStatus;
+      return matchYear && matchStatus;
+    });
+  }
+
+  onYearChange(year: number | null): void {
+    this.selectedYear = year!;
+    this.applyFilters();
+  }
+
+  onStatusChange(status: DemandStatus | null): void {
+    this.selectedStatus = status;
+    this.applyFilters();
+  }
+
+  clearFilters(): void {
+    this.selectedYear = new Date().getFullYear();
+    this.selectedStatus = null;
+    this.applyFilters();
+  }
+
+  get activeFilterCount(): number {
+    let count = 0;
+    if (this.selectedYear !== new Date().getFullYear()) count++;
+    if (this.selectedStatus !== null) count++;
+    return count;
+  }
+
   viewDetails(demande: DemandePFE): void {
     this.router.navigate(['/admin/pfe/demandes', demande.id]);
   }
@@ -48,15 +120,13 @@ export class PfeDemandeComponent implements OnInit {
   getStatusClass(status: DemandStatus): string {
     switch (status) {
       case DemandStatus.UPLOADED:
-        return 'bg-blue-100 text-blue-800';
-      case DemandStatus.PENDING:
-        return 'bg-yellow-100 text-yellow-800';
-      case DemandStatus.APPROVED:
-        return 'bg-green-100 text-green-800';
+        return 'bg-blue-100 text-blue-800 dark:bg-blue-900/30 dark:text-blue-400';
+      case DemandStatus.ACCEPTED:
+        return 'bg-green-100 text-green-800 dark:bg-green-900/30 dark:text-green-400';
       case DemandStatus.REJECTED:
-        return 'bg-red-100 text-red-800';
+        return 'bg-red-100 text-red-800 dark:bg-red-900/30 dark:text-red-400';
       default:
-        return 'bg-gray-100 text-gray-800';
+        return 'bg-gray-100 text-gray-800 dark:bg-gray-800 dark:text-gray-400';
     }
   }
 
@@ -64,10 +134,8 @@ export class PfeDemandeComponent implements OnInit {
     switch (status) {
       case DemandStatus.UPLOADED:
         return 'Téléchargée';
-      case DemandStatus.PENDING:
-        return 'En Attente';
-      case DemandStatus.APPROVED:
-        return 'Approuvée';
+      case DemandStatus.ACCEPTED:
+        return 'Acceptée';
       case DemandStatus.REJECTED:
         return 'Rejetée';
       default:
