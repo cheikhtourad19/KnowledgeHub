@@ -5,12 +5,18 @@ import lombok.RequiredArgsConstructor;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
+import tn.esprim.knowledgehub.resource.client.UserServiceClient;
+import tn.esprim.knowledgehub.resource.client.dto.TeacherDTO;
 import tn.esprim.knowledgehub.resource.dto.request.UpdateDemandStatusRequest;
 import tn.esprim.knowledgehub.resource.dto.response.ApiResponse;
 import tn.esprim.knowledgehub.resource.entity.DemandePFE;
+import tn.esprim.knowledgehub.resource.entity.PFE;
 import tn.esprim.knowledgehub.resource.enums.DemandStatus;
+import tn.esprim.knowledgehub.resource.enums.SubmissionStatus;
 import tn.esprim.knowledgehub.resource.service.PFEService;
 
+import java.time.Year;
+import java.util.Date;
 import java.util.List;
 
 @RestController
@@ -19,6 +25,7 @@ import java.util.List;
 public class AdminPFEController {
 
     private final PFEService pfeService;
+    private final UserServiceClient userServiceClient;
 
 
     @GetMapping("/demandes")
@@ -65,6 +72,7 @@ public class AdminPFEController {
     @PutMapping("/demande/{id}/status")
     public ResponseEntity<ApiResponse<DemandePFE>> updateDemandStatus(
             @PathVariable Long id,
+            @RequestParam(value = "teacherId") Long teacherId,
             @RequestBody @Valid UpdateDemandStatusRequest request,
             @RequestHeader(value = "X-User-Id") Long adminId,
             @RequestHeader(value = "X-User-Role") String role
@@ -77,6 +85,28 @@ public class AdminPFEController {
 
         try {
             DemandePFE updated = pfeService.updateDemandStatus(id, request, adminId);
+            if (request.getStatus().equals(DemandStatus.ACCEPTED)){
+                TeacherDTO teacherDTO = userServiceClient.getTeacherById(teacherId).getData();
+                PFE pfe = PFE.builder()
+                        .date_debut(updated.getDateDebut())
+                        .date_fin(updated.getDateFin())
+                        .studentId(updated.getStudentId())
+                        .studentEmail(updated.getStudentEmail())
+                        .studentName(updated.getStudentName())
+                        .entreprise_name(updated.getEntrepriseName())
+                        .title(updated.getPfeTitle())
+                        .year(Year.now().getValue())
+                        .supervisorId(teacherId)
+                        .supervisorName(teacherDTO.getNom())
+                        .status(SubmissionStatus.CREATED)
+                        .createdDate(new Date())
+
+                        .build();
+
+                pfeService.savePFE(pfe);
+            }
+
+
             return ResponseEntity.ok(
                     ApiResponse.success(updated, "Demand status updated successfully to " + request.getStatus())
             );

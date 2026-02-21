@@ -38,7 +38,23 @@ public class PFEService {
 
 
     public PFE savePFE(PFE pfe) {
-        return pfeRepository.save(pfe);
+        PFE saved = pfeRepository.save(pfe);
+
+        notificationClient.sendNotificationAsync(
+                NotificationRequest.builder()
+                        .recipientEmail(pfe.getStudentEmail())
+                        .type(NotificationType.EMAIL)
+                        .subject("Creation d'un depot de PFE")
+                        .content("Apres examination de votre demande un espace de depot de PFE vous a été créé, vous pouvez y deposer votre rapport de PFE et suivre son avancement")
+                        .userId(pfe.getStudentId().toString())
+                        .build()
+        );
+
+        return saved;
+    }
+
+    public void removeDemande(Long id){
+        pfeRepository.deleteById(id);
     }
 
     public PFE getPFEById(Long id) {

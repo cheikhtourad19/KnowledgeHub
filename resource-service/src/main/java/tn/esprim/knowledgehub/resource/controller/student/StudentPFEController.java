@@ -25,6 +25,8 @@ import tn.esprim.knowledgehub.resource.enums.SubmissionStatus;
 import tn.esprim.knowledgehub.resource.service.FileService;
 import tn.esprim.knowledgehub.resource.service.PFEService;
 
+import java.util.List;
+
 @RestController
 @RequestMapping("/api/student/pfe")
 @RequiredArgsConstructor
@@ -50,7 +52,10 @@ public class StudentPFEController {
                 );
             }
 
-
+            List<DemandePFE> demandes = pfeService.getDemandePFEByStudent(userId);
+            if (!demandes.isEmpty()){
+                pfeService.removeDemande(demandes.getFirst().getId());
+            }
             if (formRequest.getFile() == null || formRequest.getFile().isEmpty()) {
                 return ResponseEntity.status(HttpStatus.BAD_REQUEST).body(
                         ApiResponse.error("Bad Request", "File is required")
