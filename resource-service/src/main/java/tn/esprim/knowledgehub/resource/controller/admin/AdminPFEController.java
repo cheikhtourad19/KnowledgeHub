@@ -2,11 +2,13 @@ package tn.esprim.knowledgehub.resource.controller.admin;
 
 import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
+import lombok.extern.slf4j.Slf4j;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 import tn.esprim.knowledgehub.resource.client.UserServiceClient;
 import tn.esprim.knowledgehub.resource.client.dto.TeacherDTO;
+import tn.esprim.knowledgehub.resource.dto.request.AssignJury;
 import tn.esprim.knowledgehub.resource.dto.request.UpdateDemandStatusRequest;
 import tn.esprim.knowledgehub.resource.dto.response.ApiResponse;
 import tn.esprim.knowledgehub.resource.entity.DemandePFE;
@@ -19,6 +21,7 @@ import java.time.Year;
 import java.util.Date;
 import java.util.List;
 
+@Slf4j
 @RestController
 @RequestMapping("/api/admin/pfe")
 @RequiredArgsConstructor
@@ -137,5 +140,42 @@ public class AdminPFEController {
         return ResponseEntity.ok(
                 ApiResponse.success(demandes, "Demands with status " + status + " retrieved successfully")
         );
+    }
+
+
+    @PostMapping("/assign-jury/{id}")
+    public ResponseEntity<ApiResponse> assignJury(
+
+            @RequestBody AssignJury request, @RequestHeader(value = "X-User-Role") String role
+            ,@PathVariable Long id
+    ){
+
+        if (!role.equals("ADMIN")) {
+            return ResponseEntity.status(HttpStatus.FORBIDDEN).body(
+                    ApiResponse.error("Forbidden", "Only admins can assign jury")
+            );
+        }
+        PFE pfe = pfeService.getPFEById(id);
+
+        log.info("request : {}",request);
+        if (request.getJuryId() !=null){
+            TeacherDTO chef_jury = userServiceClient.getTeacherById(request.getJuryId()).getData();
+            pfe.setChefDeJuryId(chef_jury.getTeacherId());
+            pfe.setChefDeJuryName(chef_jury.getNom()+" "+chef_jury.getPrenom());
+        }
+
+        if (request.getReporteur_id()!=null){
+            TeacherDTO reporteur = userServiceClient.getTeacherById(request.getReporteur_id()).getData();
+            pfe.setRapporteurId(reporteur.getTeacherId());
+            pfe.setRapporteurName(reporteur.getNom()+" "+reporteur.getPrenom());
+        }
+
+
+
+        pfeService.savePFE(pfe);
+        return ResponseEntity.ok(ApiResponse.success(null,"Jury assigned successfully"));
+
+
+
     }
 }

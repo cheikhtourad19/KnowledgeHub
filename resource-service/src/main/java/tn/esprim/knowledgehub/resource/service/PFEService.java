@@ -38,8 +38,22 @@ public class PFEService {
 
 
     public PFE savePFE(PFE pfe) {
-        PFE saved = pfeRepository.save(pfe);
 
+
+        if (pfe.getId() != null) {
+            return pfeRepository.save(pfe);
+        }
+        
+        TeacherDTO teacher = userServiceClient.getTeacherById(pfe.getSupervisorId()).getData();
+        notificationClient.sendNotificationAsync(
+                NotificationRequest.builder()
+                        .recipientEmail(teacher.getEmail())
+                        .type(NotificationType.EMAIL)
+                        .subject("Un PFE vous a été assigné")
+                        .content("Un PFE vous a été assigné en tant qu'encadrant, vous pouvez suivre son avancement et consulter les depots de rapport de PFE")
+                        .userId(pfe.getStudentId().toString())
+                        .build()
+        );
         notificationClient.sendNotificationAsync(
                 NotificationRequest.builder()
                         .recipientEmail(pfe.getStudentEmail())
@@ -50,7 +64,7 @@ public class PFEService {
                         .build()
         );
 
-        return saved;
+        return pfeRepository.save(pfe);
     }
 
     public void removeDemande(Long id){

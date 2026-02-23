@@ -7,6 +7,8 @@ import org.springframework.web.bind.annotation.*;
 import tn.esprim.knowledgehub.resource.dto.request.UpdatePFEStatusRequest;
 import tn.esprim.knowledgehub.resource.dto.response.ApiResponse;
 import tn.esprim.knowledgehub.resource.entity.PFE;
+import tn.esprim.knowledgehub.resource.enums.SubmissionStatus;
+import tn.esprim.knowledgehub.resource.service.FileService;
 import tn.esprim.knowledgehub.resource.service.PFAService;
 import tn.esprim.knowledgehub.resource.service.PFEService;
 import tn.esprim.knowledgehub.resource.service.StageService;
@@ -19,6 +21,7 @@ public class TeacherReviewController {
     private final PFAService pfaService;
     private final PFEService pfeService;
     private final StageService stageService;
+    private final FileService fileService;
 
 
     @PutMapping("/pfe/{pfeId}/status")
@@ -38,6 +41,11 @@ public class TeacherReviewController {
         }
         try {
             PFE updatedPFE = pfeService.updatePFEStatus(pfe, request, teacherId);
+
+            if (request.getStatus()== SubmissionStatus.REJECTED){
+                updatedPFE.setReportFile(null);
+                fileService.deleteFile(updatedPFE.getReportFile().getId());
+            }
             return ResponseEntity.ok(
                     ApiResponse.success(updatedPFE, "PFE status updated successfully")
             );
