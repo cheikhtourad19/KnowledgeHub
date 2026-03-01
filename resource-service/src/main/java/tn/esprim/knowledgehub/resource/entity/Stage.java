@@ -1,11 +1,14 @@
 package tn.esprim.knowledgehub.resource.entity;
 
+import com.fasterxml.jackson.annotation.JsonIgnoreProperties;
 import tn.esprim.knowledgehub.resource.enums.SubmissionStatus;
 import lombok.*;
 import org.hibernate.annotations.CreationTimestamp;
 import org.hibernate.annotations.UpdateTimestamp;
 
 import jakarta.persistence.*;
+import tn.esprim.knowledgehub.resource.enums.TypeStage;
+
 import java.util.Date;
 
 @Entity
@@ -15,6 +18,7 @@ import java.util.Date;
 @NoArgsConstructor
 @AllArgsConstructor
 @Builder
+@JsonIgnoreProperties({"hibernateLazyInitializer", "handler"})
 public class Stage {
 
     @Id
@@ -26,6 +30,7 @@ public class Stage {
 
     private String companyName;
 
+    private TypeStage typeStage;
 
     private Integer year;
 
@@ -39,12 +44,21 @@ public class Stage {
 
     private String studentEmail;
 
-    @Column(nullable = false)
+    // supervisorId sera assigné par l'admin plus tard
     private Long supervisorId;
 
     private String supervisorName;
 
-    // File relationships
+    // File IDs - exposés directement pour éviter le lazy loading
+    @Column(name = "report_file_id", insertable = false, updatable = false)
+    private Long reportFileId;
+
+    @Column(name = "journal_file_id", insertable = false, updatable = false)
+    private Long journalFileId;
+
+    @Column(name = "attestation_file_id", insertable = false, updatable = false)
+    private Long attestationFileId;
+
     @ManyToOne(fetch = FetchType.LAZY)
     @JoinColumn(name = "report_file_id")
     private File reportFile;

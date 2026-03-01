@@ -201,6 +201,16 @@ public class AuthService {
         return resetRepository.findByCodeAndExpiresAtAfter(token, LocalDateTime.now()).isPresent();
     }
 
+    @Transactional
+    public AuthUser editUserPassword(Long id, String oldPassword, String newPassword) {
+        AuthUser authUser = authUserRepository.findById(id).orElseThrow(()->new RuntimeException("User not found with id: "+id));
+        if (!passwordEncoder.matches(oldPassword, authUser.getPassword())) {
+            throw new RuntimeException("Old password does not match");
+        }
+        authUser.setPassword(passwordEncoder.encode(newPassword));
+        return authUserRepository.save(authUser);
+    }
+
     public VerifyResetResponse verifyResetToken(String email, String token) {
         log.info("Verifying reset token for email: {}", email);
         log.debug("Token received: {}", token);
@@ -378,6 +388,29 @@ public class AuthService {
         }
 
         authUserRepository.save(authUser);
+    }
+
+    /**
+     * Verify if the provided password matches the user's password
+     * @param authId The authentication ID of the user
+     * @param password The password to verify
+     * @return true if password matches, false otherwise
+     */
+    public boolean verifyPassword(String authId, String password) {
+        log.info("Verifying password for user with authId: {}", authId);
+
+        AuthUser user = authUserRepository.findById(Long.valueOf(authId))
+                .orElseThrow(() -> new RuntimeException("User not found with authId: " + authId));
+
+        boolean matches = passwordEncoder.matches(password, user.getPassword());
+
+        if (!matches) {
+            log.warn("Password verification failed for user: {}", authId);
+        } else {
+            log.info("Password verified successfully for user: {}", authId);
+        }
+
+        return matches;
     }
 
     public void deleteUser(Long id) {

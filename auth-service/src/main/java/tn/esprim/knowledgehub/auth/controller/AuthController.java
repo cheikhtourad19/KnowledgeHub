@@ -148,7 +148,7 @@ public class AuthController {
     })
     @PutMapping("/edit-password")
     public ResponseEntity<AuthResponse> editPassword(
-            @RequestBody AuthRequest request,
+            @RequestBody EditPasswordRequest request,
 
             @Parameter(
                     description = "User ID from authentication context",
@@ -157,9 +157,13 @@ public class AuthController {
                     schema = @Schema(type = "string")
             )
             @RequestHeader(value = "X-Auth-Id", required = false) String userId) {
-
-        AuthUser authUser = authService.editPassword(Long.valueOf(userId), request.getPassword());
-        return ResponseEntity.ok(AuthResponse.success(authUser, "User updated successfully"));
+        AuthUser user = null;
+        try {
+           user = authService.editUserPassword(Long.valueOf(userId), request.getOldPassword(), request.getNewPassword());
+        }catch (Exception e){
+            return ResponseEntity.badRequest().body(AuthResponse.error("invalid credentials", HttpStatus.BAD_REQUEST));
+        }
+        return ResponseEntity.ok(AuthResponse.success(user, "User updated successfully"));
     }
 
     @Operation(
@@ -273,6 +277,35 @@ public class AuthController {
 
         String token = authHeader.replace("Bearer ", "");
         return ResponseEntity.ok(authService.validateToken(token));
+    }
+
+    @Operation(
+            summary = "Verify user password",
+            description = "Verifies if the provided password matches the authenticated user's password"
+    )
+    @PostMapping("/verify-password")
+    public ResponseEntity<AuthResponse> verifyPassword(
+            @RequestParam String password,
+            @RequestHeader(value = "X-Auth-Id") String authId
+    ) {
+        try {
+            boolean isValid = authService.verifyPassword(authId, password);
+
+            if (isValid) {
+                return ResponseEntity.ok(
+                        AuthResponse.success(null, "Password verified successfully")
+                );
+            } else {
+                return ResponseEntity.status(HttpStatus.UNAUTHORIZED).body(
+                        AuthResponse.error("Invalid password", HttpStatus.UNAUTHORIZED)
+                );
+            }
+        } catch (Exception e) {
+            log.error("Error verifying password: {}", e.getMessage());
+            return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).body(
+                    AuthResponse.error("Error verifying password", HttpStatus.INTERNAL_SERVER_ERROR)
+            );
+        }
     }
 
     @DeleteMapping("/delete/{id}")

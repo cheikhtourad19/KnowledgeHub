@@ -1,5 +1,6 @@
 package tn.esprim.knowledgehub.resource.entity;
 
+import com.fasterxml.jackson.annotation.JsonIgnoreProperties;
 import tn.esprim.knowledgehub.resource.enums.FileType;
 import lombok.*;
 import org.hibernate.annotations.CreationTimestamp;
@@ -16,6 +17,7 @@ import java.util.List;
 @NoArgsConstructor
 @AllArgsConstructor
 @Builder
+@JsonIgnoreProperties({"hibernateLazyInitializer", "handler"})
 public class File {
 
     @Id

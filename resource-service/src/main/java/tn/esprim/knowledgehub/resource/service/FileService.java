@@ -216,6 +216,9 @@ public class FileService {
     }
 
     public List<File> getAllFiles(){
+        return fileRepository.findAll();
+    }
+    public List<File> getPublishedFiles(){
         return fileRepository.findByIsPublishedTrue();
     }
     public List<File> getFilesByType(FileType fileType) {
@@ -237,10 +240,20 @@ public class FileService {
 
         if (isPublished) {
             // Index the file when publishing
-            aiandSearchService.indexFile(fileId);
+            try{
+                aiandSearchService.indexFile(fileId);
+            } catch (Exception e) {
+                return fileRepository.save(file);
+            }
+
         } else {
-            // Delete the file from vector DB when unpublishing
-            aiandSearchService.deleteFile(Math.toIntExact(fileId));
+            try {
+                aiandSearchService.deleteFile(Math.toIntExact(fileId));
+
+            }catch (Exception e) {
+                return fileRepository.save(file);
+
+            }
         }
 
         return fileRepository.save(file);

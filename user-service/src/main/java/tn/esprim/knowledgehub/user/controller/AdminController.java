@@ -88,6 +88,40 @@ public class AdminController {
         );
     }
 
+    @GetMapping("/classe/{classId}/students")
+    public ResponseEntity<ApiResponse> getStudentsByClassId(@PathVariable Long classId){
+        try {
+            Classe classe = studentService.getClasseById(classId);
+            if (classe == null) {
+                return ResponseEntity.badRequest().body(
+                        ApiResponse.builder()
+                                .success(false)
+                                .message("Classe non trouvée")
+                                .build()
+                );
+            }
+
+            if (classe.getStudents() != null) {
+                Hibernate.initialize(classe.getStudents());
+            }
+
+            return ResponseEntity.ok(
+                    ApiResponse.builder()
+                            .success(true)
+                            .data(classe.getStudents())
+                            .message(classe.getStudents().size() + " étudiant(s) trouvé(s)")
+                            .build()
+            );
+        } catch (Exception e) {
+            return ResponseEntity.badRequest().body(
+                    ApiResponse.builder()
+                            .success(false)
+                            .message("Erreur lors de la récupération des étudiants: " + e.getMessage())
+                            .build()
+            );
+        }
+    }
+
     @PostMapping("/add-student-classe")
     public ResponseEntity<ApiResponse> addStudentToClasse(
             @RequestBody StudentToClassRequest request,

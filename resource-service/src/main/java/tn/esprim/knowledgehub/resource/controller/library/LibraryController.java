@@ -31,7 +31,7 @@ public class LibraryController {
                     ApiResponse.builder()
                             .success(true)
                             .message("Documents retrieved successfully")
-                            .data(fileService.getAllFiles())
+                            .data(fileService.getPublishedFiles())
                             .build()
             );
     }

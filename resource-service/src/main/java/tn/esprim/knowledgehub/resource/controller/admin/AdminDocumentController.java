@@ -10,6 +10,7 @@ import org.springframework.web.bind.annotation.*;
 import org.springframework.web.multipart.MultipartFile;
 import tn.esprim.knowledgehub.resource.client.UserServiceClient;
 import tn.esprim.knowledgehub.resource.client.dto.TeacherDTO;
+import tn.esprim.knowledgehub.resource.dto.response.ApiResponse;
 import tn.esprim.knowledgehub.resource.dto.response.FileUploadResponse;
 import tn.esprim.knowledgehub.resource.entity.File;
 import tn.esprim.knowledgehub.resource.enums.FileType;
@@ -30,7 +31,22 @@ public class AdminDocumentController {
     private final UserServiceClient userServiceClient;
     private final PFEService pfeService;
 
+    @GetMapping("/all")
+    public ResponseEntity<ApiResponse<List<File>>> getAllFiles(
+            @RequestHeader(value = "X-User-Role") String role
 
+    ){
+        if (!role.equals("ADMIN")){
+            return ResponseEntity.status(403).body(
+                    ApiResponse.error("Forbidden", "Only admins can access this endpoint")
+            );
+        }
+        else{
+            return ResponseEntity.ok(
+                    ApiResponse.success(fileService.getAllFiles(),"All Files")
+            );
+        }
+    }
     @Operation(summary = "Upload a file", description = "Upload a file to MinIO storage")
     @PostMapping(value = "/upload", consumes = MediaType.MULTIPART_FORM_DATA_VALUE)
     public ResponseEntity<tn.esprim.knowledgehub.resource.dto.response.ApiResponse<FileUploadResponse>> uploadFile(
@@ -39,17 +55,32 @@ public class AdminDocumentController {
             @Parameter(description = "Bucket type (documents, pfa, pfe, stage)") @RequestParam("bucketType") String bucketType,
             @Parameter(description = "File title") @RequestParam(value = "title", required = false) String title,
             @Parameter(description = "File description") @RequestParam(value = "description", required = false) String description,
-            @RequestHeader(value = "X-User-Id") String userId,
-            @RequestHeader(value = "X-User-Name") String userEmail
+            @RequestHeader(value = "X-User-Id", required = false) String userId,
+            @RequestHeader(value = "X-User-Name", required = false) String userEmail
     ) {
         try {
             log.info("Uploading file: {} by user: {}", fileType, userEmail);
 
+            // Parse userId, default to 0 if empty or null (for admin uploads)
+            Long uploadedByUserId = 0L;
+            if (userId != null && !userId.trim().isEmpty()) {
+                try {
+                    uploadedByUserId = Long.parseLong(userId.trim());
+                } catch (NumberFormatException e) {
+                    log.warn("Invalid userId format: {}, using default 0", userId);
+                }
+            }
+
+            // Use email or default
+            String uploaderEmail = (userEmail != null && !userEmail.trim().isEmpty())
+                    ? userEmail
+                    : "admin@esprim.tn";
+
             FileUploadResponse response = fileService.uploadFile(
                     file,
                     fileType,
-                    Long.parseLong(userId),
-                    userEmail,
+                    uploadedByUserId,
+                    uploaderEmail,
                     bucketType,
                     title,
                     description
@@ -64,19 +95,31 @@ public class AdminDocumentController {
         }
     }
 
+
+
     @Operation(summary = "Get Secure Preview Link", description = "Generates a 2-minute secure link for the frontend.")
     @GetMapping("/view/{fileId}")
     public ResponseEntity<?> getFileForView(
             @PathVariable Long fileId,
             @RequestHeader(value = "X-User-Role") String role,
-            @RequestHeader(value = "X-User-Id") String userId
+            @RequestHeader(value = "X-User-Id", required = false) String userId
     ) {
         try {
-
             File file = fileService.getFileById(fileId);
             List<Long> users_with_access = pfeService.getTeachersInPFEandFile(file.getId());
-            boolean isAdmin = role.equals("ADMIN") ;
-            if (!file.getIsPublished() && !isAdmin && !users_with_access.contains(Long.parseLong(userId))) {
+            boolean isAdmin = role.equals("ADMIN");
+
+            // Parse userId safely
+            Long userIdLong = null;
+            if (userId != null && !userId.trim().isEmpty()) {
+                try {
+                    userIdLong = Long.parseLong(userId.trim());
+                } catch (NumberFormatException e) {
+                    log.warn("Invalid userId format: {}", userId);
+                }
+            }
+
+            if (!file.getIsPublished() && !isAdmin && (userIdLong == null || !users_with_access.contains(userIdLong))) {
                 return ResponseEntity.status(403).body(
                         tn.esprim.knowledgehub.resource.dto.response.ApiResponse.error("Forbidden", "This file is not yet published.")
                 );
@@ -115,15 +158,24 @@ public class AdminDocumentController {
     public ResponseEntity<tn.esprim.knowledgehub.resource.dto.response.ApiResponse<Void>> deleteFile(
             @Parameter(description = "File ID") @PathVariable Long fileId,
             @RequestHeader(value = "X-User-Role") String role,
-            @RequestHeader(value = "X-User-Id") String userId
+            @RequestHeader(value = "X-User-Id", required = false) String userId
     ) {
         try {
             File file = fileService.getFileById(fileId);
 
+            // Parse userId safely
+            Long userIdLong = null;
+            if (userId != null && !userId.trim().isEmpty()) {
+                try {
+                    userIdLong = Long.parseLong(userId.trim());
+                } catch (NumberFormatException e) {
+                    log.warn("Invalid userId format: {}", userId);
+                }
+            }
 
-            if (!role.equals("ADMIN") && !file.getUploadedByUserId().equals(Long.parseLong(userId))) {
+            if (!role.equals("ADMIN") && (userIdLong == null || !file.getUploadedByUserId().equals(userIdLong))) {
                 return ResponseEntity.status(403).body(
-                        tn.esprim.knowledgehub.resource.dto.response.ApiResponse.error("Forbidden", "Only admins and teachers can delete files")
+                        tn.esprim.knowledgehub.resource.dto.response.ApiResponse.error("Forbidden", "Only admins and file owners can delete files")
                 );
             }
 
@@ -151,15 +203,17 @@ public class AdminDocumentController {
             @PathVariable Long fileId,
             @RequestParam Boolean isPublished,
             @RequestHeader(value = "X-User-Role") String role,
-            @RequestHeader(value = "X-User-Id") Long userId
+            @RequestHeader(value = "X-User-Id", required = false) Long userId
     ) {
         try {
-            boolean isAdmin=role.equals("ADMIN");
-            boolean isTeacherAndOwner=role.equals("TEACHER") && fileService.getFileById(fileId).getUploadedByUserId().equals(userId);
+            boolean isAdmin = role.equals("ADMIN");
+            boolean isTeacherAndOwner = role.equals("TEACHER")
+                    && userId != null
+                    && fileService.getFileById(fileId).getUploadedByUserId().equals(userId);
 
             if (!isAdmin && !isTeacherAndOwner) {
                 return ResponseEntity.status(403).body(
-                        tn.esprim.knowledgehub.resource.dto.response.ApiResponse.error("Forbidden", "Only admins and teachers can update publication status")
+                        tn.esprim.knowledgehub.resource.dto.response.ApiResponse.error("Forbidden", "Only admins and file owners can update publication status")
                 );
             }
 
@@ -180,12 +234,23 @@ public class AdminDocumentController {
             @Parameter(description = "File title") @RequestParam(required = false) String title,
             @Parameter(description = "File description") @RequestParam(required = false) String description,
             @RequestHeader(value = "X-User-Role") String role,
-            @RequestHeader(value = "X-Auth-Id") String authId
+            @RequestHeader(value = "X-Auth-Id", required = false) String authId
     ) {
         try {
             File file = fileService.getFileById(fileId);
             boolean isStaff = role.equals("ADMIN") || role.equals("TEACHER");
-            boolean isOwner = file.getUploadedByUserId().equals(Long.parseLong(authId));
+
+            // Parse authId safely
+            Long authIdLong = null;
+            if (authId != null && !authId.trim().isEmpty()) {
+                try {
+                    authIdLong = Long.parseLong(authId.trim());
+                } catch (NumberFormatException e) {
+                    log.warn("Invalid authId format: {}", authId);
+                }
+            }
+
+            boolean isOwner = authIdLong != null && file.getUploadedByUserId().equals(authIdLong);
 
             if (!isStaff && !isOwner) {
                 return ResponseEntity.status(403).body(

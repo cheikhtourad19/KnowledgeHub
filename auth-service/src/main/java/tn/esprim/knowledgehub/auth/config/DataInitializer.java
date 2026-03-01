@@ -8,6 +8,7 @@ import org.springframework.stereotype.Component;
 import tn.esprim.knowledgehub.auth.entity.AuthUser;
 import tn.esprim.knowledgehub.auth.entity.AuthUser.Role;
 import tn.esprim.knowledgehub.auth.repository.AuthUserRepository;
+import tn.esprim.knowledgehub.auth.service.UserProfileService;
 
 import java.time.LocalDateTime;
 
@@ -18,6 +19,7 @@ public class DataInitializer implements CommandLineRunner {
 
     private final AuthUserRepository authUserRepository;
     private final PasswordEncoder passwordEncoder;
+    private final UserProfileService userProfileService;
 
     @Override
     public void run(String... args) {
@@ -39,6 +41,7 @@ public class DataInitializer implements CommandLineRunner {
                     .build();
 
             authUserRepository.save(admin);
+            userProfileService.createAdminProfileAsync(String.valueOf(admin.getId()));
             log.info("Admin user created successfully");
         }
     }
