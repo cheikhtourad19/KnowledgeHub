@@ -1,6 +1,9 @@
 import { Injectable } from '@angular/core';
+import { HttpClient, HttpParams } from '@angular/common/http';
 import { BehaviorSubject, Observable } from 'rxjs';
+import { environment } from '../../../environments/environment';
 import { UserRole } from '../../shared/models/auth-service/entities/auth-user.model';
+import { ApiResponse } from '../../shared/models/common/api-response.model';
 
 export interface AuthState {
   token: string | null;
@@ -17,11 +20,12 @@ export interface AuthState {
 export class AuthService {
   private readonly TOKEN_KEY = 'knowledgehub_token';
   private readonly AUTH_STATE_KEY = 'knowledgehub_auth_state';
+  private readonly baseUrl = `${environment.apiUrl}/auth-service/api`;
 
   private authStateSubject = new BehaviorSubject<AuthState>(this.getStoredAuthState());
   public authState$: Observable<AuthState> = this.authStateSubject.asObservable();
 
-  constructor() {
+  constructor(private http: HttpClient) {
     // Load auth state on initialization
     this.loadAuthState();
   }
@@ -151,5 +155,17 @@ export class AuthService {
    */
   getAuthId(): number | null {
     return this.currentAuthState.authId;
+  }
+
+  /**
+   * Verify user password for sensitive operations
+   */
+  verifyPassword(password: string): Observable<ApiResponse<any>> {
+    const params = new HttpParams().set('password', password);
+    return this.http.post<ApiResponse<any>>(
+      `${this.baseUrl}/verify-password`,
+      null,
+      { params }
+    );
   }
 }

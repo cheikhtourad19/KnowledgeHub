@@ -17,6 +17,11 @@ export interface VerifyResetRequest {
   token: string;
 }
 
+export interface ResetPasswordRequest {
+  oldPassword: string;
+  newPassword: string;
+}
+
 export interface VerifyResetResponse {
   valid: boolean;
   token: string | null;
@@ -31,7 +36,7 @@ export class AuthApiService {
 
   constructor(private http: HttpClient) {}
 
-  
+
   login(request: LoginRequest): Observable<AuthResponse<AuthUser>> {
     return this.http.post<AuthResponse<AuthUser>>(
       `${this.baseUrl}/api/public/login`,
@@ -39,7 +44,7 @@ export class AuthApiService {
     );
   }
 
-  
+
   register(request: RegisterRequest): Observable<AuthResponse<AuthUser>> {
     return this.http.post<AuthResponse<AuthUser>>(
       `${this.baseUrl}/api/register`,
@@ -47,21 +52,17 @@ export class AuthApiService {
     );
   }
 
-  
+
   updatePassword(
-    authId: number,
-    request: AuthRequest,
+    request: ResetPasswordRequest,
   ): Observable<AuthResponse<AuthUser>> {
     return this.http.put<AuthResponse<AuthUser>>(
       `${this.baseUrl}/api/edit-password`,
       request,
-      {
-        headers: { 'X-Auth-Id': authId.toString() },
-      },
     );
   }
 
- 
+
   requestPasswordReset(
     request: CreateResetRequest,
   ): Observable<AuthResponse<any>> {
@@ -71,7 +72,7 @@ export class AuthApiService {
     );
   }
 
-  
+
   verifyResetToken(
     request: VerifyResetRequest,
   ): Observable<VerifyResetResponse> {
@@ -81,7 +82,7 @@ export class AuthApiService {
     );
   }
 
-  
+
   resetPassword(request: ResetRequest): Observable<AuthResponse<any>> {
     return this.http.post<AuthResponse<any>>(
       `${this.baseUrl}/api/public/reset-password/${request.token}`,
@@ -89,7 +90,7 @@ export class AuthApiService {
     );
   }
 
-  
+
   bulkCreateUsers(
     file: File,
   ): Observable<AuthResponse<BulkUserCreationResult>> {
@@ -102,21 +103,21 @@ export class AuthApiService {
     );
   }
 
-  
+
   getAllUsers(): Observable<AuthResponse<AuthUser[]>> {
     return this.http.get<AuthResponse<AuthUser[]>>(
       `${this.baseUrl}/api/admin/users`,
     );
   }
 
-  
+
   getUserById(id: number): Observable<AuthResponse<AuthUser>> {
     return this.http.get<AuthResponse<AuthUser>>(
       `${this.baseUrl}/api/admin/users/${id}`,
     );
   }
 
- 
+
   deleteUser(id: number): Observable<AuthResponse<any>> {
     return this.http.delete<AuthResponse<any>>(
       `${this.baseUrl}/api/admin/users/${id}`,

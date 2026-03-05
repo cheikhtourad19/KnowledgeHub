@@ -1,13 +1,13 @@
-# Stage 1: Build the Angular application
+# Stage 1: Build with dependency caching
 FROM node:20-alpine AS build
 
 WORKDIR /app
 
-# Copy package files
+# Copy only package files first
 COPY package*.json ./
 
-# Install dependencies
-RUN npm ci
+# Install dependencies (cached layer)
+RUN npm ci --prefer-offline
 
 # Copy source code
 COPY . .

@@ -87,5 +87,51 @@ public class StudentStageController {
             );
         }
     }
+
+    @GetMapping("/my-stage")
+    public ResponseEntity<ApiResponse<Object>> getMyStage(
+            @RequestHeader(value = "X-User-Id") Long userId
+    ) {
+        log.info("Student {} requesting their stages", userId);
+        try {
+            var stages = stageService.getStagesByStudentId(userId);
+            return ResponseEntity.ok(
+                    ApiResponse.success(stages, "Stages retrieved successfully")
+            );
+        } catch (Exception e) {
+            log.error("Error retrieving stages for student {}: {}", userId, e.getMessage(), e);
+            return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR)
+                    .body(ApiResponse.error(
+                            "Erreur interne du serveur",
+                            "Une erreur inattendue s'est produite"
+                    ));
+        }
+    }
+
+    @GetMapping("/check-authorization")
+    public ResponseEntity<ApiResponse<Object>> checkAuthorization(
+            @RequestHeader(value = "X-User-Id") Long userId
+    ) {
+        log.info("Student {} checking stage authorization", userId);
+        try {
+            var authorization = stageService.getStudentAuthorization(userId);
+            if (authorization != null) {
+                return ResponseEntity.ok(
+                        ApiResponse.success(authorization, "Authorization found")
+                );
+            } else {
+                return ResponseEntity.ok(
+                        ApiResponse.success(null, "No authorization found")
+                );
+            }
+        } catch (Exception e) {
+            log.error("Error checking authorization for student {}: {}", userId, e.getMessage(), e);
+            return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR)
+                    .body(ApiResponse.error(
+                            "Erreur interne du serveur",
+                            "Une erreur inattendue s'est produite"
+                    ));
+        }
+    }
 }
 

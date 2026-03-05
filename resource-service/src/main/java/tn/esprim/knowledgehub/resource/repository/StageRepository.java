@@ -5,7 +5,6 @@ import org.springframework.data.jpa.repository.Query;
 import org.springframework.data.repository.query.Param;
 import org.springframework.stereotype.Repository;
 import tn.esprim.knowledgehub.resource.entity.Stage;
-import tn.esprim.knowledgehub.resource.enums.SubmissionStatus;
 
 import java.util.List;
 import java.util.Optional;
@@ -14,6 +13,9 @@ import java.util.Optional;
 public interface StageRepository extends JpaRepository<Stage, Long> {
 
     List<Stage> findByStudentId(Long studentId);
+
+    @Query("SELECT s FROM Stage s WHERE s.reportFile.id = :fileId OR s.journalFile.id = :fileId OR s.attestationFile.id = :fileId")
+    List<Stage> findByAnyFileId(@Param("fileId") Long fileId);
 
     List<Stage> findBySupervisorId(Long supervisorId);
 
@@ -48,5 +50,13 @@ public interface StageRepository extends JpaRepository<Stage, Long> {
            "WHERE s.supervisorId = :supervisorId")
     List<Stage> findBySupervisorIdWithFiles(@Param("supervisorId") Long supervisorId);
 
-    List<Stage> findByCompanyName(String companyName);
+    /**
+     * Fetch Stages by student with all File associations eagerly loaded
+     */
+    @Query("SELECT s FROM Stage s " +
+           "LEFT JOIN FETCH s.reportFile " +
+           "LEFT JOIN FETCH s.journalFile " +
+           "LEFT JOIN FETCH s.attestationFile " +
+           "WHERE s.studentId = :studentId")
+    List<Stage> findByStudentIdWithFiles(@Param("studentId") Long studentId);
 }

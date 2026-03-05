@@ -5,6 +5,8 @@ server:
 spring:
   application:
     name: api-gateway
+  codec:
+    max-in-memory-size: 100MB
   cloud:
     gateway:
       routes:
@@ -82,6 +84,9 @@ spring:
   config:
     activate:
       on-profile: docker
+
+  codec:
+    max-in-memory-size: 100MB
 
   cloud:
     gateway:

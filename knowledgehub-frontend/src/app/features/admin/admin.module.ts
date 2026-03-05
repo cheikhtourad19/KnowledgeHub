@@ -10,9 +10,11 @@ import { PfeGestionComponent } from './pages/pfe.gestion/pfe.gestion.component';
 import { PfeDemandeComponent } from './pages/pfe.demande/pfe.demande.component';
 import { DemandeDetailsComponent } from './pages/pfe.demande/demande-details/demande-details.component';
 import { StageComponent } from './pages/stage/stage.component';
+import { StageDetailsComponent } from './pages/stage/stage-details/stage-details.component';
 import { EnseignantComponent } from './pages/enseignant/enseignant.component';
 import { DocumentsComponent } from './pages/documents/documents.component';
 import { PdfViewerModule } from 'ng2-pdf-viewer';
+import { SharedModule } from '../../shared/shared.module';
 
 import { TableModule } from 'primeng/table';
 import { ButtonModule } from 'primeng/button';
@@ -23,6 +25,7 @@ import { ToastModule } from 'primeng/toast';
 import { FileUploadModule } from 'primeng/fileupload';
 import { Badge } from 'primeng/badge';
 import { TooltipModule } from 'primeng/tooltip';
+import { PfeDetailsComponent } from './pages/pfe.gestion/pfe-details/pfe-details.component';
 
 @NgModule({
   declarations: [
@@ -33,8 +36,10 @@ import { TooltipModule } from 'primeng/tooltip';
     PfeDemandeComponent,
     DemandeDetailsComponent,
     StageComponent,
+    StageDetailsComponent,
     EnseignantComponent,
     DocumentsComponent,
+    PfeDetailsComponent,
   ],
   imports: [
     CommonModule,
@@ -52,6 +57,7 @@ import { TooltipModule } from 'primeng/tooltip';
     ConfirmDialogModule,
     ReactiveFormsModule,
     TooltipModule,
+    SharedModule,
   ],
 })
 export class AdminModule {}

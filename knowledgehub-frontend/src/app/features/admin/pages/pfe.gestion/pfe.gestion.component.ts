@@ -107,8 +107,7 @@ export class PfeGestionComponent implements OnInit {
   }
 
   viewDetails(pfe: PFE): void {
-    // TODO: navigate to PFE detail page
-    // this.router.navigate(['/admin/pfe/gestion', pfe.id]);
+    this.router.navigate(['/admin/pfe-details', pfe.id]);
   }
 
   getStatusClass(status: SubmissionStatus): string {

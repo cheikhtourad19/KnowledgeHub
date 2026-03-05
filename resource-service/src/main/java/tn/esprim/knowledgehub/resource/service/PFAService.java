@@ -3,9 +3,11 @@ package tn.esprim.knowledgehub.resource.service;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.stereotype.Service;
+import tn.esprim.knowledgehub.resource.entity.File;
 import tn.esprim.knowledgehub.resource.entity.PFA;
 import tn.esprim.knowledgehub.resource.repository.PFARepository;
 
+import java.util.ArrayList;
 import java.util.List;
 
 @Service
@@ -30,5 +32,17 @@ public class PFAService {
     }
     public List<PFA> getAllPFA(){
         return pfaRepository.findAll();
+    }
+    
+    public List<Long> usersWithAccess(Long fileId) {
+        File file = fileService.getFileById(fileId);
+        PFA pfa = pfaRepository.findByReportFile(file).orElse(null);
+        if (pfa == null) return List.of();
+        
+        List<Long> userIds = new ArrayList<>();
+        if (pfa.getSupervisorId() != null) userIds.add(pfa.getSupervisorId());
+        if (pfa.getStudentId() != null) userIds.add(pfa.getStudentId());
+        
+        return userIds;
     }
 }

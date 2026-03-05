@@ -8,8 +8,6 @@ import org.springframework.http.MediaType;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 import org.springframework.web.multipart.MultipartFile;
-import tn.esprim.knowledgehub.resource.client.UserServiceClient;
-import tn.esprim.knowledgehub.resource.client.dto.TeacherDTO;
 import tn.esprim.knowledgehub.resource.dto.response.ApiResponse;
 import tn.esprim.knowledgehub.resource.dto.response.FileUploadResponse;
 import tn.esprim.knowledgehub.resource.entity.File;
@@ -17,6 +15,7 @@ import tn.esprim.knowledgehub.resource.enums.FileType;
 import tn.esprim.knowledgehub.resource.service.AIandSearchService;
 import tn.esprim.knowledgehub.resource.service.FileService;
 import tn.esprim.knowledgehub.resource.service.PFEService;
+import tn.esprim.knowledgehub.resource.service.StageService;
 
 import java.util.List;
 
@@ -28,7 +27,7 @@ public class AdminDocumentController {
 
     private final FileService fileService;
     private final AIandSearchService aiandSearchService;
-    private final UserServiceClient userServiceClient;
+    private final StageService stageService;
     private final PFEService pfeService;
 
     @GetMapping("/all")
@@ -106,7 +105,27 @@ public class AdminDocumentController {
     ) {
         try {
             File file = fileService.getFileById(fileId);
-            List<Long> users_with_access = pfeService.getTeachersInPFEandFile(file.getId());
+            
+            List<Long> users_with_access = new java.util.ArrayList<>();
+            
+            // Get PFE access
+            try {
+                List<Long> pfeUsers = pfeService.getTeachersInPFEandFile(file.getId());
+                users_with_access.addAll(pfeUsers);
+                log.debug("PFE users with access to file {}: {}", fileId, pfeUsers);
+            } catch (Exception e) {
+                log.error("Error getting PFE access for file {}: {}", fileId, e.getMessage(), e);
+            }
+            
+            // Get Stage access
+            try {
+                List<Long> stageUsers = stageService.usersWithAccess(file.getId());
+                users_with_access.addAll(stageUsers);
+                log.debug("Stage users with access to file {}: {}", fileId, stageUsers);
+            } catch (Exception e) {
+                log.error("Error getting Stage access for file {}: {}", fileId, e.getMessage(), e);
+            }
+
             boolean isAdmin = role.equals("ADMIN");
 
             // Parse userId safely
@@ -127,7 +146,7 @@ public class AdminDocumentController {
             String presignedUrl = fileService.generatePresignedUrl(fileId, 2);
             return ResponseEntity.ok(tn.esprim.knowledgehub.resource.dto.response.ApiResponse.success(presignedUrl, "Secure link generated"));
         } catch (Exception e) {
-            log.error("Error generating view link: {}", e.getMessage());
+            log.error("Error generating view link for file {}: {}", fileId, e.getMessage(), e);
             return ResponseEntity.badRequest().body(
                     tn.esprim.knowledgehub.resource.dto.response.ApiResponse.error(e.getMessage(), "Failed to generate link")
             );

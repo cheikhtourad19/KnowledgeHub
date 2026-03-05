@@ -1,22 +1,56 @@
-# Multi-stage build for Spring Boot application
+# Multi-stage build with dependency caching
+FROM maven:3.9-eclipse-temurin-21-alpine AS dependencies
+
+WORKDIR /build
+
+# Copy only POM files first for dependency resolution
+COPY pom.xml .
+COPY api-gateway/pom.xml api-gateway/
+COPY auth-service/pom.xml auth-service/
+COPY user-service/pom.xml user-service/
+COPY resource-service/pom.xml resource-service/
+COPY notification-service/pom.xml notification-service/
+COPY notification-client/pom.xml notification-client/
+
+# Download dependencies (cached layer)
+RUN mvn dependency:go-offline -pl api-gateway -am || true
+
+# Build stage
 FROM maven:3.9-eclipse-temurin-21-alpine AS build
 WORKDIR /build
-# Copy entire project for build
-COPY . .
-# Build the specific module
+
+# Copy dependencies from cache stage
+COPY --from=dependencies /root/.m2 /root/.m2
+
+# Copy POM files
+COPY pom.xml .
+COPY api-gateway/pom.xml api-gateway/
+COPY auth-service/pom.xml auth-service/
+COPY user-service/pom.xml user-service/
+COPY resource-service/pom.xml resource-service/
+COPY notification-service/pom.xml notification-service/
+COPY notification-client/pom.xml notification-client/
+
+# Copy source code
+COPY api-gateway/src api-gateway/src
+COPY notification-client/src notification-client/src
+
+# Build (dependencies already cached)
 RUN mvn -pl api-gateway -am clean package -DskipTests
+
 # Runtime stage
 FROM eclipse-temurin:21-jre-alpine
+
 WORKDIR /app
-# Copy the built jar from build stage
+
 COPY --from=build /build/api-gateway/target/*.jar app.jar
-# Create non-root user
+
 RUN addgroup -S spring && adduser -S spring -G spring
 USER spring:spring
-# Health check
+
 HEALTHCHECK --interval=30s --timeout=3s --start-period=60s --retries=3 \
   CMD wget --no-verbose --tries=1 --spider http://localhost:8080/actuator/health || exit 1
-# Expose port
+
 EXPOSE 8080
-# Run the application
+
 ENTRYPOINT ["java", "-jar", "app.jar"]

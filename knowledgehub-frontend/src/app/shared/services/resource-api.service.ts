@@ -84,6 +84,11 @@ export class ResourceApiService {
 
   getAllDocuments(): Observable<ApiResponse<File[]>> {
     return this.http.get<ApiResponse<File[]>>(
+      `${this.baseUrl}/api/admin/documents/all`,
+    );
+  }
+  getPublishedDocuments(): Observable<ApiResponse<File[]>>{
+    return this.http.get<ApiResponse<File[]>>(
       `${this.baseUrl}/api/public/library/getDocuments`,
     );
   }
@@ -210,12 +215,12 @@ export class ResourceApiService {
    * Get PFE for a student
    * GET /api/student/pfe/student-PFE?studentId={studentId}
    */
-  getStudentPFE(studentId?: number): Observable<ApiResponse<PFE>> {
+  getStudentPFE(studentId?: number): Observable<ApiResponse<PFE[]>> {
     let params = new HttpParams();
     if (studentId) {
       params = params.set('studentId', studentId.toString());
     }
-    return this.http.get<ApiResponse<PFE>>(
+    return this.http.get<ApiResponse<PFE[]>>(
       `${this.baseUrl}/api/student/pfe/student-PFE`,
       { params },
     );
@@ -230,7 +235,16 @@ export class ResourceApiService {
       `${this.baseUrl}/api/student/pfe/teacher-PFE`,
     );
   }
-
+  assignJury(
+    pfeId: number,
+    jury?: number,
+    reporteur?: number,
+  ): Observable<ApiResponse<void>> {
+    return this.http.post<ApiResponse<void>>(
+      `${this.baseUrl}/api/admin/pfe/assign-jury/${pfeId}`,
+      { juryId: jury, reporteur_id: reporteur },
+    );
+  }
   /**
    * Get all PFEs (Admin only)
    * GET /api/student/pfe/all-PFE
@@ -401,9 +415,95 @@ export class ResourceApiService {
     );
   }
 
+  /**
+   * Get student's own stage(s)
+   * GET /api/student/stage/my-stage
+   */
+  getMyStage(): Observable<ApiResponse<Stage[]>> {
+    return this.http.get<ApiResponse<Stage[]>>(
+      `${this.baseUrl}/api/student/stage/my-stage`,
+    );
+  }
+
+  /**
+   * Check if student has authorization to create a stage
+   * GET /api/student/stage/check-authorization
+   */
+  checkStageAuthorization(): Observable<ApiResponse<any>> {
+    return this.http.get<ApiResponse<any>>(
+      `${this.baseUrl}/api/student/stage/check-authorization`,
+    );
+  }
+
   viewpdf(fileId: number): Observable<ApiResponse<string>> {
     return this.http.get<ApiResponse<string>>(
       `${this.baseUrl}/api/admin/documents/view/${fileId}`,
+    );
+  }
+
+  // ========== Stage Authorization Methods (Admin) ==========
+
+  /**
+   * Authorize a student to create a stage
+   * POST /api/admin/stage/authorize/student/{studentId}?typeStage=TECHNICIEN
+   */
+  authorizeStudent(
+    studentId: number,
+    typeStage: string,
+  ): Observable<ApiResponse<string>> {
+    return this.http.post<ApiResponse<string>>(
+      `${this.baseUrl}/api/admin/stage/authorize/student/${studentId}`,
+      null,
+      { params: { typeStage } },
+    );
+  }
+
+  /**
+   * Authorize all students in a class to create a stage
+   * POST /api/admin/stage/authorize/class/{classId}?typeStage=TECHNICIEN
+   */
+  authorizeClass(
+    classId: number,
+    typeStage: string,
+  ): Observable<ApiResponse<number>> {
+    return this.http.post<ApiResponse<number>>(
+      `${this.baseUrl}/api/admin/stage/authorize/class/${classId}`,
+      null,
+      { params: { typeStage } },
+    );
+  }
+
+  /**
+   * Get all stages (Admin)
+   * GET /api/admin/stage
+   */
+  getAllStages(): Observable<ApiResponse<Stage[]>> {
+    return this.http.get<ApiResponse<Stage[]>>(
+      `${this.baseUrl}/api/admin/stage`,
+    );
+  }
+
+  /**
+   * Assign a supervisor to a stage (Admin)
+   * POST /api/admin/stage/{stageId}/assign-supervisor/{supervisorId}
+   */
+  assignStageSupervisor(
+    stageId: number,
+    supervisorId: number,
+  ): Observable<ApiResponse<Stage>> {
+    return this.http.post<ApiResponse<Stage>>(
+      `${this.baseUrl}/api/admin/stage/${stageId}/assign-supervisor/${supervisorId}`,
+      null,
+    );
+  }
+
+  /**
+   * Remove all stage creation authorizations (Admin)
+   * DELETE /api/admin/stage/remove-all-authorized-students
+   */
+  removeAllStageAuthorizations(): Observable<ApiResponse<any>> {
+    return this.http.delete<ApiResponse<any>>(
+      `${this.baseUrl}/api/admin/stage/remove-all-authorized-students`,
     );
   }
 }

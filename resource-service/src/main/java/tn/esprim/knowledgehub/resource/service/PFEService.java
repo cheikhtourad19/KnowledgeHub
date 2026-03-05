@@ -219,9 +219,25 @@ public class PFEService {
 
     public List<Long> getTeachersInPFEandFile(Long fileId) {
         File file = fileService.getFileById(fileId);
+        
+        // Check if file is a PFE report file
         PFE pfe = pfeRepository.findByReportFile(file).orElse(null);
+        
+        // If not found, check if file is a PFE attestation file
+        if (pfe == null) {
+            pfe = pfeRepository.findByAttestationFile(file).orElse(null);
+        }
+        
         if(pfe==null)return List.of();
-        return List.of(pfe.getSupervisorId(),pfe.getStudentId(),pfe.getChefDeJuryId(),pfe.getRapporteurId());
+        
+        // Filter out null values to prevent NullPointerException with List.of()
+        List<Long> userIds = new java.util.ArrayList<>();
+        if (pfe.getSupervisorId() != null) userIds.add(pfe.getSupervisorId());
+        if (pfe.getStudentId() != null) userIds.add(pfe.getStudentId());
+        if (pfe.getChefDeJuryId() != null) userIds.add(pfe.getChefDeJuryId());
+        if (pfe.getRapporteurId() != null) userIds.add(pfe.getRapporteurId());
+        
+        return userIds;
     }
 
 

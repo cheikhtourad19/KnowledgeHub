@@ -6,7 +6,9 @@ import { DateFormatPipe } from './pipes/date-format.pipe';
 import { UnauthorizedComponent } from './components/unauthorized/unauthorized.component';
 import { NotFoundComponent } from './components/not-found/not-found.component';
 import { LoadingOverlayComponent } from './components/loading-overlay/loading-overlay.component';
+import { ProfileComponent } from './components/profile/profile.component';
 import { ProgressSpinnerModule } from 'primeng/progressspinner';
+import { ReactiveFormsModule } from '@angular/forms';
 
 @NgModule({
   declarations: [
@@ -14,12 +16,14 @@ import { ProgressSpinnerModule } from 'primeng/progressspinner';
     DateFormatPipe,
     UnauthorizedComponent,
     NotFoundComponent,
+    ProfileComponent,
   ],
   imports: [
     CommonModule,
     RouterModule,
     ProgressSpinnerModule,
     LoadingOverlayComponent,
+    ReactiveFormsModule,
   ],
   exports: [
     FileSizePipe,
@@ -27,6 +31,7 @@ import { ProgressSpinnerModule } from 'primeng/progressspinner';
     UnauthorizedComponent,
     NotFoundComponent,
     LoadingOverlayComponent,
+    ProfileComponent,
   ],
 })
 export class SharedModule {}

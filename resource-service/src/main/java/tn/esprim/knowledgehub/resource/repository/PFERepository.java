@@ -24,4 +24,6 @@ public interface PFERepository extends JpaRepository<PFE, Long> {
     List<PFE> findByYear(Integer year);
 
     Optional<PFE> findByReportFile(File reportFile);
+    
+    Optional<PFE> findByAttestationFile(File attestationFile);
 }

@@ -14,7 +14,9 @@ import tn.esprim.knowledgehub.resource.enums.TypeStage;
 import tn.esprim.knowledgehub.resource.repository.StageCreationAutorisationRepository;
 import tn.esprim.knowledgehub.resource.repository.StageRepository;
 
+import java.io.File;
 import java.time.LocalDate;
+import java.util.ArrayList;
 import java.util.List;
 import java.util.Optional;
 import java.util.stream.Collectors;
@@ -171,6 +173,19 @@ public class StageService {
 
         return mapToStageResponse(savedStage);
     }
+    public List<Long> usersWithAccess(Long fileId){
+        List<Stage> stages = stageRepository.findByAnyFileId(fileId);
+        List<Long> userIds = new ArrayList<>();
+        for (Stage stage : stages) {
+            if (stage.getStudentId() != null) {
+                userIds.add(stage.getStudentId());
+            }
+            if (stage.getSupervisorId() != null) {
+                userIds.add(stage.getSupervisorId());
+            }
+        }
+        return userIds;
+    }
 
     /**
      * Récupérer tous les stages (pour l'admin)
@@ -294,6 +309,25 @@ public class StageService {
 
     public void deleteAllDemande(){
         stageCreationAutorisationRepository.deleteAll();
+    }
+
+    /**
+     * Get all stages for a specific student
+     */
+    public List<StageResponse> getStagesByStudentId(Long studentId) {
+        log.info("Retrieving stages for student ID: {}", studentId);
+        List<Stage> stages = stageRepository.findByStudentIdWithFiles(studentId);
+        return stages.stream()
+                .map(this::mapToStageResponse)
+                .collect(Collectors.toList());
+    }
+
+    /**
+     * Get student's stage authorization
+     */
+    public StageCreationAutorisation getStudentAuthorization(Long studentId) {
+        log.info("Checking authorization for student ID: {}", studentId);
+        return stageCreationAutorisationRepository.findByStudentId(studentId).orElse(null);
     }
 }
 

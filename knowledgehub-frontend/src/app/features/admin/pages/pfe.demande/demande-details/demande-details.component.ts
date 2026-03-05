@@ -24,6 +24,7 @@ export class DemandeDetailsComponent implements OnInit {
   adminFeedback: string = '';
   teachers: Teacher[] = [];
   selectedTeacherId: number | null = null;
+  showPdfModal: boolean = false;
   constructor(
     private route: ActivatedRoute,
     private router: Router,
@@ -225,5 +226,13 @@ export class DemandeDetailsComponent implements OnInit {
       default:
         return status;
     }
+  }
+
+  openPdfModal(): void {
+    this.showPdfModal = true;
+  }
+
+  closePdfModal(): void {
+    this.showPdfModal = false;
   }
 }

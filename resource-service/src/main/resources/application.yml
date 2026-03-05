@@ -51,12 +51,12 @@ feign:
   client:
     config:
       default:
-        connectTimeout: 10000   # 10 seconds
-        readTimeout: 300000     # 5 minutes for AI processing
+        connectTimeout: 10000 # 10 seconds
+        readTimeout: 300000 # 5 minutes for AI processing
       # Specific timeout for AI client (if you want different from default)
       ai-search-service:
         connectTimeout: 10000
-        readTimeout: 600000     # 10 minutes for heavy AI operations
+        readTimeout: 600000 # 10 minutes for heavy AI operations
 
 # MinIO Configuration
 minio:
@@ -90,7 +90,7 @@ logging:
   level:
     root: WARN
     tn.esprim.knowledgehub.resource: DEBUG
-    feign: DEBUG  # Added to debug Feign calls
+    feign: DEBUG # Added to debug Feign calls
 
 ---
 # Docker Profile
@@ -103,6 +103,12 @@ spring:
     url: jdbc:mysql://${MYSQL_HOST}:${MYSQL_PORT}/${MYSQL_RESOURCE_DB}?createDatabaseIfNotExist=true&useSSL=false&serverTimezone=UTC
     username: ${MYSQL_USERNAME}
     password: ${MYSQL_PASSWORD}
+
+  servlet:
+    multipart:
+      enabled: true
+      max-file-size: 100MB
+      max-request-size: 100MB
 
 server:
   port: ${RESOURCE_SERVICE_PORT:8083}
