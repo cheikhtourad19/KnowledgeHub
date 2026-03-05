@@ -228,9 +228,9 @@ public class StudentPFEController {
             );
         }
 
-        if (!pfe.getStatus().equals(SubmissionStatus.UNDER_REVIEW) && !pfe.getStatus().equals(SubmissionStatus.REJECTED)) {
+        if (pfe.getStatus().equals(SubmissionStatus.UNDER_REVIEW) || pfe.getStatus().equals(SubmissionStatus.APPROVED)) {
             return ResponseEntity.status(HttpStatus.FORBIDDEN).body(
-                    ApiResponse.error("Forbidden", "This PFE is already approved")
+                    ApiResponse.error("Forbidden", "This PFE is already approved or under review, you cannot upload a new report")
             );
         }
 

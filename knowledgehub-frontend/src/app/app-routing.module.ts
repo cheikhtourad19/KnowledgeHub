@@ -44,13 +44,6 @@ const routes: Routes = [
   },
 
   {
-    path: 'library',
-    loadChildren: () =>
-      import('./features/library/library.module').then((m) => m.LibraryModule),
-    canActivate: [authGuard],
-  },
-
-  {
     path: 'notifications',
     loadChildren: () =>
       import('./features/notification/notification.module').then(
