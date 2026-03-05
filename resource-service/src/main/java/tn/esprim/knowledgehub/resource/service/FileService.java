@@ -3,11 +3,11 @@ package tn.esprim.knowledgehub.resource.service;
 import io.minio.*;
 import io.minio.errors.*;
 import io.minio.http.Method;
-import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.apache.pdfbox.Loader;
 import org.apache.pdfbox.pdmodel.PDDocument;
 import org.apache.tika.Tika;
+import org.springframework.beans.factory.annotation.Qualifier;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
@@ -26,13 +26,27 @@ import java.util.UUID;
 import java.util.concurrent.TimeUnit;
 
 @Service
-@RequiredArgsConstructor
 @Slf4j
 public class FileService {
 
     private final FileRepository fileRepository;
     private final MinioClient minioClient;
+    private final MinioClient minioClientForPresignedUrls;
+    private final AIandSearchService aiandSearchService;
     private final Tika tika = new Tika();
+
+    // Constructor injection with qualifier for presigned URL client
+    public FileService(
+            FileRepository fileRepository,
+            MinioClient minioClient,
+            @Qualifier("minioClientForPresignedUrls") MinioClient minioClientForPresignedUrls,
+            AIandSearchService aiandSearchService
+    ) {
+        this.fileRepository = fileRepository;
+        this.minioClient = minioClient;
+        this.minioClientForPresignedUrls = minioClientForPresignedUrls;
+        this.aiandSearchService = aiandSearchService;
+    }
 
     @Value("${minio.buckets.documents}")
     private String documentsBucket;
@@ -49,8 +63,6 @@ public class FileService {
 
     @Value("${minio.buckets.stage}")
     private String stageBucket;
-
-    private final AIandSearchService aiandSearchService;
 
     /**
      * Upload a file to MinIO and save metadata to database
@@ -161,7 +173,8 @@ public class FileService {
             String bucketName = pathParts[0];
             String objectName = pathParts[1];
 
-            String url = minioClient.getPresignedObjectUrl(
+            // Use the external MinIO client for presigned URLs (browser-accessible)
+            String url = minioClientForPresignedUrls.getPresignedObjectUrl(
                     GetPresignedObjectUrlArgs.builder()
                             .method(Method.GET)
                             .bucket(bucketName)
@@ -170,7 +183,7 @@ public class FileService {
                             .build()
             );
 
-            log.info("Generated presigned URL for file ID: {}", fileId);
+            log.info("Generated presigned URL for file ID: {} with external endpoint", fileId);
             return url;
 
         } catch (Exception e) {

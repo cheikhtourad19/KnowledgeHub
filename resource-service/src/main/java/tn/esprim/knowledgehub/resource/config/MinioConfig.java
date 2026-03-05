@@ -15,6 +15,9 @@ public class MinioConfig {
     @Value("${minio.endpoint}")
     private String endpoint;
 
+    @Value("${minio.external-endpoint}")
+    private String externalEndpoint;
+
     @Value("${minio.access-key}")
     private String accessKey;
 
@@ -58,6 +61,25 @@ public class MinioConfig {
         } catch (Exception e) {
             log.error("Error initializing MinIO client: {}", e.getMessage(), e);
             throw new RuntimeException("Failed to initialize MinIO client", e);
+        }
+    }
+
+    /**
+     * MinIO client for generating presigned URLs with external endpoint
+     * This ensures browsers can access the URLs
+     */
+    @Bean(name = "minioClientForPresignedUrls")
+    public MinioClient minioClientForPresignedUrls() {
+        try {
+            MinioClient client = MinioClient.builder()
+                    .endpoint(externalEndpoint)
+                    .credentials(accessKey, secretKey)
+                    .build();
+            log.info("MinIO presigned URL client initialized with external endpoint: {}", externalEndpoint);
+            return client;
+        } catch (Exception e) {
+            log.error("Error initializing MinIO presigned URL client: {}", e.getMessage(), e);
+            throw new RuntimeException("Failed to initialize MinIO presigned URL client", e);
         }
     }
 
