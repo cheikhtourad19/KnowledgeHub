@@ -47,6 +47,20 @@ public class AdminPFEController {
         );
     }
 
+    @DeleteMapping("/demandes")
+    public ResponseEntity<ApiResponse<Void>> deleteAllDemandes(
+            @RequestHeader(value = "X-User-Role") String role
+
+    ){
+        if (!role.equals("ADMIN")){
+            return ResponseEntity.status(HttpStatus.FORBIDDEN).body(
+                    ApiResponse.error("Forbidden", "Only admins can delete all demands")
+            );
+        }
+        pfeService.removeAllDemandes();
+        return ResponseEntity.ok(ApiResponse.success(null,"All PFE demands deleted successfully"));
+    }
+
 
     @GetMapping("/demande/{id}")
     public ResponseEntity<ApiResponse<DemandePFE>> getDemandePFEById(

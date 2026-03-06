@@ -68,7 +68,10 @@ public class PFEService {
     }
 
     public void removeDemande(Long id){
-        pfeRepository.deleteById(id);
+        demandePFERepository.deleteById(id);
+    }
+    public void removeAllDemandes(){
+        demandePFERepository.deleteAll();
     }
 
     public PFE getPFEById(Long id) {

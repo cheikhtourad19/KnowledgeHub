@@ -1,0 +1,21 @@
+// Only PrimeNG InputSwitch color override — everything else is Tailwind
+
+:host ::ng-deep {
+  .p-inputswitch.p-inputswitch-checked {
+    .p-inputswitch-slider {
+      background: #c60c30;
+
+      &:before {
+        background: #ffffff;
+      }
+    }
+
+    &:not(.p-disabled):hover .p-inputswitch-slider {
+      background: #a00a28;
+    }
+  }
+
+  .p-inputswitch:not(.p-disabled):focus-within .p-inputswitch-slider {
+    box-shadow: 0 0 0 3px rgba(198, 12, 48, 0.2);
+  }
+}

@@ -7,6 +7,7 @@ import { LibraryComponent } from './pages/library/library.component';
 import { DemandePfeComponent } from './pages/demande.pfe/demande.pfe.component';
 import { ProfileComponent } from '../../shared/components/profile/profile.component';
 import { StudentStageDetailsComponent } from './pages/stage/stage-details/stage-details.component';
+import { DocumentComponent } from './pages/library/document/document.component';
 
 const routes: Routes = [
   {
@@ -41,6 +42,10 @@ const routes: Routes = [
       {
         path: 'profile',
         component: ProfileComponent,
+      },
+      {
+        path: 'document/:id',
+        component: DocumentComponent,
       },
     ],
   },

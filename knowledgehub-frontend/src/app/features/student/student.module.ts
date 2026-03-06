@@ -12,7 +12,7 @@ import { FileUploadModule } from 'primeng/fileupload';
 import { Badge } from 'primeng/badge';
 import { TooltipModule } from 'primeng/tooltip';
 import { FormGroup, FormsModule, ReactiveFormsModule } from '@angular/forms';
-
+import { ToggleSwitchModule } from 'primeng/toggleswitch';
 import { StudentRoutingModule } from './student-routing.module';
 import { StudentLayoutComponent } from './student-layout/student-layout.component';
 import { RouterModule } from '@angular/router';
@@ -22,6 +22,7 @@ import { StudentStageDetailsComponent } from './pages/stage/stage-details/stage-
 import { LibraryComponent } from './pages/library/library.component';
 import { DemandePfeComponent } from './pages/demande.pfe/demande.pfe.component';
 import { SharedModule } from '../../shared/shared.module';
+import { DocumentComponent } from './pages/library/document/document.component';
 
 @NgModule({
   declarations: [
@@ -31,6 +32,7 @@ import { SharedModule } from '../../shared/shared.module';
     StudentStageDetailsComponent,
     LibraryComponent,
     DemandePfeComponent,
+    DocumentComponent,
   ],
   imports: [
     CommonModule,
@@ -42,6 +44,7 @@ import { SharedModule } from '../../shared/shared.module';
     SelectModule,
     PdfViewerModule,
     ToastModule,
+    ToggleSwitchModule,
     Badge,
     FileUploadModule,
     ConfirmDialogModule,

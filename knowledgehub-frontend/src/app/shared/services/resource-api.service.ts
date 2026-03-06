@@ -1,7 +1,6 @@
 import { Injectable } from '@angular/core';
 import { HttpClient, HttpParams } from '@angular/common/http';
 import { Observable } from 'rxjs';
-import { map } from 'rxjs/operators';
 import { environment } from '../../../environments/environment';
 import { ApiResponse } from '../../shared/models/common/api-response.model';
 import { File } from '../../shared/models/resource-service/entities/file.model';
@@ -49,11 +48,12 @@ export class ResourceApiService {
   }
 
   getFileDownloadUrl(fileId: number): Observable<string> {
-    return this.http
-      .get(`${this.baseUrl}/api/admin/documents/${fileId}/download`, {
+    return this.http.get(
+      `${this.baseUrl}/api/admin/documents/${fileId}/download`,
+      {
         responseType: 'text',
-      })
-      .pipe(map((url) => this.transformMinioUrl(url)));
+      },
+    );
   }
 
   deleteFile(fileId: number): Observable<ApiResponse<void>> {
@@ -105,6 +105,12 @@ export class ResourceApiService {
     return this.http.get<ApiResponse<File[]>>(
       `${this.baseUrl}/api/public/library/searchdocument`,
       { params: { query } },
+    );
+  }
+  aiSearchDocuments(query: string): Observable<ApiResponse<File[]>> {
+    return this.http.post<ApiResponse<File[]>>(
+      `${this.baseUrl}/files/ai-search`,
+      { query },
     );
   }
 
@@ -438,30 +444,9 @@ export class ResourceApiService {
   }
 
   viewpdf(fileId: number): Observable<ApiResponse<string>> {
-    return this.http
-      .get<
-        ApiResponse<string>
-      >(`${this.baseUrl}/api/admin/documents/view/${fileId}`)
-      .pipe(
-        map((response) => {
-          if (response.data) {
-            response.data = this.transformMinioUrl(response.data);
-          }
-          return response;
-        }),
-      );
-  }
-
-  /**
-   * Transform MinIO internal Docker URLs to browser-accessible URLs
-   * Replaces 'minio:9000' with the configured minioUrl from environment
-   */
-  private transformMinioUrl(url: string): string {
-    if (!url) return url;
-
-    // Replace Docker service name 'minio' with localhost or configured host
-    // Handles both http://minio:9000 and https://minio:9000
-    return url.replace(/^(https?:\/\/)minio:9000/i, environment.minioUrl);
+    return this.http.get<ApiResponse<string>>(
+      `${this.baseUrl}/api/admin/documents/view/${fileId}`,
+    );
   }
 
   // ========== Stage Authorization Methods (Admin) ==========
