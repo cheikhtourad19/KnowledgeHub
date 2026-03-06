@@ -26,6 +26,7 @@ export class PfeComponent implements OnInit {
   // Upload modal
   showUploadModal = false;
   selectedFile: File | null = null;
+  reportTitle: string = '';
   uploadLoading = false;
 
   // PDF viewer modal
@@ -73,13 +74,11 @@ export class PfeComponent implements OnInit {
         this.demandes = response.data ?? [];
 
         // Find pending or rejected demand
-        this.pendingDemande = this.demandes.find(
-          (d) => d.status === DemandStatus.UPLOADED
-        ) ?? null;
+        this.pendingDemande =
+          this.demandes.find((d) => d.status === DemandStatus.UPLOADED) ?? null;
 
-        this.rejectedDemande = this.demandes.find(
-          (d) => d.status === DemandStatus.REJECTED
-        ) ?? null;
+        this.rejectedDemande =
+          this.demandes.find((d) => d.status === DemandStatus.REJECTED) ?? null;
       },
       error: () => {},
     });
@@ -130,12 +129,13 @@ export class PfeComponent implements OnInit {
   }
 
   canUploadReport(): boolean {
-    // Can't upload if there's already a report file
-    if (this.pfe?.reportFile) {
+    // Can't upload if status is UNDER_REVIEW or APPROVED
+    if (this.pfe?.status === SubmissionStatus.UNDER_REVIEW || 
+        this.pfe?.status === SubmissionStatus.APPROVED) {
       return false;
     }
-    // Can't upload if PFE is approved (validated)
-    return this.pfe?.status !== SubmissionStatus.APPROVED;
+    // Otherwise, can upload (even if file exists, for re-upload)
+    return true;
   }
 
   navigateToDemandes(): void {
@@ -146,11 +146,13 @@ export class PfeComponent implements OnInit {
   openUploadModal(): void {
     this.showUploadModal = true;
     this.selectedFile = null;
+    this.reportTitle = this.pfe?.reportFile?.title || this.pfe?.title || '';
   }
 
   closeUploadModal(): void {
     this.showUploadModal = false;
     this.selectedFile = null;
+    this.reportTitle = '';
     this.uploadLoading = false;
   }
 
@@ -168,11 +170,11 @@ export class PfeComponent implements OnInit {
   }
 
   uploadReport(): void {
-    if (!this.selectedFile || !this.pfe?.id) return;
+    if (!this.selectedFile || !this.pfe?.id || !this.reportTitle.trim()) return;
 
     this.uploadLoading = true;
     this.resourceApi
-      .uploadPFEReport(this.pfe.id, this.selectedFile, 'Rapport PFE')
+      .uploadPFEReport(this.pfe.id, this.selectedFile, this.reportTitle.trim())
       .subscribe({
         next: () => {
           this.messageService.add({
@@ -188,7 +190,7 @@ export class PfeComponent implements OnInit {
           this.messageService.add({
             severity: 'error',
             summary: 'Erreur',
-            detail: err.error?.message || 'Erreur lors de l\'upload du rapport',
+            detail: err.error?.message || "Erreur lors de l'upload du rapport",
           });
         },
       });

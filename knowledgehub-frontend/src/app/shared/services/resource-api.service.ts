@@ -102,14 +102,8 @@ export class ResourceApiService {
   }
 
   searchDocuments(query: string): Observable<ApiResponse<File[]>> {
-    return this.http.get<ApiResponse<File[]>>(
-      `${this.baseUrl}/api/public/library/searchdocument`,
-      { params: { query } },
-    );
-  }
-  aiSearchDocuments(query: string): Observable<ApiResponse<File[]>> {
     return this.http.post<ApiResponse<File[]>>(
-      `${this.baseUrl}/files/ai-search`,
+      `${this.baseUrl}/api/public/library/ai-search`,
       { query },
     );
   }

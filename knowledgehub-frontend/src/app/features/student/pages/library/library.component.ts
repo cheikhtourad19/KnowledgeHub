@@ -115,7 +115,7 @@ export class LibraryComponent implements OnInit {
     this.isAiLoading = true;
     this.isAiResults = false;
 
-    this.ressourceService.aiSearchDocuments(query).subscribe({
+    this.ressourceService.searchDocuments(query).subscribe({
       next: (response) => {
         const results: File[] = response.data || [];
         this.documents = results.filter((doc) =>
