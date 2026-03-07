@@ -2,22 +2,40 @@
   <div class="max-w-7xl mx-auto">
     <!-- Header -->
     <div class="mb-6">
-      <h1 class="text-3xl font-bold text-gray-900 dark:text-white">Mon Projet de Fin d'Études</h1>
-      <p class="text-gray-600 dark:text-gray-400 mt-2">Gérez votre projet de fin d'études et soumettez vos rapports</p>
+      <h1 class="text-3xl font-bold text-gray-900 dark:text-white">
+        Mon Projet de Fin d'Études
+      </h1>
+      <p class="text-gray-600 dark:text-gray-400 mt-2">
+        Gérez votre projet de fin d'études et soumettez vos rapports
+      </p>
     </div>
 
     <!-- Content -->
     <div>
       <!-- No PFE Yet -->
-      <div *ngIf="!pfe && !pendingDemande" class="bg-white dark:bg-gray-800 rounded-lg shadow-md p-8 text-center">
-        <i class="pi pi-inbox text-6xl text-gray-400 dark:text-gray-600 mb-4"></i>
-        <h2 class="text-2xl font-semibold text-gray-900 dark:text-white mb-3">Aucun PFE</h2>
+      <div
+        *ngIf="!pfe && !pendingDemande"
+        class="bg-white dark:bg-gray-800 rounded-lg shadow-md p-8 text-center"
+      >
+        <i
+          class="pi pi-inbox text-6xl text-gray-400 dark:text-gray-600 mb-4"
+        ></i>
+        <h2 class="text-2xl font-semibold text-gray-900 dark:text-white mb-3">
+          Aucun PFE
+        </h2>
 
         <!-- Rejected Demand Message -->
         <div *ngIf="rejectedDemande" class="mb-6">
-          <div class="bg-red-50 dark:bg-red-900/20 border border-red-200 dark:border-red-800 rounded-lg p-4 mb-4">
-            <p class="text-red-800 dark:text-red-300 font-medium">Votre dernière demande a été rejetée</p>
-            <p *ngIf="rejectedDemande.adminFeedback" class="text-red-700 dark:text-red-400 text-sm mt-2">
+          <div
+            class="bg-red-50 dark:bg-red-900/20 border border-red-200 dark:border-red-800 rounded-lg p-4 mb-4"
+          >
+            <p class="text-red-800 dark:text-red-300 font-medium">
+              Votre dernière demande a été rejetée
+            </p>
+            <p
+              *ngIf="rejectedDemande.adminFeedback"
+              class="text-red-700 dark:text-red-400 text-sm mt-2"
+            >
               Feedback: {{ rejectedDemande.adminFeedback }}
             </p>
           </div>
@@ -29,28 +47,38 @@
         <!-- No Demand Message -->
         <div *ngIf="!rejectedDemande">
           <p class="text-gray-600 dark:text-gray-400 mb-6">
-            Vous n'avez pas encore de projet de fin d'études. Commencez par soumettre une demande de PFE.
+            Vous n'avez pas encore de projet de fin d'études. Commencez par
+            soumettre une demande de PFE.
           </p>
         </div>
 
         <button
           (click)="navigateToDemandes()"
-          class="bg-[#FF7E00] hover:bg-[#e67100] text-white font-medium px-6 py-3 rounded-lg transition-colors">
+          class="bg-[#C60C30] hover:bg-[#a00927] text-white font-medium px-6 py-3 rounded-lg transition-colors"
+        >
           <i class="pi pi-plus mr-2"></i>
           Créer une demande de PFE
         </button>
       </div>
 
       <!-- Pending Demand -->
-      <div *ngIf="!pfe && pendingDemande" class="bg-white dark:bg-gray-800 rounded-lg shadow-md p-8">
+      <div
+        *ngIf="!pfe && pendingDemande"
+        class="bg-white dark:bg-gray-800 rounded-lg shadow-md p-8"
+      >
         <div class="flex items-start gap-4 mb-6">
           <div class="flex-shrink-0">
             <i class="pi pi-clock text-5xl text-yellow-500"></i>
           </div>
           <div class="flex-1">
-            <h2 class="text-2xl font-semibold text-gray-900 dark:text-white mb-2">Demande en cours de traitement</h2>
+            <h2
+              class="text-2xl font-semibold text-gray-900 dark:text-white mb-2"
+            >
+              Demande en cours de traitement
+            </h2>
             <p class="text-gray-600 dark:text-gray-400">
-              Votre demande de PFE est en cours d'évaluation par l'administration
+              Votre demande de PFE est en cours d'évaluation par
+              l'administration
             </p>
           </div>
         </div>
@@ -58,23 +86,39 @@
         <!-- Demand Details -->
         <div class="bg-gray-50 dark:bg-gray-700/50 rounded-lg p-6 space-y-4">
           <div>
-            <span class="text-sm font-medium text-gray-500 dark:text-gray-400">Titre du PFE</span>
-            <p class="text-gray-900 dark:text-white font-medium mt-1">{{ pendingDemande.pfeTitle }}</p>
+            <span class="text-sm font-medium text-gray-500 dark:text-gray-400"
+              >Titre du PFE</span
+            >
+            <p class="text-gray-900 dark:text-white font-medium mt-1">
+              {{ pendingDemande.pfeTitle }}
+            </p>
           </div>
 
           <div>
-            <span class="text-sm font-medium text-gray-500 dark:text-gray-400">Description</span>
-            <p class="text-gray-900 dark:text-white mt-1">{{ pendingDemande.pfeDescription }}</p>
+            <span class="text-sm font-medium text-gray-500 dark:text-gray-400"
+              >Description</span
+            >
+            <p class="text-gray-900 dark:text-white mt-1">
+              {{ pendingDemande.pfeDescription }}
+            </p>
           </div>
 
           <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
             <div>
-              <span class="text-sm font-medium text-gray-500 dark:text-gray-400">Entreprise</span>
-              <p class="text-gray-900 dark:text-white mt-1">{{ pendingDemande.entrepriseName }}</p>
+              <span class="text-sm font-medium text-gray-500 dark:text-gray-400"
+                >Entreprise</span
+              >
+              <p class="text-gray-900 dark:text-white mt-1">
+                {{ pendingDemande.entrepriseName }}
+              </p>
             </div>
             <div>
-              <span class="text-sm font-medium text-gray-500 dark:text-gray-400">Date de soumission</span>
-              <p class="text-gray-900 dark:text-white mt-1">{{ pendingDemande.createdAt | date: 'dd/MM/yyyy' }}</p>
+              <span class="text-sm font-medium text-gray-500 dark:text-gray-400"
+                >Date de soumission</span
+              >
+              <p class="text-gray-900 dark:text-white mt-1">
+                {{ pendingDemande.createdAt | date: "dd/MM/yyyy" }}
+              </p>
             </div>
           </div>
         </div>
@@ -82,7 +126,8 @@
         <div class="mt-6">
           <button
             (click)="navigateToDemandes()"
-            class="text-[#FF7E00] hover:text-[#e67100] font-medium">
+            class="text-[#C60C30] hover:text-[#a00927] font-medium"
+          >
             <i class="pi pi-arrow-right mr-2"></i>
             Voir toutes mes demandes
           </button>
@@ -95,142 +140,229 @@
         <div class="bg-white dark:bg-gray-800 rounded-lg shadow-md p-6">
           <div class="flex items-start justify-between mb-6">
             <div>
-              <h2 class="text-2xl font-semibold text-gray-900 dark:text-white mb-2">{{ pfe.title }}</h2>
+              <h2
+                class="text-2xl font-semibold text-gray-900 dark:text-white mb-2"
+              >
+                {{ pfe.title }}
+              </h2>
               <span
                 class="inline-flex items-center px-3 py-1 rounded-full text-sm font-medium"
-                [ngClass]="getStatusClass(pfe.status)">
+                [ngClass]="getStatusClass(pfe.status)"
+              >
                 {{ getStatusLabel(pfe.status) }}
               </span>
             </div>
             <button
               *ngIf="canUploadReport()"
               (click)="openUploadModal()"
-              class="bg-[#FF7E00] hover:bg-[#e67100] text-white font-medium px-4 py-2 rounded-lg transition-colors">
+              class="bg-[#C60C30] hover:bg-[#a00927] text-white font-medium px-4 py-2 rounded-lg transition-colors"
+            >
               <i class="pi pi-upload mr-2"></i>
-              Uploader le rapport
+              {{
+                pfe.reportFile
+                  ? "Re-uploader le rapport"
+                  : "Uploader le rapport"
+              }}
             </button>
           </div>
 
           <!-- PFE Details Grid -->
           <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
             <div *ngIf="pfe.year">
-              <span class="text-sm font-medium text-gray-500 dark:text-gray-400">Année</span>
-              <p class="text-gray-900 dark:text-white font-medium mt-1">{{ pfe.year }}</p>
+              <span class="text-sm font-medium text-gray-500 dark:text-gray-400"
+                >Année</span
+              >
+              <p class="text-gray-900 dark:text-white font-medium mt-1">
+                {{ pfe.year }}
+              </p>
             </div>
 
             <div *ngIf="pfe.entreprise_name">
-              <span class="text-sm font-medium text-gray-500 dark:text-gray-400">Entreprise</span>
-              <p class="text-gray-900 dark:text-white font-medium mt-1">{{ pfe.entreprise_name }}</p>
+              <span class="text-sm font-medium text-gray-500 dark:text-gray-400"
+                >Entreprise</span
+              >
+              <p class="text-gray-900 dark:text-white font-medium mt-1">
+                {{ pfe.entreprise_name }}
+              </p>
             </div>
 
             <div *ngIf="pfe.supervisorName">
-              <span class="text-sm font-medium text-gray-500 dark:text-gray-400">Encadrant</span>
-              <p class="text-gray-900 dark:text-white font-medium mt-1">{{ pfe.supervisorName }}</p>
+              <span class="text-sm font-medium text-gray-500 dark:text-gray-400"
+                >Encadrant</span
+              >
+              <p class="text-gray-900 dark:text-white font-medium mt-1">
+                {{ pfe.supervisorName }}
+              </p>
             </div>
 
             <div *ngIf="pfe.chefDeJuryName">
-              <span class="text-sm font-medium text-gray-500 dark:text-gray-400">Chef de Jury</span>
-              <p class="text-gray-900 dark:text-white font-medium mt-1">{{ pfe.chefDeJuryName }}</p>
+              <span class="text-sm font-medium text-gray-500 dark:text-gray-400"
+                >Chef de Jury</span
+              >
+              <p class="text-gray-900 dark:text-white font-medium mt-1">
+                {{ pfe.chefDeJuryName }}
+              </p>
             </div>
 
             <div *ngIf="pfe.rapporteurName">
-              <span class="text-sm font-medium text-gray-500 dark:text-gray-400">Rapporteur</span>
-              <p class="text-gray-900 dark:text-white font-medium mt-1">{{ pfe.rapporteurName }}</p>
+              <span class="text-sm font-medium text-gray-500 dark:text-gray-400"
+                >Rapporteur</span
+              >
+              <p class="text-gray-900 dark:text-white font-medium mt-1">
+                {{ pfe.rapporteurName }}
+              </p>
             </div>
 
             <div *ngIf="pfe.date_debut && pfe.date_fin">
-              <span class="text-sm font-medium text-gray-500 dark:text-gray-400">Période</span>
+              <span class="text-sm font-medium text-gray-500 dark:text-gray-400"
+                >Période</span
+              >
               <p class="text-gray-900 dark:text-white font-medium mt-1">
-                {{ pfe.date_debut | date: 'dd/MM/yyyy' }} - {{ pfe.date_fin | date: 'dd/MM/yyyy' }}
+                {{ pfe.date_debut | date: "dd/MM/yyyy" }} -
+                {{ pfe.date_fin | date: "dd/MM/yyyy" }}
               </p>
             </div>
           </div>
 
           <!-- Supervisor Feedback -->
-          <div *ngIf="pfe.supervisorFeedback" class="mt-6 bg-blue-50 dark:bg-blue-900/20 border border-blue-200 dark:border-blue-800 rounded-lg p-4">
-            <h3 class="text-sm font-semibold text-blue-900 dark:text-blue-300 mb-2">Feedback de l'encadrant</h3>
-            <p class="text-blue-800 dark:text-blue-400">{{ pfe.supervisorFeedback }}</p>
+          <div
+            *ngIf="pfe.supervisorFeedback"
+            class="mt-6 bg-blue-50 dark:bg-blue-900/20 border border-blue-200 dark:border-blue-800 rounded-lg p-4"
+          >
+            <h3
+              class="text-sm font-semibold text-blue-900 dark:text-blue-300 mb-2"
+            >
+              Feedback de l'encadrant
+            </h3>
+            <p class="text-blue-800 dark:text-blue-400">
+              {{ pfe.supervisorFeedback }}
+            </p>
           </div>
 
           <!-- Plagiarism Score -->
-          <div *ngIf="pfe.plagiarismScore !== null && pfe.plagiarismScore !== undefined" class="mt-6">
-            <span class="text-sm font-medium text-gray-500 dark:text-gray-400">Score de plagiat</span>
+          <div
+            *ngIf="
+              pfe.plagiarismScore !== null && pfe.plagiarismScore !== undefined
+            "
+            class="mt-6"
+          >
+            <span class="text-sm font-medium text-gray-500 dark:text-gray-400"
+              >Score de plagiat</span
+            >
             <div class="flex items-center gap-3 mt-2">
               <div class="flex-1 bg-gray-200 dark:bg-gray-700 rounded-full h-3">
                 <div
                   class="h-3 rounded-full transition-all"
                   [ngClass]="{
                     'bg-green-500': pfe.plagiarismScore < 20,
-                    'bg-yellow-500': pfe.plagiarismScore >= 20 && pfe.plagiarismScore < 40,
-                    'bg-red-500': pfe.plagiarismScore >= 40
+                    'bg-yellow-500':
+                      pfe.plagiarismScore >= 20 && pfe.plagiarismScore < 40,
+                    'bg-red-500': pfe.plagiarismScore >= 40,
                   }"
-                  [style.width.%]="pfe.plagiarismScore">
-                </div>
+                  [style.width.%]="pfe.plagiarismScore"
+                ></div>
               </div>
-              <span class="text-gray-900 dark:text-white font-semibold">{{ pfe.plagiarismScore }}%</span>
+              <span class="text-gray-900 dark:text-white font-semibold"
+                >{{ pfe.plagiarismScore }}%</span
+              >
             </div>
           </div>
         </div>
 
         <!-- Files Section -->
         <div class="bg-white dark:bg-gray-800 rounded-lg shadow-md p-6">
-          <h3 class="text-xl font-semibold text-gray-900 dark:text-white mb-4">Documents</h3>
+          <h3 class="text-xl font-semibold text-gray-900 dark:text-white mb-4">
+            Documents
+          </h3>
 
           <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
             <!-- Report File -->
             <div
               class="border-2 rounded-lg p-4 transition-all"
-              [ngClass]="pfe.reportFile ? 'border-green-500 dark:border-green-600 bg-green-50 dark:bg-green-900/20' : 'border-dashed border-gray-300 dark:border-gray-600'">
+              [ngClass]="
+                pfe.reportFile
+                  ? 'border-green-500 dark:border-green-600 bg-green-50 dark:bg-green-900/20'
+                  : 'border-dashed border-gray-300 dark:border-gray-600'
+              "
+            >
               <div class="flex items-center justify-between">
                 <div class="flex items-center gap-3">
                   <i
                     class="pi pi-file-pdf text-2xl"
-                    [ngClass]="pfe.reportFile ? 'text-green-600 dark:text-green-400' : 'text-gray-400'">
+                    [ngClass]="
+                      pfe.reportFile
+                        ? 'text-green-600 dark:text-green-400'
+                        : 'text-gray-400'
+                    "
+                  >
                   </i>
                   <div>
-                    <p class="font-medium text-gray-900 dark:text-white">Rapport</p>
+                    <p class="font-medium text-gray-900 dark:text-white">
+                      Rapport
+                    </p>
                     <p class="text-sm text-gray-500 dark:text-gray-400">
-                      {{ pfe.reportFile ? pfe.reportFile.title : 'Non uploadé' }}
+                      {{
+                        pfe.reportFile ? pfe.reportFile.title : "Non uploadé"
+                      }}
                     </p>
                   </div>
                 </div>
                 <button
                   *ngIf="pfe.reportFile && reportFileUrl"
                   (click)="viewReport()"
-                  class="text-[#FF7E00] hover:text-[#e67100] p-2 rounded-lg transition-colors">
+                  class="text-[#C60C30] hover:text-[#a00927] p-2 rounded-lg transition-colors"
+                >
                   <i class="pi pi-eye text-xl"></i>
                 </button>
               </div>
               <button
                 *ngIf="canUploadReport()"
                 (click)="openUploadModal()"
-                class="mt-3 w-full text-[#FF7E00] hover:text-[#e67100] font-medium text-sm py-2 border border-[#FF7E00] rounded-lg transition-colors">
+                class="mt-3 w-full text-[#C60C30] hover:text-[#a00927] font-medium text-sm py-2 border border-[#C60C30] rounded-lg transition-colors"
+              >
                 <i class="pi pi-upload mr-2"></i>
-                Uploader
+                {{ pfe.reportFile ? "Re-uploader" : "Uploader" }}
               </button>
             </div>
 
             <!-- Attestation File -->
             <div
               class="border-2 rounded-lg p-4 transition-all"
-              [ngClass]="pfe.attestationFile ? 'border-green-500 dark:border-green-600 bg-green-50 dark:bg-green-900/20' : 'border-dashed border-gray-300 dark:border-gray-600'">
+              [ngClass]="
+                pfe.attestationFile
+                  ? 'border-green-500 dark:border-green-600 bg-green-50 dark:bg-green-900/20'
+                  : 'border-dashed border-gray-300 dark:border-gray-600'
+              "
+            >
               <div class="flex items-center justify-between">
                 <div class="flex items-center gap-3">
                   <i
                     class="pi pi-file-pdf text-2xl"
-                    [ngClass]="pfe.attestationFile ? 'text-green-600 dark:text-green-400' : 'text-gray-400'">
+                    [ngClass]="
+                      pfe.attestationFile
+                        ? 'text-green-600 dark:text-green-400'
+                        : 'text-gray-400'
+                    "
+                  >
                   </i>
                   <div>
-                    <p class="font-medium text-gray-900 dark:text-white">Attestation</p>
+                    <p class="font-medium text-gray-900 dark:text-white">
+                      Attestation
+                    </p>
                     <p class="text-sm text-gray-500 dark:text-gray-400">
-                      {{ pfe.attestationFile ? pfe.attestationFile.title : 'Non uploadé' }}
+                      {{
+                        pfe.attestationFile
+                          ? pfe.attestationFile.title
+                          : "Non uploadé"
+                      }}
                     </p>
                   </div>
                 </div>
                 <button
                   *ngIf="pfe.attestationFile && attestationFileUrl"
                   (click)="viewAttestation()"
-                  class="text-[#FF7E00] hover:text-[#e67100] p-2 rounded-lg transition-colors">
+                  class="text-[#C60C30] hover:text-[#a00927] p-2 rounded-lg transition-colors"
+                >
                   <i class="pi pi-eye text-xl"></i>
                 </button>
               </div>
@@ -248,30 +380,59 @@
   [modal]="true"
   [closable]="true"
   [style]="{ width: '500px' }"
-  header="Uploader le rapport PFE"
-  (onHide)="closeUploadModal()">
-
+  [header]="
+    pfe?.reportFile ? 'Re-uploader le rapport PFE' : 'Uploader le rapport PFE'
+  "
+  (onHide)="closeUploadModal()"
+>
   <div class="space-y-4">
     <p class="text-gray-600 dark:text-gray-400">
-      Sélectionnez votre fichier de rapport au format PDF
+      {{
+        pfe?.reportFile
+          ? "Remplacer le rapport existant par un nouveau fichier PDF"
+          : "Sélectionnez votre fichier de rapport au format PDF"
+      }}
     </p>
 
-    <div class="border-2 border-dashed border-gray-300 dark:border-gray-600 rounded-lg p-6 text-center">
+    <!-- Title Input -->
+    <div>
+      <label
+        class="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2"
+      >
+        Titre du rapport <span class="text-red-500">*</span>
+      </label>
+      <input
+        type="text"
+        [(ngModel)]="reportTitle"
+        placeholder="Ex: Rapport PFE - Développement Application Web"
+        class="w-full px-4 py-2 border border-gray-300 dark:border-gray-600 rounded-lg bg-white dark:bg-gray-700 text-gray-900 dark:text-white focus:ring-2 focus:ring-[#C60C30] focus:border-[#C60C30] outline-none transition-colors"
+      />
+    </div>
+
+    <!-- File Upload -->
+    <div
+      class="border-2 border-dashed border-gray-300 dark:border-gray-600 rounded-lg p-6 text-center"
+    >
       <input
         type="file"
         #fileInput
         accept="application/pdf"
         (change)="onFileSelected($event)"
-        class="hidden" />
+        class="hidden"
+      />
 
       <button
         (click)="fileInput.click()"
-        class="bg-gray-100 dark:bg-gray-700 hover:bg-gray-200 dark:hover:bg-gray-600 text-gray-900 dark:text-white px-4 py-2 rounded-lg transition-colors">
+        class="bg-gray-100 dark:bg-gray-700 hover:bg-gray-200 dark:hover:bg-gray-600 text-gray-900 dark:text-white px-4 py-2 rounded-lg transition-colors"
+      >
         <i class="pi pi-upload mr-2"></i>
         Choisir un fichier
       </button>
 
-      <p *ngIf="selectedFile" class="mt-3 text-sm text-gray-900 dark:text-white font-medium">
+      <p
+        *ngIf="selectedFile"
+        class="mt-3 text-sm text-gray-900 dark:text-white font-medium"
+      >
         {{ selectedFile.name }}
       </p>
     </div>
@@ -281,15 +442,23 @@
     <button
       (click)="closeUploadModal()"
       class="px-4 py-2 text-gray-700 dark:text-gray-300 hover:bg-gray-100 dark:hover:bg-gray-700 rounded-lg transition-colors"
-      [disabled]="uploadLoading">
+      [disabled]="uploadLoading"
+    >
       Annuler
     </button>
     <button
       (click)="uploadReport()"
-      [disabled]="!selectedFile || uploadLoading"
-      class="bg-[#FF7E00] hover:bg-[#e67100] text-white px-4 py-2 rounded-lg transition-colors disabled:opacity-50 disabled:cursor-not-allowed">
+      [disabled]="!selectedFile || !reportTitle.trim() || uploadLoading"
+      class="bg-[#C60C30] hover:bg-[#a00927] text-white px-4 py-2 rounded-lg transition-colors disabled:opacity-50 disabled:cursor-not-allowed"
+    >
       <i class="pi pi-spin pi-spinner mr-2" *ngIf="uploadLoading"></i>
-      {{ uploadLoading ? 'Upload en cours...' : 'Uploader' }}
+      {{
+        uploadLoading
+          ? "Upload en cours..."
+          : pfe?.reportFile
+            ? "Re-uploader"
+            : "Uploader"
+      }}
     </button>
   </ng-template>
 </p-dialog>
@@ -301,24 +470,25 @@
   [closable]="false"
   [style]="{ width: '90vw', height: '90vh' }"
   [contentStyle]="{ padding: '0', height: 'calc(90vh - 60px)' }"
-  [header]="pdfTitle">
-
+  [header]="pdfTitle"
+>
   <div class="h-full">
     <pdf-viewer
       *ngIf="pdfUrl"
       [src]="pdfUrl"
       [render-text]="true"
       [original-size]="false"
-      style="width: 100%; height: 100%;">
+      style="width: 100%; height: 100%"
+    >
     </pdf-viewer>
   </div>
 
   <ng-template pTemplate="footer">
     <button
       (click)="closePdfModal()"
-      class="bg-gray-500 hover:bg-gray-600 text-white px-6 py-2 rounded-lg transition-colors">
+      class="bg-gray-500 hover:bg-gray-600 text-white px-6 py-2 rounded-lg transition-colors"
+    >
       <i class="pi pi-times mr-2"></i>
-
     </button>
   </ng-template>
 </p-dialog>

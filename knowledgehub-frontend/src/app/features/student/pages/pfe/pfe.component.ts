@@ -130,8 +130,10 @@ export class PfeComponent implements OnInit {
 
   canUploadReport(): boolean {
     // Can't upload if status is UNDER_REVIEW or APPROVED
-    if (this.pfe?.status === SubmissionStatus.UNDER_REVIEW || 
-        this.pfe?.status === SubmissionStatus.APPROVED) {
+    if (
+      this.pfe?.status === SubmissionStatus.UNDER_REVIEW ||
+      this.pfe?.status === SubmissionStatus.APPROVED
+    ) {
       return false;
     }
     // Otherwise, can upload (even if file exists, for re-upload)
