@@ -1,1 +1,230 @@
-<p>document works!</p>
+<div class="min-h-screen bg-gray-50" *ngIf="document">
+  <!-- Header -->
+  <div class="relative overflow-hidden bg-[#C60C30] px-10 py-8">
+    <div
+      class="pointer-events-none absolute inset-0"
+      style="
+        background: repeating-linear-gradient(
+          45deg,
+          transparent,
+          transparent 40px,
+          rgba(255, 255, 255, 0.03) 40px,
+          rgba(255, 255, 255, 0.03) 80px
+        );
+      "></div>
+    <div class="relative z-10">
+      <button
+        (click)="goBack()"
+        class="mb-4 flex items-center gap-2 text-white/80 transition-colors hover:text-white">
+        <i class="pi pi-arrow-left text-sm"></i>
+        <span class="text-sm font-medium">Retour à la bibliothèque</span>
+      </button>
+      <div class="flex items-start justify-between">
+        <div>
+          <span
+            class="mb-2 inline-block rounded-md bg-white/20 px-3 py-1 text-xs font-bold uppercase tracking-widest text-white backdrop-blur-sm">
+            {{ typeLabels[document.fileType] }}
+          </span>
+          <h1 class="text-3xl font-bold text-white">{{ document.title }}</h1>
+          <p *ngIf="document.description" class="mt-2 text-sm text-white/80">
+            {{ document.description }}
+          </p>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- Document Content -->
+  <div class="px-10 py-8">
+    <div class="mx-auto max-w-7xl">
+      <div class="grid grid-cols-1 gap-6 lg:grid-cols-3">
+        <!-- Main Content - PDF Viewer -->
+        <div class="lg:col-span-2">
+          <p-card
+            styleClass="shadow-sm border border-gray-200 rounded-xl overflow-hidden">
+            <ng-template pTemplate="header">
+              <div
+                class="flex items-center justify-between border-b border-gray-100 bg-white px-6 py-4">
+                <h2 class="text-lg font-semibold text-[#333333]">
+                  Aperçu du document
+                </h2>
+                <div class="flex gap-2">
+                  <p-button
+                    icon="pi pi-eye"
+                    label="Plein écran"
+                    [outlined]="true"
+                    severity="secondary"
+                    (onClick)="openPdfModal()"
+                    styleClass="text-sm"></p-button>
+                  <p-button
+                    icon="pi pi-download"
+                    label="Télécharger"
+                    severity="danger"
+                    (onClick)="downloadDocument()"
+                    styleClass="text-sm bg-[#C60C30] border-[#C60C30] hover:bg-[#a00a28]"></p-button>
+                </div>
+              </div>
+            </ng-template>
+
+            <div class="bg-gray-100 p-4">
+              <div
+                *ngIf="pdfUrl"
+                class="overflow-hidden rounded-lg border border-gray-300 bg-white shadow-inner">
+                <pdf-viewer
+                  [src]="pdfUrl"
+                  [render-text]="true"
+                  [show-all]="true"
+                  [original-size]="false"
+                  [fit-to-page]="true"
+                  [zoom]="1"
+                  style="display: block; width: 100%; height: 800px"></pdf-viewer>
+              </div>
+              <div
+                *ngIf="!pdfUrl"
+                class="flex h-96 items-center justify-center rounded-lg bg-gray-100">
+                <div class="text-center text-gray-400">
+                  <i class="pi pi-spin pi-spinner mb-3 text-3xl"></i>
+                  <p class="text-sm">Chargement du document...</p>
+                </div>
+              </div>
+            </div>
+          </p-card>
+        </div>
+
+        <!-- Sidebar - Document Info -->
+        <div class="space-y-6">
+          <!-- Document Metadata -->
+          <p-card
+            styleClass="shadow-sm border border-gray-200 rounded-xl overflow-hidden">
+            <ng-template pTemplate="header">
+              <div class="border-b border-gray-100 bg-white px-6 py-4">
+                <h3 class="text-base font-semibold text-[#333333]">
+                  Informations
+                </h3>
+              </div>
+            </ng-template>
+
+            <div class="space-y-4">
+              <!-- File Name -->
+              <div>
+                <label class="mb-1 block text-xs font-semibold uppercase tracking-wider text-gray-400">
+                  Nom du fichier
+                </label>
+                <p class="text-sm text-[#333333]">
+                  {{ document.originalFileName }}
+                </p>
+              </div>
+
+              <!-- File Size -->
+              <div>
+                <label class="mb-1 block text-xs font-semibold uppercase tracking-wider text-gray-400">
+                  Taille
+                </label>
+                <div class="flex items-center gap-2">
+                  <i class="pi pi-file text-[#C60C30]"></i>
+                  <p class="text-sm text-[#333333]">
+                    {{ formatFileSize(document.fileSize) }}
+                  </p>
+                </div>
+              </div>
+
+              <!-- Page Count -->
+              <div *ngIf="document.pageCount">
+                <label class="mb-1 block text-xs font-semibold uppercase tracking-wider text-gray-400">
+                  Nombre de pages
+                </label>
+                <div class="flex items-center gap-2">
+                  <i class="pi pi-book text-[#C60C30]"></i>
+                  <p class="text-sm text-[#333333]">
+                    {{ document.pageCount }} pages
+                  </p>
+                </div>
+              </div>
+
+              <!-- Upload Date -->
+              <div>
+                <label class="mb-1 block text-xs font-semibold uppercase tracking-wider text-gray-400">
+                  Date de publication
+                </label>
+                <div class="flex items-center gap-2">
+                  <i class="pi pi-calendar text-[#C60C30]"></i>
+                  <p class="text-sm text-[#333333]">
+                    {{ document.uploadDate | date: 'dd MMMM yyyy' }}
+                  </p>
+                </div>
+              </div>
+
+              <!-- Uploaded By -->
+              <div *ngIf="document.uploadedByUserName">
+                <label class="mb-1 block text-xs font-semibold uppercase tracking-wider text-gray-400">
+                  Publié par
+                </label>
+                <div class="flex items-center gap-2">
+                  <i class="pi pi-user text-[#C60C30]"></i>
+                  <p class="text-sm text-[#333333]">
+                    {{ document.uploadedByUserName }}
+                  </p>
+                </div>
+              </div>
+
+              <!-- Type -->
+              <div>
+                <label class="mb-1 block text-xs font-semibold uppercase tracking-wider text-gray-400">
+                  Type de document
+                </label>
+                <span
+                  class="inline-block rounded-md bg-[#C60C30]/10 px-3 py-1 text-xs font-semibold text-[#C60C30]">
+                  {{ typeLabels[document.fileType] }}
+                </span>
+              </div>
+            </div>
+          </p-card>
+
+          <!-- Actions Card -->
+          <p-card
+            styleClass="shadow-sm border border-gray-200 rounded-xl overflow-hidden">
+            <ng-template pTemplate="header">
+              <div class="border-b border-gray-100 bg-white px-6 py-4">
+                <h3 class="text-base font-semibold text-[#333333]">Actions</h3>
+              </div>
+            </ng-template>
+
+            <div class="space-y-3">
+              <p-button
+                icon="pi pi-eye"
+                label="Ouvrir en plein écran"
+                [outlined]="true"
+                severity="secondary"
+                (onClick)="openPdfModal()"
+                styleClass="w-full justify-center"></p-button>
+
+              <p-button
+                icon="pi pi-download"
+                label="Télécharger le PDF"
+                severity="danger"
+                (onClick)="downloadDocument()"
+                styleClass="w-full justify-center bg-[#C60C30] border-[#C60C30] hover:bg-[#a00a28]"></p-button>
+            </div>
+          </p-card>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- Loading State -->
+<div
+  *ngIf="!document"
+  class="flex min-h-screen items-center justify-center bg-gray-50">
+  <div class="text-center">
+    <i class="pi pi-spin pi-spinner mb-4 text-4xl text-[#C60C30]"></i>
+    <p class="text-sm text-gray-500">Chargement du document...</p>
+  </div>
+</div>
+
+<!-- PDF Modal -->
+<app-pdf-viewer-modal
+  [(visible)]="showPdfModal"
+  [pdfUrl]="pdfUrl"
+  [title]="document?.title || 'Document'">
+</app-pdf-viewer-modal>

@@ -7,8 +7,11 @@ import { UnauthorizedComponent } from './components/unauthorized/unauthorized.co
 import { NotFoundComponent } from './components/not-found/not-found.component';
 import { LoadingOverlayComponent } from './components/loading-overlay/loading-overlay.component';
 import { ProfileComponent } from './components/profile/profile.component';
+import { PdfViewerModalComponent } from './components/pdf-viewer-modal/pdf-viewer-modal.component';
 import { ProgressSpinnerModule } from 'primeng/progressspinner';
 import { ReactiveFormsModule } from '@angular/forms';
+import { DialogModule } from 'primeng/dialog';
+import { PdfViewerModule } from 'ng2-pdf-viewer';
 
 @NgModule({
   declarations: [
@@ -17,6 +20,7 @@ import { ReactiveFormsModule } from '@angular/forms';
     UnauthorizedComponent,
     NotFoundComponent,
     ProfileComponent,
+    PdfViewerModalComponent,
   ],
   imports: [
     CommonModule,
@@ -24,6 +28,8 @@ import { ReactiveFormsModule } from '@angular/forms';
     ProgressSpinnerModule,
     LoadingOverlayComponent,
     ReactiveFormsModule,
+    DialogModule,
+    PdfViewerModule,
   ],
   exports: [
     FileSizePipe,
@@ -32,6 +38,7 @@ import { ReactiveFormsModule } from '@angular/forms';
     NotFoundComponent,
     LoadingOverlayComponent,
     ProfileComponent,
+    PdfViewerModalComponent,
   ],
 })
 export class SharedModule {}

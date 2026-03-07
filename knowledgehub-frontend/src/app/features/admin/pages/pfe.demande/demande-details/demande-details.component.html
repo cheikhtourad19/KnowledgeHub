@@ -620,28 +620,10 @@
 </p-dialog>
 
 <!-- ===== PDF VIEWER MODAL ===== -->
-<p-dialog
-  header="Document PDF"
+<app-pdf-viewer-modal
   [(visible)]="showPdfModal"
-  [modal]="true"
-  [style]="{ width: '90vw', height: '90vh' }"
-  [draggable]="false"
-  [resizable]="false"
-  [maximizable]="false"
-  styleClass="pdf-modal"
->
-  <div *ngIf="pdf_presigned_url" class="h-full">
-    <pdf-viewer
-      [src]="pdf_presigned_url"
-      [render-text]="true"
-      [show-all]="true"
-      [original-size]="false"
-      [fit-to-page]="true"
+  [pdfUrl]="pdf_presigned_url"
+  [title]="'Document PDF'">
+</app-pdf-viewer-modal>
 
-      [zoom]="1"
-      style="display: block; width: 100%; height: 75vh"
-    ></pdf-viewer>
-  </div>
-
-</p-dialog>
 

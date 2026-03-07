@@ -13,6 +13,7 @@ import { Badge } from 'primeng/badge';
 import { TooltipModule } from 'primeng/tooltip';
 import { FormGroup, FormsModule, ReactiveFormsModule } from '@angular/forms';
 import { ToggleSwitchModule } from 'primeng/toggleswitch';
+import { CardModule } from 'primeng/card';
 import { StudentRoutingModule } from './student-routing.module';
 import { StudentLayoutComponent } from './student-layout/student-layout.component';
 import { RouterModule } from '@angular/router';
@@ -50,6 +51,7 @@ import { DocumentComponent } from './pages/library/document/document.component';
     ConfirmDialogModule,
     ReactiveFormsModule,
     TooltipModule,
+    CardModule,
     StudentRoutingModule,
     RouterModule,
     SharedModule,

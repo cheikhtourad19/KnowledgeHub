@@ -750,27 +750,10 @@
 </p-dialog>
 
 <!-- ===== PDF VIEWER MODAL ===== -->
-<p-dialog
-  header="Rapport PFE"
+<app-pdf-viewer-modal
   [(visible)]="showPdfModal"
-  [modal]="true"
-  [style]="{ width: '90vw', height: '90vh' }"
-  [draggable]="false"
-  [resizable]="false"
-  [maximizable]="false"
-  styleClass="pdf-modal"
->
-  <div *ngIf="reportFileUrl && reportFileUrl.trim().length > 0" class="h-full">
-    <pdf-viewer
-      [src]="reportFileUrl"
-      [render-text]="true"
-      [show-all]="true"
-      [original-size]="false"
-      [fit-to-page]="true"
-      [zoom]="1"
-      style="display: block; width: 100%; height: 75vh"
-    ></pdf-viewer>
-  </div>
+  [pdfUrl]="reportFileUrl"
+  [title]="'Rapport PFE'">
+</app-pdf-viewer-modal>
 
-</p-dialog>
 

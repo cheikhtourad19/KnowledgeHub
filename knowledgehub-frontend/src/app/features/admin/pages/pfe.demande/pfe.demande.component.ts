@@ -143,5 +143,82 @@ export class PfeDemandeComponent implements OnInit {
     }
   }
 
+  // ══════════════════════════════════════════════════════════
+  // ADD these new properties to the component class
+  // (alongside the existing filter properties)
+  // ══════════════════════════════════════════════════════════
 
+  // Delete-all modal state
+  showDeleteAllModal = false;
+  deleteConfirmPassword = '';
+  deletePasswordError = '';
+  deletingAll = false;
+
+  // ══════════════════════════════════════════════════════════
+  // ADD these new methods to the component class
+  // ══════════════════════════════════════════════════════════
+
+  openDeleteAllModal(): void {
+    this.deleteConfirmPassword = '';
+    this.deletePasswordError = '';
+    this.showDeleteAllModal = true;
+  }
+
+  closeDeleteAllModal(): void {
+    this.showDeleteAllModal = false;
+    this.deleteConfirmPassword = '';
+    this.deletePasswordError = '';
+  }
+
+  confirmDeleteAll(): void {
+    if (!this.deleteConfirmPassword.trim()) {
+      this.deletePasswordError = 'Veuillez saisir votre mot de passe.';
+      return;
+    }
+
+    this.deletingAll = true;
+    this.deletePasswordError = '';
+
+    // Step 1 — verify password with the backend
+    this.resourceApiService
+      .verifyPassword(this.deleteConfirmPassword)
+      .subscribe({
+        next: () => {
+          // Step 2 — password OK → delete all demandes
+          this.resourceApiService.deleteAllDemandes().subscribe({
+            next: () => {
+              this.deletingAll = false;
+              this.closeDeleteAllModal();
+              this.allDemandes = [];
+              this.demandes = [];
+              this.messageService.add({
+                severity: 'success',
+                summary: 'Suppression réussie',
+                detail: 'Toutes les demandes de PFE ont été supprimées.',
+              });
+            },
+            error: () => {
+              this.deletingAll = false;
+              this.messageService.add({
+                severity: 'error',
+                summary: 'Erreur',
+                detail: 'La suppression a échoué. Veuillez réessayer.',
+              });
+            },
+          });
+        },
+        error: () => {
+          this.deletingAll = false;
+          this.deletePasswordError =
+            'Mot de passe incorrect. Veuillez réessayer.';
+        },
+      });
+  }
+
+  // ══════════════════════════════════════════════════════════
+  // ADD these two methods to ResourceApiService
+  // (resource-api.service.ts)
+  // ══════════════════════════════════════════════════════════
+
+  // Verify the admin password before a destructive action
 }

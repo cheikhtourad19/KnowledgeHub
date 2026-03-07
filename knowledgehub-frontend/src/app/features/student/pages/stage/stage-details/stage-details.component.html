@@ -668,30 +668,9 @@
 </p-dialog>
 
 <!-- PDF Viewer Modal -->
-<p-dialog
+<app-pdf-viewer-modal
   [(visible)]="showPdfModal"
-  [modal]="true"
-  [closable]="false"
-  [style]="{ width: '90vw', height: '90vh' }"
-  [contentStyle]="{ padding: '0', height: 'calc(90vh - 60px)' }"
-  [header]="currentPdfTitle">
+  [pdfUrl]="currentPdfUrl"
+  [title]="currentPdfTitle">
+</app-pdf-viewer-modal>
 
-  <div class="h-full">
-    <pdf-viewer
-      *ngIf="currentPdfUrl"
-      [src]="currentPdfUrl"
-      [render-text]="true"
-      [original-size]="false"
-      style="width: 100%; height: 100%;">
-    </pdf-viewer>
-  </div>
-
-  <ng-template pTemplate="footer">
-    <button
-      (click)="closePdfModal()"
-      class="bg-gray-500 hover:bg-gray-600 text-white px-6 py-2 rounded-lg transition-colors">
-      <i class="pi pi-times mr-2"></i>
-      X
-    </button>
-  </ng-template>
-</p-dialog>

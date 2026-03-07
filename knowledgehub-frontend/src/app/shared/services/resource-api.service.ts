@@ -108,6 +108,18 @@ export class ResourceApiService {
     );
   }
 
+  getFileById(fileId: number): Observable<ApiResponse<File>> {
+    return this.http.get<ApiResponse<File>>(
+      `${this.baseUrl}/api/public/library/document/${fileId}`,
+    );
+  }
+
+  getPresignedUrl(fileId: number): Observable<ApiResponse<string>> {
+    return this.http.get<ApiResponse<string>>(
+      `${this.baseUrl}/api/public/library/document/${fileId}/presigned-url`,
+    );
+  }
+
   // ========== PFE Demande Methods ==========
 
   /**
@@ -341,22 +353,23 @@ export class ResourceApiService {
       `${this.baseUrl}/api/student/stage/student/${studentId}`,
     );
   }
-
   uploadStageReport(
     stageId: number,
     file: globalThis.File,
-    title: string,
+    title?: string,
     description?: string,
   ): Observable<ApiResponse<FileUploadResponse>> {
     const formData = new FormData();
     formData.append('file', file);
-    formData.append('title', title);
+    if (title) {
+      formData.append('title', title);
+    }
     if (description) {
       formData.append('description', description);
     }
 
     return this.http.post<ApiResponse<FileUploadResponse>>(
-      `${this.baseUrl}/api/student/stage/${stageId}/upload-report`,
+      `${this.baseUrl}/api/student/stage/upload-report/${stageId}`,
       formData,
     );
   }
@@ -364,18 +377,20 @@ export class ResourceApiService {
   uploadStageJournal(
     stageId: number,
     file: globalThis.File,
-    title: string,
+    title?: string,
     description?: string,
   ): Observable<ApiResponse<FileUploadResponse>> {
     const formData = new FormData();
     formData.append('file', file);
-    formData.append('title', title);
+    if (title) {
+      formData.append('title', title);
+    }
     if (description) {
       formData.append('description', description);
     }
 
     return this.http.post<ApiResponse<FileUploadResponse>>(
-      `${this.baseUrl}/api/student/stage/${stageId}/upload-journal`,
+      `${this.baseUrl}/api/student/stage/upload-journal/${stageId}`,
       formData,
     );
   }
@@ -383,18 +398,20 @@ export class ResourceApiService {
   uploadStageAttestation(
     stageId: number,
     file: globalThis.File,
-    title: string,
+    title?: string,
     description?: string,
   ): Observable<ApiResponse<FileUploadResponse>> {
     const formData = new FormData();
     formData.append('file', file);
-    formData.append('title', title);
+    if (title) {
+      formData.append('title', title);
+    }
     if (description) {
       formData.append('description', description);
     }
 
     return this.http.post<ApiResponse<FileUploadResponse>>(
-      `${this.baseUrl}/api/student/stage/${stageId}/upload-attestation`,
+      `${this.baseUrl}/api/student/stage/upload-attestation/${stageId}`,
       formData,
     );
   }
@@ -507,5 +524,19 @@ export class ResourceApiService {
     return this.http.delete<ApiResponse<any>>(
       `${this.baseUrl}/api/admin/stage/remove-all-authorized-students`,
     );
+  }
+
+  verifyPassword(password: string): Observable<any> {
+    const params = new HttpParams().set('password', password);
+    return this.http.post(
+      `${environment.apiUrl}auth-service/api//verify-password`,
+      null,
+      { params },
+    );
+  }
+
+  // Delete every DemandePFE record
+  deleteAllDemandes(): Observable<any> {
+    return this.http.delete(`${this.baseUrl}/api/admin/pfe/demandes`);
   }
 }
