@@ -1,7 +1,7 @@
 package tn.esprim.knowledgehub.resource.service;
 
-import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
+import org.springframework.context.annotation.Lazy;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 import tn.esprim.knowledgehub.resource.client.UserServiceClient;
@@ -22,7 +22,6 @@ import java.util.Optional;
 import java.util.stream.Collectors;
 
 @Service
-@RequiredArgsConstructor
 @Slf4j
 public class StageService {
 
@@ -30,6 +29,18 @@ public class StageService {
     private final StageCreationAutorisationRepository stageCreationAutorisationRepository;
     private final FileService fileService;
     private final UserServiceClient userServiceClient;
+
+    public StageService(
+            StageRepository stageRepository,
+            StageCreationAutorisationRepository stageCreationAutorisationRepository,
+            @Lazy FileService fileService,
+            UserServiceClient userServiceClient
+    ) {
+        this.stageRepository = stageRepository;
+        this.stageCreationAutorisationRepository = stageCreationAutorisationRepository;
+        this.fileService = fileService;
+        this.userServiceClient = userServiceClient;
+    }
 
     /**
      * Autoriser un étudiant à créer un stage d'un type spécifique

@@ -3,8 +3,8 @@ package tn.esprim.knowledgehub.resource.service;
 import com.knowledgehub.notification.client.NotificationClient;
 import com.knowledgehub.notification.client.dto.NotificationRequest;
 import com.knowledgehub.notification.client.dto.NotificationType;
-import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
+import org.springframework.context.annotation.Lazy;
 import org.springframework.stereotype.Service;
 import org.springframework.web.multipart.MultipartFile;
 import tn.esprim.knowledgehub.resource.client.UserServiceClient;
@@ -22,11 +22,11 @@ import tn.esprim.knowledgehub.resource.enums.FileType;
 import tn.esprim.knowledgehub.resource.repository.DemandePFERepository;
 import tn.esprim.knowledgehub.resource.repository.PFERepository;
 
+import java.util.ArrayList;
 import java.util.Date;
 import java.util.List;
 
 @Service
-@RequiredArgsConstructor
 @Slf4j
 public class PFEService {
 
@@ -36,6 +36,43 @@ public class PFEService {
     private final UserServiceClient userServiceClient;
     private final NotificationClient notificationClient;
 
+    public PFEService(
+            PFERepository pfeRepository,
+            DemandePFERepository demandePFERepository,
+            @Lazy FileService fileService,
+            UserServiceClient userServiceClient,
+            NotificationClient notificationClient
+    ) {
+        this.pfeRepository = pfeRepository;
+        this.demandePFERepository = demandePFERepository;
+        this.fileService = fileService;
+        this.userServiceClient = userServiceClient;
+        this.notificationClient = notificationClient;
+    }
+
+
+
+    public PFE getPFEByFile(Long FileId) {
+        File file = fileService.getFileById(FileId);
+        return pfeRepository.findByReportFile(file)
+                .orElseGet(() -> pfeRepository.findByAttestationFile(file).orElse(null));
+
+    }
+    public List<Long> getFileUsersAccess(Long fileId){
+        File file = fileService.getFileById(fileId);
+        List<Long> userIds = new ArrayList<>();
+        if (file.getUploadedByUserId() != null) userIds.add(file.getUploadedByUserId());
+        if (file.getFileType()==FileType.PFE_REPORT ) {
+            Long tecaherId = getPFEByFile(fileId).getSupervisorId();
+            Long juryId = getPFEByFile(fileId).getChefDeJuryId();
+            Long rapporteurId = getPFEByFile(fileId).getRapporteurId();
+            if (tecaherId != null) userIds.add(tecaherId);
+            if (juryId != null) userIds.add(juryId);
+            if (rapporteurId != null) userIds.add(rapporteurId);
+        }
+        return userIds;
+
+    }
 
     public PFE savePFE(PFE pfe) {
 

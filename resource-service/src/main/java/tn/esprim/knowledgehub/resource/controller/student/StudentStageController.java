@@ -6,11 +6,19 @@ import lombok.extern.slf4j.Slf4j;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
+import org.springframework.web.multipart.MultipartFile;
+import tn.esprim.knowledgehub.resource.client.UserServiceClient;
+import tn.esprim.knowledgehub.resource.client.dto.StudentDTO;
 import tn.esprim.knowledgehub.resource.dto.request.StudentCreateStageRequest;
 import tn.esprim.knowledgehub.resource.dto.response.ApiResponse;
+import tn.esprim.knowledgehub.resource.dto.response.FileUploadResponse;
 import tn.esprim.knowledgehub.resource.dto.response.StageResponse;
+import tn.esprim.knowledgehub.resource.entity.File;
 import tn.esprim.knowledgehub.resource.entity.Stage;
+import tn.esprim.knowledgehub.resource.enums.FileType;
+import tn.esprim.knowledgehub.resource.service.FileService;
 import tn.esprim.knowledgehub.resource.service.StageService;
+import tn.esprim.knowledgehub.resource.repository.StageRepository;
 
 @RestController
 @RequestMapping("/api/student/stage")
@@ -19,6 +27,9 @@ import tn.esprim.knowledgehub.resource.service.StageService;
 public class StudentStageController {
 
     private final StageService stageService;
+    private final FileService fileService;
+    private final UserServiceClient userServiceClient;
+    private final StageRepository stageRepository;
 
 
     @PostMapping
@@ -133,5 +144,199 @@ public class StudentStageController {
                     ));
         }
     }
-}
 
+    @PostMapping("/upload-report/{stageId}")
+    public ResponseEntity<ApiResponse<FileUploadResponse>> uploadReportFile(
+            @PathVariable Long stageId,
+            @RequestParam(value = "title", required = false) String title,
+            @RequestParam(value = "description", required = false) String description,
+            @RequestParam("file") MultipartFile file,
+            @RequestHeader(value = "X-User-Id") Long userId
+    ) {
+        log.info("Student {} attempting to upload report for stage {}", userId, stageId);
+
+        try {
+            Stage stage = stageService.getStageById(stageId);
+            if (stage == null) {
+                return ResponseEntity.status(HttpStatus.NOT_FOUND).body(
+                        ApiResponse.error("Not Found", "Stage non trouvé avec l'ID: " + stageId)
+                );
+            }
+
+            if (!stage.getStudentId().equals(userId)) {
+                return ResponseEntity.status(HttpStatus.FORBIDDEN).body(
+                        ApiResponse.error("Forbidden", "Vous n'êtes pas autorisé à uploader des fichiers pour ce stage")
+                );
+            }
+
+            // Check if the stage is from a past year (not editable)
+            int currentYear = java.time.LocalDate.now().getYear();
+            if (stage.getYear() != null && stage.getYear() < currentYear) {
+                return ResponseEntity.status(HttpStatus.FORBIDDEN).body(
+                        ApiResponse.error("Forbidden", "Ce stage est de l'année " + stage.getYear() + " et n'est plus modifiable")
+                );
+            }
+
+            StudentDTO student = userServiceClient.getStudentById(stage.getStudentId()).getData();
+            if (student == null) {
+                return ResponseEntity.status(HttpStatus.NOT_FOUND).body(
+                        ApiResponse.error("Not Found", "Étudiant non trouvé")
+                );
+            }
+
+            FileUploadResponse response = fileService.uploadFile(
+                    file,
+                    FileType.STAGE_REPORT,
+                    userId,
+                    student.getEmail(),
+                    "stage",
+                    title != null ? title : "Rapport de stage - " + stage.getTitle(),
+                    description
+            );
+
+            File uploadedFile = fileService.getFileById(response.getFileId());
+            stage.setReportFile(uploadedFile);
+            stageRepository.save(stage);
+
+            log.info("Report uploaded successfully for stage {}", stageId);
+            return ResponseEntity.ok(
+                    ApiResponse.success(response, "Rapport uploadé avec succès")
+            );
+        } catch (Exception e) {
+            log.error("Error uploading report for stage {}: {}", stageId, e.getMessage(), e);
+            return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).body(
+                    ApiResponse.error("Erreur interne", "Erreur lors de l'upload du rapport: " + e.getMessage())
+            );
+        }
+    }
+
+    @PostMapping("/upload-journal/{stageId}")
+    public ResponseEntity<ApiResponse<FileUploadResponse>> uploadJournalFile(
+            @PathVariable Long stageId,
+            @RequestParam(value = "title", required = false) String title,
+            @RequestParam(value = "description", required = false) String description,
+            @RequestParam("file") MultipartFile file,
+            @RequestHeader(value = "X-User-Id") Long userId
+    ) {
+        log.info("Student {} attempting to upload journal for stage {}", userId, stageId);
+
+        try {
+            Stage stage = stageService.getStageById(stageId);
+            if (stage == null) {
+                return ResponseEntity.status(HttpStatus.NOT_FOUND).body(
+                        ApiResponse.error("Not Found", "Stage non trouvé avec l'ID: " + stageId)
+                );
+            }
+
+            if (!stage.getStudentId().equals(userId)) {
+                return ResponseEntity.status(HttpStatus.FORBIDDEN).body(
+                        ApiResponse.error("Forbidden", "Vous n'êtes pas autorisé à uploader des fichiers pour ce stage")
+                );
+            }
+
+            // Check if the stage is from a past year (not editable)
+            int currentYear = java.time.LocalDate.now().getYear();
+            if (stage.getYear() != null && stage.getYear() < currentYear) {
+                return ResponseEntity.status(HttpStatus.FORBIDDEN).body(
+                        ApiResponse.error("Forbidden", "Ce stage est de l'année " + stage.getYear() + " et n'est plus modifiable")
+                );
+            }
+
+            StudentDTO student = userServiceClient.getStudentById(stage.getStudentId()).getData();
+            if (student == null) {
+                return ResponseEntity.status(HttpStatus.NOT_FOUND).body(
+                        ApiResponse.error("Not Found", "Étudiant non trouvé")
+                );
+            }
+
+            FileUploadResponse response = fileService.uploadFile(
+                    file,
+                    FileType.JOURNAL,
+                    userId,
+                    student.getEmail(),
+                    "journal",
+                    title != null ? title : "Journal de stage - " + stage.getTitle(),
+                    description
+            );
+
+            File uploadedFile = fileService.getFileById(response.getFileId());
+            stage.setJournalFile(uploadedFile);
+            stageRepository.save(stage);
+
+            log.info("Journal uploaded successfully for stage {}", stageId);
+            return ResponseEntity.ok(
+                    ApiResponse.success(response, "Journal uploadé avec succès")
+            );
+        } catch (Exception e) {
+            log.error("Error uploading journal for stage {}: {}", stageId, e.getMessage(), e);
+            return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).body(
+                    ApiResponse.error("Erreur interne", "Erreur lors de l'upload du journal: " + e.getMessage())
+            );
+        }
+    }
+
+    @PostMapping("/upload-attestation/{stageId}")
+    public ResponseEntity<ApiResponse<FileUploadResponse>> uploadAttestationFile(
+            @PathVariable Long stageId,
+            @RequestParam(value = "title", required = false) String title,
+            @RequestParam(value = "description", required = false) String description,
+            @RequestParam("file") MultipartFile file,
+            @RequestHeader(value = "X-User-Id") Long userId
+    ) {
+        log.info("Student {} attempting to upload attestation for stage {}", userId, stageId);
+
+        try {
+            Stage stage = stageService.getStageById(stageId);
+            if (stage == null) {
+                return ResponseEntity.status(HttpStatus.NOT_FOUND).body(
+                        ApiResponse.error("Not Found", "Stage non trouvé avec l'ID: " + stageId)
+                );
+            }
+
+            if (!stage.getStudentId().equals(userId)) {
+                return ResponseEntity.status(HttpStatus.FORBIDDEN).body(
+                        ApiResponse.error("Forbidden", "Vous n'êtes pas autorisé à uploader des fichiers pour ce stage")
+                );
+            }
+
+            // Check if the stage is from a past year (not editable)
+            int currentYear = java.time.LocalDate.now().getYear();
+            if (stage.getYear() != null && stage.getYear() < currentYear) {
+                return ResponseEntity.status(HttpStatus.FORBIDDEN).body(
+                        ApiResponse.error("Forbidden", "Ce stage est de l'année " + stage.getYear() + " et n'est plus modifiable")
+                );
+            }
+
+            StudentDTO student = userServiceClient.getStudentById(stage.getStudentId()).getData();
+            if (student == null) {
+                return ResponseEntity.status(HttpStatus.NOT_FOUND).body(
+                        ApiResponse.error("Not Found", "Étudiant non trouvé")
+                );
+            }
+
+            FileUploadResponse response = fileService.uploadFile(
+                    file,
+                    FileType.ATTESTATION,
+                    userId,
+                    student.getEmail(),
+                    "attestation",
+                    title != null ? title : "Attestation de stage - " + stage.getTitle(),
+                    description
+            );
+
+            File uploadedFile = fileService.getFileById(response.getFileId());
+            stage.setAttestationFile(uploadedFile);
+            stageRepository.save(stage);
+
+            log.info("Attestation uploaded successfully for stage {}", stageId);
+            return ResponseEntity.ok(
+                    ApiResponse.success(response, "Attestation uploadée avec succès")
+            );
+        } catch (Exception e) {
+            log.error("Error uploading attestation for stage {}: {}", stageId, e.getMessage(), e);
+            return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).body(
+                    ApiResponse.error("Erreur interne", "Erreur lors de l'upload de l'attestation: " + e.getMessage())
+            );
+        }
+    }
+}

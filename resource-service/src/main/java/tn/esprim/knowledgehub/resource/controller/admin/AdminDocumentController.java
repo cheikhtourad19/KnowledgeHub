@@ -119,8 +119,10 @@ public class AdminDocumentController {
             
             // Get PFE access
             try {
-                List<Long> pfeUsers = pfeService.getTeachersInPFEandFile(file.getId());
+                List<Long> pfeUsers = pfeService.getFileUsersAccess(file.getId());
+                List<Long> stageUsers = stageService.usersWithAccess(file.getId());
                 users_with_access.addAll(pfeUsers);
+                users_with_access.addAll(stageUsers);
                 log.debug("PFE users with access to file {}: {}", fileId, pfeUsers);
             } catch (Exception e) {
                 log.error("Error getting PFE access for file {}: {}", fileId, e.getMessage(), e);

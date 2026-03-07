@@ -71,9 +71,69 @@ public class LibraryController {
         }
     }
 
+    @GetMapping("/document/{id}")
+    public ResponseEntity<ApiResponse> getDocumentById(@PathVariable Long id) {
+        try {
+            File file = fileService.getFileById(id);
+            if (file == null || !file.getIsPublished()) {
+                return ResponseEntity.ok(
+                        ApiResponse.builder()
+                                .success(false)
+                                .message("Document not found or not published")
+                                .data(null)
+                                .build()
+                );
+            }
+            return ResponseEntity.ok(
+                    ApiResponse.builder()
+                            .success(true)
+                            .message("Document retrieved successfully")
+                            .data(file)
+                            .build()
+            );
+        } catch (Exception e) {
+            log.error("Error retrieving document: {}", e.getMessage(), e);
+            return ResponseEntity.ok(
+                    ApiResponse.builder()
+                            .success(false)
+                            .message("Error retrieving document: " + e.getMessage())
+                            .data(null)
+                            .build()
+            );
+        }
+    }
+
+    @GetMapping("/document/{id}/presigned-url")
+    public ResponseEntity<ApiResponse> getDocumentPresignedUrl(@PathVariable Long id) {
+        try {
+            File file = fileService.getFileById(id);
+            if (file == null || !file.getIsPublished()) {
+                return ResponseEntity.ok(
+                        ApiResponse.builder()
+                                .success(false)
+                                .message("Document not found or not published")
+                                .data(null)
+                                .build()
+                );
+            }
+            String presignedUrl = fileService.generatePresignedUrl(id,5);
+            return ResponseEntity.ok(
+                    ApiResponse.builder()
+                            .success(true)
+                            .message("Presigned URL generated successfully")
+                            .data(presignedUrl)
+                            .build()
+            );
+        } catch (Exception e) {
+            log.error("Error generating presigned URL: {}", e.getMessage(), e);
+            return ResponseEntity.ok(
+                    ApiResponse.builder()
+                            .success(false)
+                            .message("Error generating presigned URL: " + e.getMessage())
+                            .data(null)
+                            .build()
+            );
+        }
+    }}
 
 
-
-
-
-}
