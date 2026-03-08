@@ -16,7 +16,7 @@ import tn.esprim.knowledgehub.resource.service.FileService;
 import java.util.List;
 
 @RestController
-@RequestMapping("/api/public/library")
+@RequestMapping("/api/library")
 @RequiredArgsConstructor
 @Slf4j
 public class LibraryController {

@@ -187,7 +187,8 @@ public class FileService {
                             .build()
             );
 
-            log.info("Generated presigned URL for file ID: {} with external endpoint", fileId);
+            log.info("Generated presigned URL for file ID: {} -> {}", fileId, url);
+
             return url;
 
         } catch (Exception e) {

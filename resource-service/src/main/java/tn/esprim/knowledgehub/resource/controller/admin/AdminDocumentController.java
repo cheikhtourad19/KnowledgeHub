@@ -154,7 +154,8 @@ public class AdminDocumentController {
                         tn.esprim.knowledgehub.resource.dto.response.ApiResponse.error("Forbidden", "This file is not yet published.")
                 );
             }
-            String presignedUrl = fileService.generatePresignedUrl(fileId, 2);
+            String presignedUrl = fileService.generatePresignedUrl(fileId, 30);
+            log.info("Generated presigned URL: {}", presignedUrl);
             return ResponseEntity.ok(tn.esprim.knowledgehub.resource.dto.response.ApiResponse.success(presignedUrl, "Secure link generated"));
         } catch (Exception e) {
             log.error("Error generating view link for file {}: {}", fileId, e.getMessage(), e);

@@ -26,7 +26,8 @@ spring:
       - org.springframework.boot.autoconfigure.data.mongo.MongoDataAutoConfiguration
 
   datasource:
-    url: jdbc:mysql://localhost:3306/knowledgehub_ressource?createDatabaseIfNotExist=true&useSSL=false&serverTimezone=UTC
+    url: jdbc:mysql://localhost:3306/knowledgehub_ressource?createDatabaseIfNotExist=true&useSSL=false&serverTimezone=UTC&allowPublicKeyRetrieval=true
+
     driver-class-name: com.mysql.cj.jdbc.Driver
     username: root
     password: JYzNL0Tfb5r65W3dayz03/xDwS34yj6Z
@@ -61,7 +62,7 @@ feign:
 # MinIO Configuration
 minio:
   endpoint: http://localhost:9000  # Internal endpoint for file operations
-  external-endpoint: http://localhost:9000  # External endpoint for presigned URLs (browser access)
+  external-endpoint: http://localhost:9000 # External endpoint for presigned URLs (browser access)
   access-key: minioadmin
   secret-key: IM0i7/Sb3/tGGxWQdtxBtMRWov3fZ3qf
   bucket-name: knowledgehub-documents
@@ -101,7 +102,7 @@ spring:
       on-profile: docker
 
   datasource:
-    url: jdbc:mysql://${MYSQL_HOST}:${MYSQL_PORT}/${MYSQL_RESOURCE_DB}?createDatabaseIfNotExist=true&useSSL=false&serverTimezone=UTC
+    url: jdbc:mysql://${MYSQL_HOST}:${MYSQL_PORT}/${MYSQL_RESOURCE_DB}?createDatabaseIfNotExist=true&useSSL=false&serverTimezone=UTC&allowPublicKeyRetrieval=true
     username: ${MYSQL_USERNAME}
     password: ${MYSQL_PASSWORD}
 

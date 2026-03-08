@@ -54,7 +54,8 @@ jwt:
   secret: SMHWV9Em+mtG0bVR9Cpoummg8Tg1lKSvc5q34ysfar4=
 
 cors:
-  allowed-origins: http://localhost:4200,http://localhost:80,http://127.0.0.1:4200
+  allowed-origins: http://localhost:4200,http://localhost:80,http://127.0.0.1:4200, http://192.168.1.32:4200
+  allowed-origin-patterns: http://192.168.*.*:*
 
 management:
   endpoints:
