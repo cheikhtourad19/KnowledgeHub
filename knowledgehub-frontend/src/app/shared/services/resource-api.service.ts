@@ -16,7 +16,7 @@ import { CreatePFARequest } from '../../shared/models/resource-service/requests/
 import { CreateStageRequest } from '../../shared/models/resource-service/requests/create-stage-request.model';
 import { FileUploadResponse } from '../../shared/models/resource-service/responses/file-upload-response.model';
 import { FileType } from '../../shared/models/resource-service/enums/file-type.enum';
-
+import { map } from 'rxjs/operators';
 @Injectable({
   providedIn: 'root',
 })
@@ -91,33 +91,47 @@ export class ResourceApiService {
   }
   getPublishedDocuments(): Observable<ApiResponse<File[]>> {
     return this.http.get<ApiResponse<File[]>>(
-      `${this.baseUrl}/api/public/library/getDocuments`,
+      `${this.baseUrl}/api/library/getDocuments`,
     );
   }
 
   getDocumentsByType(type: FileType): Observable<ApiResponse<File[]>> {
     return this.http.get<ApiResponse<File[]>>(
-      `${this.baseUrl}/api/public/library/getDocumentsByType/${type}`,
+      `${this.baseUrl}/api/library/getDocumentsByType/${type}`,
     );
   }
 
   searchDocuments(query: string): Observable<ApiResponse<File[]>> {
     return this.http.post<ApiResponse<File[]>>(
-      `${this.baseUrl}/api/public/library/ai-search`,
+      `${this.baseUrl}/api/library/ai-search`,
       { query },
     );
   }
 
   getFileById(fileId: number): Observable<ApiResponse<File>> {
     return this.http.get<ApiResponse<File>>(
-      `${this.baseUrl}/api/public/library/document/${fileId}`,
+      `${this.baseUrl}/api/library/document/${fileId}`,
     );
   }
 
   getPresignedUrl(fileId: number): Observable<ApiResponse<string>> {
-    return this.http.get<ApiResponse<string>>(
-      `${this.baseUrl}/api/public/library/document/${fileId}/presigned-url`,
-    );
+    return this.http
+      .get<
+        ApiResponse<string>
+      >(`${this.baseUrl}/api/library/document/${fileId}/presigned-url`)
+      .pipe(
+        map((response) => {
+          if (response.data) {
+            const minioUrl = new URL(response.data);
+            const apiUrl = new URL(environment.apiUrl);
+            minioUrl.hostname = apiUrl.hostname;
+            minioUrl.port = '9000';
+            response.data = minioUrl.toString();
+          }
+          console.log('Presigned URL:', response.data);
+          return response;
+        }),
+      );
   }
 
   // ========== PFE Demande Methods ==========
