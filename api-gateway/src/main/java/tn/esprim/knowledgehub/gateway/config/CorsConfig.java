@@ -16,42 +16,19 @@ import java.util.stream.Collectors;
 @Configuration
 public class CorsConfig {
 
-    @Value("${cors.allowed-origins:http://localhost:4200,http://localhost:80,http://localhost}")
-    private String allowedOrigins;
-
     @Bean
     public CorsWebFilter corsWebFilter() {
+
         CorsConfiguration corsConfig = new CorsConfiguration();
 
-        // Parse allowed origins from environment variable
-        List<String> origins = Arrays.stream(allowedOrigins.split(","))
-                .map(String::trim)
-                .collect(Collectors.toList());
-
-        corsConfig.setAllowedOrigins(origins);
-
-        // Allow all HTTP methods
-        corsConfig.setAllowedMethods(Arrays.asList(
-                "GET", "POST", "PUT", "DELETE", "PATCH", "OPTIONS"
-        ));
-
-        // Allow all headers
-        corsConfig.setAllowedHeaders(Collections.singletonList("*"));
-
-        // Allow credentials (cookies, authorization headers)
+        corsConfig.addAllowedOriginPattern("*");   // allow ALL origins
+        corsConfig.addAllowedMethod("*");          // allow ALL methods
+        corsConfig.addAllowedHeader("*");          // allow ALL headers
         corsConfig.setAllowCredentials(true);
 
-        // Expose Authorization header to frontend
-        corsConfig.setExposedHeaders(Arrays.asList(
-                "Authorization",
-                "Content-Type",
-                "X-Requested-With"
-        ));
+        UrlBasedCorsConfigurationSource source =
+                new UrlBasedCorsConfigurationSource();
 
-        // How long the response from a pre-flight request can be cached
-        corsConfig.setMaxAge(3600L);
-
-        UrlBasedCorsConfigurationSource source = new UrlBasedCorsConfigurationSource();
         source.registerCorsConfiguration("/**", corsConfig);
 
         return new CorsWebFilter(source);

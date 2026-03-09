@@ -15,7 +15,7 @@ import Aura from '@primeng/themes/aura';
 import { providePrimeNG } from 'primeng/config';
 import { ProgressSpinnerModule } from 'primeng/progressspinner';
 import { HTTP_INTERCEPTORS } from '@angular/common/http';
-import { loadingInterceptor } from './core/interceptors/loading.interceptor';
+// import { loadingInterceptor } from './core/interceptors/loading.interceptor';
 import { LoadingOverlayComponent } from './shared/components/loading-overlay/loading-overlay.component';
 import { NgxExtendedPdfViewerModule } from 'ngx-extended-pdf-viewer';
 
@@ -34,7 +34,11 @@ import { NgxExtendedPdfViewerModule } from 'ngx-extended-pdf-viewer';
   ],
   providers: [
     provideHttpClient(
-      withInterceptors([authInterceptor, errorInterceptor, loadingInterceptor]),
+      withInterceptors([
+        authInterceptor,
+        errorInterceptor, //loadingInterceptor
+        // ]),
+      ]),
     ),
     MessageService,
     ConfirmationService,

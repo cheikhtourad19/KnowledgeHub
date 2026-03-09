@@ -52,10 +52,21 @@ spring:
 
 jwt:
   secret: SMHWV9Em+mtG0bVR9Cpoummg8Tg1lKSvc5q34ysfar4=
-
 cors:
-  allowed-origins: http://localhost:4200,http://localhost:80,http://127.0.0.1:4200, http://192.168.1.32:4200
-  allowed-origin-patterns: http://192.168.*.*:*
+  allowed-origin-patterns:
+    - "http://localhost:4200"
+    - "http://127.0.0.1:4200"
+    - "http://localhost:80"
+    - "http://192.168.*:*"
+    - "http://172.23.*:*"
+  allowed-methods:
+    - GET
+    - POST
+    - PUT
+    - DELETE
+    - OPTIONS
+  allowed-headers: "*"
+  allow-credentials: true
 
 management:
   endpoints:

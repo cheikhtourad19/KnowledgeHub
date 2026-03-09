@@ -215,10 +215,5 @@ export class PfeDemandeComponent implements OnInit {
       });
   }
 
-  // ══════════════════════════════════════════════════════════
-  // ADD these two methods to ResourceApiService
-  // (resource-api.service.ts)
-  // ══════════════════════════════════════════════════════════
-
-  // Verify the admin password before a destructive action
+ 
 }

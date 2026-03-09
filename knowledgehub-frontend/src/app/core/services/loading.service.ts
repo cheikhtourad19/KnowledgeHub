@@ -8,7 +8,7 @@ export class LoadingService {
   private activeRequests = 0;
   private hideTimer: ReturnType<typeof setTimeout> | null = null;
   private showTime: number | null = null;
-  private readonly MIN_DISPLAY_MS = 1000;
+  private readonly MIN_DISPLAY_MS = 1;
 
   show(): void {
     this.activeRequests++;
