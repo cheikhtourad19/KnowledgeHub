@@ -184,19 +184,7 @@ public class StageService {
 
         return mapToStageResponse(savedStage);
     }
-    public List<Long> usersWithAccess(Long fileId){
-        List<Stage> stages = stageRepository.findByAnyFileId(fileId);
-        List<Long> userIds = new ArrayList<>();
-        for (Stage stage : stages) {
-            if (stage.getStudentId() != null) {
-                userIds.add(stage.getStudentId());
-            }
-            if (stage.getSupervisorId() != null) {
-                userIds.add(stage.getSupervisorId());
-            }
-        }
-        return userIds;
-    }
+
 
     /**
      * Récupérer tous les stages (pour l'admin)

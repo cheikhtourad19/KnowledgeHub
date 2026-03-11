@@ -1,9 +1,12 @@
 package tn.esprim.knowledgehub.resource.repository;
 
 import org.springframework.data.jpa.repository.JpaRepository;
+import org.springframework.data.jpa.repository.Query;
+import org.springframework.data.repository.query.Param;
 import org.springframework.stereotype.Repository;
 import tn.esprim.knowledgehub.resource.entity.File;
 import tn.esprim.knowledgehub.resource.entity.PFE;
+import tn.esprim.knowledgehub.resource.entity.Stage;
 import tn.esprim.knowledgehub.resource.enums.SubmissionStatus;
 
 import java.util.List;
@@ -26,4 +29,8 @@ public interface PFERepository extends JpaRepository<PFE, Long> {
     Optional<PFE> findByReportFile(File reportFile);
     
     Optional<PFE> findByAttestationFile(File attestationFile);
+
+
+    @Query("SELECT s FROM PFE s WHERE s.reportFile.id = :fileId  OR s.attestationFile.id = :fileId")
+    Optional<PFE>  findByAnyFileId(@Param("fileId") Long fileId);
 }

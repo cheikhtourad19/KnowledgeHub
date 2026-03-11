@@ -15,7 +15,7 @@ public interface StageRepository extends JpaRepository<Stage, Long> {
     List<Stage> findByStudentId(Long studentId);
 
     @Query("SELECT s FROM Stage s WHERE s.reportFile.id = :fileId OR s.journalFile.id = :fileId OR s.attestationFile.id = :fileId")
-    List<Stage> findByAnyFileId(@Param("fileId") Long fileId);
+    Optional<Stage> findByAnyFileId(@Param("fileId") Long fileId);
 
     List<Stage> findBySupervisorId(Long supervisorId);
 
@@ -59,4 +59,6 @@ public interface StageRepository extends JpaRepository<Stage, Long> {
            "LEFT JOIN FETCH s.attestationFile " +
            "WHERE s.studentId = :studentId")
     List<Stage> findByStudentIdWithFiles(@Param("studentId") Long studentId);
+
+
 }

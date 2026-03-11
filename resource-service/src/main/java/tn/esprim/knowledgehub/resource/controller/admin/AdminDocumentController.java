@@ -12,10 +12,7 @@ import tn.esprim.knowledgehub.resource.dto.response.ApiResponse;
 import tn.esprim.knowledgehub.resource.dto.response.FileUploadResponse;
 import tn.esprim.knowledgehub.resource.entity.File;
 import tn.esprim.knowledgehub.resource.enums.FileType;
-import tn.esprim.knowledgehub.resource.service.AIandSearchService;
-import tn.esprim.knowledgehub.resource.service.FileService;
-import tn.esprim.knowledgehub.resource.service.PFEService;
-import tn.esprim.knowledgehub.resource.service.StageService;
+import tn.esprim.knowledgehub.resource.service.*;
 
 import java.util.List;
 
@@ -27,8 +24,7 @@ public class AdminDocumentController {
 
     private final FileService fileService;
     private final AIandSearchService aiandSearchService;
-    private final StageService stageService;
-    private final PFEService pfeService;
+    private final AccesService accesService;
 
     @GetMapping("/all")
     public ResponseEntity<ApiResponse<List<File>>> getAllFiles(
@@ -113,33 +109,8 @@ public class AdminDocumentController {
             @RequestHeader(value = "X-User-Id", required = false) String userId
     ) {
         try {
-            File file = fileService.getFileById(fileId);
-            
-            List<Long> users_with_access = new java.util.ArrayList<>();
-            
-            // Get PFE access
-            try {
-                List<Long> pfeUsers = pfeService.getFileUsersAccess(file.getId());
-                List<Long> stageUsers = stageService.usersWithAccess(file.getId());
-                users_with_access.addAll(pfeUsers);
-                users_with_access.addAll(stageUsers);
-                log.debug("PFE users with access to file {}: {}", fileId, pfeUsers);
-            } catch (Exception e) {
-                log.error("Error getting PFE access for file {}: {}", fileId, e.getMessage(), e);
-            }
-            
-            // Get Stage access
-            try {
-                List<Long> stageUsers = stageService.usersWithAccess(file.getId());
-                users_with_access.addAll(stageUsers);
-                log.debug("Stage users with access to file {}: {}", fileId, stageUsers);
-            } catch (Exception e) {
-                log.error("Error getting Stage access for file {}: {}", fileId, e.getMessage(), e);
-            }
-
             boolean isAdmin = role.equals("ADMIN");
 
-            // Parse userId safely
             Long userIdLong = null;
             if (userId != null && !userId.trim().isEmpty()) {
                 try {
@@ -149,22 +120,30 @@ public class AdminDocumentController {
                 }
             }
 
-            if (!file.getIsPublished() && !isAdmin && (userIdLong == null || !users_with_access.contains(userIdLong))) {
-                return ResponseEntity.status(403).body(
-                        tn.esprim.knowledgehub.resource.dto.response.ApiResponse.error("Forbidden", "This file is not yet published.")
-                );
+            File file = fileService.getFileById(fileId);
+
+            if (!file.getIsPublished() && !isAdmin) {
+                List<Long> usersWithAccess = accesService.fileAccess(fileId);
+                log.debug("Users with access to file {}: {}", fileId, usersWithAccess);
+
+                if (userIdLong == null || !usersWithAccess.contains(userIdLong)) {
+                    return ResponseEntity.status(403).body(
+                            ApiResponse.error("Forbidden", "This file is not yet published.")
+                    );
+                }
             }
+
             String presignedUrl = fileService.generatePresignedUrl(fileId, 30);
-            log.info("Generated presigned URL: {}", presignedUrl);
-            return ResponseEntity.ok(tn.esprim.knowledgehub.resource.dto.response.ApiResponse.success(presignedUrl, "Secure link generated"));
+            log.info("Generated presigned URL for file {}: {}", fileId, presignedUrl);
+            return ResponseEntity.ok(ApiResponse.success(presignedUrl, "Secure link generated"));
+
         } catch (Exception e) {
             log.error("Error generating view link for file {}: {}", fileId, e.getMessage(), e);
             return ResponseEntity.badRequest().body(
-                    tn.esprim.knowledgehub.resource.dto.response.ApiResponse.error(e.getMessage(), "Failed to generate link")
+                    ApiResponse.error(e.getMessage(), "Failed to generate link")
             );
         }
     }
-
 
     @Operation(summary = "Get file metadata", description = "Get file metadata by ID")
     @GetMapping("/{fileId}")
