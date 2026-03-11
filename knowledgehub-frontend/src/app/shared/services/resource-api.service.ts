@@ -543,7 +543,7 @@ export class ResourceApiService {
   verifyPassword(password: string): Observable<any> {
     const params = new HttpParams().set('password', password);
     return this.http.post(
-      `${environment.apiUrl}auth-service/api//verify-password`,
+      `${environment.apiUrl}auth-service/api/verify-password`,
       null,
       { params },
     );

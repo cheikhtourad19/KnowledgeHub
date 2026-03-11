@@ -1,231 +1,179 @@
 <!-- login.component.html -->
-
 <div
-  class="min-h-screen flex items-center justify-center bg-gray-50 px-4 py-12"
-  >
-  <div class="w-full max-w-md">
+  class="min-h-screen flex items-center justify-center bg-[#F0F0F0] px-4 py-12"
+>
+  <!-- Background accent blobs -->
+  <div class="absolute inset-0 overflow-hidden pointer-events-none">
+    <div
+      class="absolute -top-32 -left-32 w-96 h-96 bg-[#C60C30] opacity-5 rounded-full"
+    ></div>
+    <div
+      class="absolute -bottom-20 -right-20 w-80 h-80 bg-[#333333] opacity-5 rounded-full"
+    ></div>
+  </div>
+
+  <div class="w-full max-w-md relative">
     <!-- Login Card -->
-    <div class="bg-white rounded-lg shadow-xl overflow-hidden">
-      <!-- Header with Logo -->
-      <div class="px-8 pt-8 pb-4 text-center bg-white border-b border-gray-100">
-        <div class="mb-4">
+    <div
+      class="bg-white rounded-2xl shadow-2xl overflow-hidden border border-gray-100"
+    >
+      <!-- Header: red left accent bar + content -->
+      <div class="flex">
+        <div class="w-2 bg-[#C60C30] flex-shrink-0"></div>
+        <div class="flex-1 px-8 pt-8 pb-6 text-center">
           <img
             src="assets/images/logo_esprim.jpg"
-            alt="Logo du Collège"
-            class="h-32 w-auto mx-auto"
-            />
+            alt="Logo ESPRIM"
+            class="h-20 w-auto mx-auto mb-5 drop-shadow-sm"
+          />
+          <div class="inline-flex items-center gap-2 mb-1">
+            <div class="w-6 h-0.5 bg-[#C60C30]"></div>
+            <h1
+              class="text-xl font-black text-[#333333] tracking-widest uppercase"
+            >
+              Knowledge<span class="text-[#C60C30]">Hub</span>
+            </h1>
+            <div class="w-6 h-0.5 bg-[#C60C30]"></div>
+          </div>
+          <p class="text-[#666666] text-xs tracking-widest uppercase mt-1">
+            Portail de connexion
+          </p>
         </div>
-        <h2 class="text-2xl font-bold text-[#C60C30]">KnowledgeHub</h2>
-        <p class="text-[#666666] text-sm mt-1">Portail de connexion</p>
       </div>
 
+      <!-- Divider -->
+      <div
+        class="h-px bg-gradient-to-r from-transparent via-gray-200 to-transparent mx-8"
+      ></div>
+
       <!-- Form Section -->
-      <div class="p-8">
+      <div class="px-8 py-8">
         <form [formGroup]="loginForm" (ngSubmit)="onSubmit()" class="space-y-5">
           <!-- Email Field -->
-          <div>
+          <div class="flex flex-col gap-1.5">
             <label
               for="email"
-              class="block text-sm font-semibold text-[#333333] mb-2"
-              >
+              class="text-xs font-bold text-[#333333] uppercase tracking-widest"
+            >
               Adresse Email
             </label>
-            <div class="relative">
-              <div
-                class="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none"
-                >
-                <svg
-                  class="h-5 w-5 text-[#666666]"
-                  fill="none"
-                  stroke="currentColor"
-                  viewBox="0 0 24 24"
-                  >
-                  <path
-                    stroke-linecap="round"
-                    stroke-linejoin="round"
-                    stroke-width="2"
-                    d="M16 12a4 4 0 10-8 0 4 4 0 008 0zm0 0v1.5a2.5 2.5 0 005 0V12a9 9 0 10-9 9m4.5-1.206a8.959 8.959 0 01-4.5 1.207"
-                    />
-                </svg>
-              </div>
+            <p-iconfield iconPosition="left">
+              <p-inputicon class="pi pi-envelope" />
               <input
                 id="email"
+                pInputText
                 type="email"
                 formControlName="email"
                 placeholder="vous@exemple.com"
-                class="w-full pl-10 pr-4 py-3 border border-[#F0F0F0] rounded-lg focus:ring-2 focus:ring-[#C60C30] focus:border-[#C60C30] outline-none transition text-[#333333]"
-                [class.border-red-500]="email?.invalid && email?.touched"
-                />
-            </div>
+                class="w-full"
+                [class.ng-invalid]="email?.invalid && email?.touched"
+                [class.ng-dirty]="email?.touched"
+              />
+            </p-iconfield>
             @if (email?.invalid && email?.touched) {
-              <p
-                class="mt-2 text-sm text-red-600"
-                >
-                @if (email?.errors?.['required']) {
-                  <span
-                    >L'email est requis</span
-                    >
-                  }
-                  @if (email?.errors?.['email']) {
-                    <span
-                      >Veuillez entrer un email valide</span
-                      >
-                    }
-                  </p>
+              <small class="text-red-600 flex items-center gap-1">
+                <i class="pi pi-exclamation-circle text-xs"></i>
+                @if (email?.errors?.["required"]) {
+                  L'email est requis
                 }
-              </div>
-
-              <!-- Password Field -->
-              <div>
-                <label
-                  for="password"
-                  class="block text-sm font-semibold text-[#333333] mb-2"
-                  >
-                  Mot de passe
-                </label>
-                <div class="relative">
-                  <div
-                    class="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none"
-                    >
-                    <svg
-                      class="h-5 w-5 text-[#666666]"
-                      fill="none"
-                      stroke="currentColor"
-                      viewBox="0 0 24 24"
-                      >
-                      <path
-                        stroke-linecap="round"
-                        stroke-linejoin="round"
-                        stroke-width="2"
-                        d="M12 15v2m-6 4h12a2 2 0 002-2v-6a2 2 0 00-2-2H6a2 2 0 00-2 2v6a2 2 0 002 2zm10-10V7a4 4 0 00-8 0v4h8z"
-                        />
-                    </svg>
-                  </div>
-                  <input
-                    id="password"
-                    type="password"
-                    formControlName="password"
-                    placeholder="••••••••"
-                    class="w-full pl-10 pr-4 py-3 border border-[#F0F0F0] rounded-lg focus:ring-2 focus:ring-[#C60C30] focus:border-[#C60C30] outline-none transition text-[#333333]"
-                    [class.border-red-500]="password?.invalid && password?.touched"
-                    />
-                </div>
-                @if (password?.invalid && password?.touched) {
-                  <p
-                    class="mt-2 text-sm text-red-600"
-                    >
-                    @if (password?.errors?.['required']) {
-                      <span
-                        >Le mot de passe est requis</span
-                        >
-                      }
-                      @if (password?.errors?.['minlength']) {
-                        <span
-                          >Le mot de passe doit contenir au moins 6 caractères</span
-                          >
-                        }
-                      </p>
-                    }
-                  </div>
-
-                  <!-- Error Message -->
-                  @if (errorMessage) {
-                    <div
-                      class="p-4 bg-red-50 border-l-4 border-[#C60C30] text-[#C60C30] rounded"
-                      >
-                      <div class="flex items-start">
-                        <svg
-                          class="w-5 h-5 mr-2 flex-shrink-0"
-                          fill="currentColor"
-                          viewBox="0 0 20 20"
-                          >
-                          <path
-                            fill-rule="evenodd"
-                            d="M10 18a8 8 0 100-16 8 8 0 000 16zM8.707 7.293a1 1 0 00-1.414 1.414L8.586 10l-1.293 1.293a1 1 0 101.414 1.414L10 11.414l1.293 1.293a1 1 0 001.414-1.414L11.414 10l1.293-1.293a1 1 0 00-1.414-1.414L10 8.586 8.707 7.293z"
-                            clip-rule="evenodd"
-                            />
-                        </svg>
-                        <p class="text-sm font-medium">{{ errorMessage }}</p>
-                      </div>
-                    </div>
-                  }
-
-                  <!-- Submit Button -->
-                  <button
-                    type="submit"
-                    [disabled]="isLoading || loginForm.invalid"
-                    class="w-full bg-[#C60C30] hover:bg-[#A00A28] text-white font-semibold py-3.5 px-4 rounded-lg transition duration-300 ease-in-out transform hover:-translate-y-0.5 hover:shadow-lg disabled:opacity-50 disabled:cursor-not-allowed disabled:hover:translate-y-0 disabled:hover:shadow-none flex items-center justify-center"
-                    >
-                    @if (!isLoading) {
-                      <span class="flex items-center">
-                        Se connecter
-                        <svg
-                          class="w-5 h-5 ml-2"
-                          fill="none"
-                          stroke="currentColor"
-                          viewBox="0 0 24 24"
-                          >
-                          <path
-                            stroke-linecap="round"
-                            stroke-linejoin="round"
-                            stroke-width="2"
-                            d="M13 7l5 5m0 0l-5 5m5-5H6"
-                            />
-                        </svg>
-                      </span>
-                    }
-                    @if (isLoading) {
-                      <span class="flex items-center">
-                        <svg
-                          class="animate-spin h-5 w-5 mr-3"
-                          xmlns="http://www.w3.org/2000/svg"
-                          fill="none"
-                          viewBox="0 0 24 24"
-                          >
-                          <circle
-                            class="opacity-25"
-                            cx="12"
-                            cy="12"
-                            r="10"
-                            stroke="currentColor"
-                            stroke-width="4"
-                          ></circle>
-                          <path
-                            class="opacity-75"
-                            fill="currentColor"
-                            d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"
-                          ></path>
-                        </svg>
-                        Connexion en cours...
-                      </span>
-                    }
-                  </button>
-                </form>
-
-                <!-- Footer Links -->
-                <div class="mt-6 space-y-3 text-center">
-                  <a
-                    routerLink="/auth/forgot-password"
-                    class="block text-sm text-[#C60C30] hover:text-[#A00A28] font-medium hover:underline transition"
-                    >
-                    Mot de passe oublié ?
-                  </a>
-                  <div class="text-sm text-[#666666]">
-                    Vous n'avez pas de compte ?
-                    <a
-                      routerLink=""
-                      class="text-[#C60C30] hover:text-[#A00A28] font-semibold hover:underline transition"
-                      >
-                      Contacter l'administrateur
-                    </a>
-                  </div>
-                </div>
-              </div>
-            </div>
-
-            <!-- Footer -->
-            <p class="text-center text-[#666660] text-sm mt-6">
-              © 2026 ESPRIM. Tous droits réservés.
-            </p>
+                @if (email?.errors?.["email"]) {
+                  Veuillez entrer un email valide
+                }
+              </small>
+            }
           </div>
-        </div>
+
+          <!-- Password Field -->
+          <div class="flex flex-col gap-1.5">
+            <label
+              for="password"
+              class="text-xs font-bold text-[#333333] uppercase tracking-widest"
+            >
+              Mot de passe
+            </label>
+            <p-password
+              inputId="password"
+              formControlName="password"
+              placeholder="••••••••"
+              [feedback]="false"
+              [toggleMask]="true"
+              styleClass="w-full"
+              inputStyleClass="w-full"
+              [class.ng-invalid]="password?.invalid && password?.touched"
+              [class.ng-dirty]="password?.touched"
+            />
+            @if (password?.invalid && password?.touched) {
+              <small class="text-red-600 flex items-center gap-1">
+                <i class="pi pi-exclamation-circle text-xs"></i>
+                @if (password?.errors?.["required"]) {
+                  Le mot de passe est requis
+                }
+                @if (password?.errors?.["minlength"]) {
+                  Au moins 6 caractères requis
+                }
+              </small>
+            }
+          </div>
+
+          <!-- Forgot password -->
+          <div class="text-right -mt-2">
+            <a
+              routerLink="/auth/forgot-password"
+              class="text-xs text-[#C60C30] hover:text-[#A00A28] font-semibold hover:underline transition"
+            >
+              Mot de passe oublié ?
+            </a>
+          </div>
+
+          <!-- Error Message -->
+          @if (errorMessage) {
+            <div
+              class="flex items-start gap-2.5 p-3.5 bg-red-50 border-l-4 border-[#C60C30] rounded-r-lg"
+            >
+              <i
+                class="pi pi-times-circle text-[#C60C30] flex-shrink-0 mt-0.5"
+              ></i>
+              <p class="text-sm font-medium text-[#C60C30]">
+                {{ errorMessage }}
+              </p>
+            </div>
+          }
+
+          <!-- Submit Button -->
+          <p-button
+            type="submit"
+            label="Se connecter"
+            icon="pi pi-sign-in"
+            iconPos="right"
+            [loading]="isLoading"
+            [disabled]="isLoading || loginForm.invalid"
+            styleClass="w-full font-bold tracking-wide"
+            [style]="{
+              'background-color': '#C60C30',
+              'border-color': '#C60C30',
+              width: '100%',
+              'justify-content': 'center',
+              padding: '0.85rem',
+            }"
+          />
+        </form>
+
+        <!-- Footer note -->
+        <p class="text-center text-xs text-[#666666] mt-6">
+          Pas de compte ?
+          <a
+            routerLink=""
+            class="text-[#C60C30] font-semibold hover:underline transition"
+          >
+            Contacter l'administrateur
+          </a>
+        </p>
+      </div>
+    </div>
+
+    <!-- Page Footer -->
+    <p class="text-center text-[#666666] text-xs mt-5 tracking-wide">
+      © 2026 ESPRIM · Tous droits réservés.
+    </p>
+  </div>
+</div>

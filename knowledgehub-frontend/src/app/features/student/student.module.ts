@@ -4,7 +4,9 @@ import { ConfirmDialogModule } from 'primeng/confirmdialog';
 import { PdfViewerModule } from 'ng2-pdf-viewer';
 import { TableModule } from 'primeng/table';
 import { ButtonModule } from 'primeng/button';
+import { DatePickerModule } from 'primeng/datepicker';
 import { Dialog, DialogModule } from 'primeng/dialog';
+import { TagModule } from 'primeng/tag';
 import { InputTextModule } from 'primeng/inputtext';
 import { SelectModule } from 'primeng/select';
 import { ToastModule } from 'primeng/toast';
@@ -37,6 +39,8 @@ import { DocumentComponent } from './pages/library/document/document.component';
   ],
   imports: [
     CommonModule,
+    DatePickerModule,
+    TagModule,
     FormsModule,
     TableModule,
     ButtonModule,

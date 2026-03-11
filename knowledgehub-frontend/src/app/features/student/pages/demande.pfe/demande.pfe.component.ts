@@ -1,10 +1,16 @@
 import { Component, OnInit } from '@angular/core';
-import { FormBuilder, FormGroup, Validators } from '@angular/forms';
+import {
+  AbstractControl,
+  FormBuilder,
+  FormGroup,
+  ValidationErrors,
+  ValidatorFn,
+  Validators,
+} from '@angular/forms';
 import { MessageService } from 'primeng/api';
 import { DemandStatus } from '../../../../shared/models/resource-service/enums/demand-status.enum';
 import { DemandePFE } from '../../../../shared/models/resource-service/entities/demande-pfe.model';
 import { ResourceApiService } from '../../../../shared/services/resource-api.service';
-import { AbstractControl, ValidationErrors, ValidatorFn } from '@angular/forms';
 
 export function pfeDateValidator(): ValidatorFn {
   return (group: AbstractControl): ValidationErrors | null => {
@@ -13,35 +19,26 @@ export function pfeDateValidator(): ValidatorFn {
 
     if (!dateDebut || !dateFin) return null;
 
-    const start = new Date(dateDebut);
-    const end = new Date(dateFin);
+    // p-datePicker binds Date objects directly
+    const start = dateDebut instanceof Date ? dateDebut : new Date(dateDebut);
+    const end = dateFin instanceof Date ? dateFin : new Date(dateFin);
     const currentYear = new Date().getFullYear();
     const errors: ValidationErrors = {};
 
-    // Both dates must be in the current year
-    if (start.getFullYear() !== currentYear) {
+    if (start.getFullYear() !== currentYear)
       errors['startNotCurrentYear'] = true;
-    }
-    if (end.getFullYear() !== currentYear) {
-      errors['endNotCurrentYear'] = true;
-    }
+    if (end.getFullYear() !== currentYear) errors['endNotCurrentYear'] = true;
+    if (end <= start) errors['endBeforeStart'] = true;
 
-    // End must be after start
-    if (end <= start) {
-      errors['endBeforeStart'] = true;
-    }
-
-    // Max 7 months difference
     const diffMonths =
       (end.getFullYear() - start.getFullYear()) * 12 +
       (end.getMonth() - start.getMonth());
-    if (diffMonths > 7) {
-      errors['exceedsMaxDuration'] = true;
-    }
+    if (diffMonths > 7) errors['exceedsMaxDuration'] = true;
 
     return Object.keys(errors).length ? errors : null;
   };
 }
+
 @Component({
   selector: 'app-demande.pfe',
   standalone: false,
@@ -51,11 +48,10 @@ export function pfeDateValidator(): ValidatorFn {
 export class DemandePfeComponent implements OnInit {
   demande: DemandePFE | null = null;
   showModal = false;
-  isLoading = false;
-  isSubmitting = false;
   selectedFile: globalThis.File | null = null;
   demandeForm: FormGroup;
   DemandStatus = DemandStatus;
+  currentYear = new Date().getFullYear();
 
   constructor(
     private fb: FormBuilder,
@@ -68,33 +64,35 @@ export class DemandePfeComponent implements OnInit {
         studentPhone: ['', Validators.required],
         pfeTitle: ['', Validators.required],
         pfeDescription: ['', Validators.required],
-        motCles: ['', Validators.required],
+        motCles: [''],
         entrepriseDomaine: ['', Validators.required],
         entrepriseName: ['', Validators.required],
         entrepriseEncadrantName: ['', Validators.required],
         entrepriseEncadrantEmail: ['', [Validators.required, Validators.email]],
         entrepriseEncadrantPhone: ['', Validators.required],
-        dateDebut: ['', Validators.required],
-        dateFin: ['', Validators.required],
+        dateDebut: [null, Validators.required],
+        dateFin: [null, Validators.required],
       },
       { validators: pfeDateValidator() },
     );
   }
-  currentYear = new Date().getFullYear();
 
   ngOnInit(): void {
     this.loadMyDemande();
   }
 
   loadMyDemande(): void {
-    this.isLoading = true;
     this.ressourceService.getMyDemandes().subscribe({
       next: (res) => {
         this.demande = res.data?.[0] ?? null;
-        this.isLoading = false;
       },
       error: () => {
-        this.isLoading = false;
+        this.messageService.add({
+          severity: 'error',
+          summary: 'Erreur',
+          detail: 'Impossible de charger votre demande',
+          life: 5000,
+        });
       },
     });
   }
@@ -115,15 +113,15 @@ export class DemandePfeComponent implements OnInit {
       return;
     }
 
-    this.isSubmitting = true;
     const formValue = this.demandeForm.value;
 
     this.ressourceService
       .createDemandePFE(
         {
           ...formValue,
-          dateDebut: new Date(formValue.dateDebut),
-          dateFin: new Date(formValue.dateFin),
+          // Values are already Date objects from p-datePicker
+          dateDebut: formValue.dateDebut,
+          dateFin: formValue.dateFin,
         },
         this.selectedFile,
       )
@@ -133,33 +131,20 @@ export class DemandePfeComponent implements OnInit {
             severity: 'success',
             summary: 'Succès',
             detail: 'Demande envoyée avec succès',
+            life: 3000,
           });
           this.showModal = false;
           this.loadMyDemande();
-          this.isSubmitting = false;
         },
         error: () => {
           this.messageService.add({
             severity: 'error',
             summary: 'Erreur',
             detail: "Échec de l'envoi de la demande",
+            life: 5000,
           });
-          this.isSubmitting = false;
         },
       });
-  }
-
-  getStatusSeverity(status: DemandStatus): string {
-    switch (status) {
-      case DemandStatus.ACCEPTED:
-        return 'success';
-      case DemandStatus.REJECTED:
-        return 'danger';
-      case DemandStatus.UPLOADED:
-        return 'warn';
-      default:
-        return 'info';
-    }
   }
 
   getStatusLabel(status: DemandStatus): string {

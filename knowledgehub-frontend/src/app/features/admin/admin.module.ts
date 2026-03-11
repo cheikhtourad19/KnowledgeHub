@@ -15,7 +15,7 @@ import { EnseignantComponent } from './pages/enseignant/enseignant.component';
 import { DocumentsComponent } from './pages/documents/documents.component';
 import { PdfViewerModule } from 'ng2-pdf-viewer';
 import { SharedModule } from '../../shared/shared.module';
-
+import { PasswordModule } from 'primeng/password';
 import { TableModule } from 'primeng/table';
 import { ButtonModule } from 'primeng/button';
 import { Dialog, DialogModule } from 'primeng/dialog';
@@ -44,6 +44,7 @@ import { PfeDetailsComponent } from './pages/pfe.gestion/pfe-details/pfe-details
   imports: [
     CommonModule,
     FormsModule,
+    PasswordModule,
     AdminRoutingModule,
     TableModule,
     ButtonModule,

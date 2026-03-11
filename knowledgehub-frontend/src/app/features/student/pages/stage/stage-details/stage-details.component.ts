@@ -24,7 +24,6 @@ export class StudentStageDetailsComponent implements OnInit {
   showUploadJournalModal = false;
   showUploadAttestationModal = false;
   selectedFile: File | null = null;
-  uploadLoading = false;
 
   // PDF Viewer Modal
   showPdfModal = false;
@@ -51,17 +50,12 @@ export class StudentStageDetailsComponent implements OnInit {
     this.resourceApiService.getStageById(stageId).subscribe({
       next: (response) => {
         this.stage = response.data ?? null;
-
-        // Load presigned URLs for files
-        if (this.stage?.reportFileId) {
+        if (this.stage?.reportFileId)
           this.loadPresignedUrl(this.stage.reportFileId, 'report');
-        }
-        if (this.stage?.journalFileId) {
+        if (this.stage?.journalFileId)
           this.loadPresignedUrl(this.stage.journalFileId, 'journal');
-        }
-        if (this.stage?.attestationFileId) {
+        if (this.stage?.attestationFileId)
           this.loadPresignedUrl(this.stage.attestationFileId, 'attestation');
-        }
       },
       error: () => {
         this.messageService.add({
@@ -74,17 +68,16 @@ export class StudentStageDetailsComponent implements OnInit {
     });
   }
 
-  loadPresignedUrl(fileId: number, type: 'report' | 'journal' | 'attestation'): void {
+  loadPresignedUrl(
+    fileId: number,
+    type: 'report' | 'journal' | 'attestation',
+  ): void {
     this.resourceApiService.viewpdf(fileId).subscribe({
       next: (response) => {
         const url = response.data ?? '';
-        if (type === 'report') {
-          this.reportFileUrl = url;
-        } else if (type === 'journal') {
-          this.journalFileUrl = url;
-        } else if (type === 'attestation') {
-          this.attestationFileUrl = url;
-        }
+        if (type === 'report') this.reportFileUrl = url;
+        else if (type === 'journal') this.journalFileUrl = url;
+        else if (type === 'attestation') this.attestationFileUrl = url;
       },
       error: () => {
         this.messageService.add({
@@ -110,12 +103,10 @@ export class StudentStageDetailsComponent implements OnInit {
     return typeStage === 'TECHNICIEN' ? 'Technicien' : 'Ouvrier';
   }
 
-  getTypeStageClass(typeStage?: string): string {
-    if (!typeStage)
-      return 'bg-gray-100 text-gray-600 dark:bg-gray-800 dark:text-gray-400';
-    return typeStage === 'TECHNICIEN'
-      ? 'bg-blue-100 text-blue-700 dark:bg-blue-900/30 dark:text-blue-400'
-      : 'bg-orange-100 text-orange-700 dark:bg-orange-900/30 dark:text-orange-400';
+  // Returns PrimeNG Tag severity based on stage type
+  getTypeStageTagSeverity(typeStage?: string): 'info' | 'warn' | 'secondary' {
+    if (!typeStage) return 'secondary';
+    return typeStage === 'TECHNICIEN' ? 'info' : 'warn';
   }
 
   getFileCount(): string {
@@ -130,11 +121,9 @@ export class StudentStageDetailsComponent implements OnInit {
   openUploadReportModal(): void {
     this.showUploadReportModal = true;
   }
-
   openUploadJournalModal(): void {
     this.showUploadJournalModal = true;
   }
-
   openUploadAttestationModal(): void {
     this.showUploadAttestationModal = true;
   }
@@ -163,109 +152,97 @@ export class StudentStageDetailsComponent implements OnInit {
 
   uploadReport(): void {
     if (!this.selectedFile || !this.stageId) return;
-
-    this.uploadLoading = true;
-    this.resourceApiService.uploadStageReport(this.stageId, this.selectedFile, 'Rapport de stage').subscribe({
-      next: () => {
-        this.messageService.add({
-          severity: 'success',
-          summary: 'Succès',
-          detail: 'Rapport uploadé avec succès',
-          life: 3000,
-        });
-        this.closeUploadModal();
-        this.loadStageDetails(this.stageId);
-        this.uploadLoading = false;
-      },
-      error: () => {
-        this.messageService.add({
-          severity: 'error',
-          summary: 'Erreur',
-          detail: "Erreur lors de l'upload du rapport",
-          life: 5000,
-        });
-        this.uploadLoading = false;
-      },
-    });
+    this.resourceApiService
+      .uploadStageReport(this.stageId, this.selectedFile, 'Rapport de stage')
+      .subscribe({
+        next: () => {
+          this.messageService.add({
+            severity: 'success',
+            summary: 'Succès',
+            detail: 'Rapport uploadé avec succès',
+            life: 3000,
+          });
+          this.closeUploadModal();
+          this.loadStageDetails(this.stageId);
+        },
+        error: () => {
+          this.messageService.add({
+            severity: 'error',
+            summary: 'Erreur',
+            detail: "Erreur lors de l'upload du rapport",
+            life: 5000,
+          });
+        },
+      });
   }
 
   uploadJournal(): void {
     if (!this.selectedFile || !this.stageId) return;
-
-    this.uploadLoading = true;
-    this.resourceApiService.uploadStageJournal(this.stageId, this.selectedFile, 'Journal de stage').subscribe({
-      next: () => {
-        this.messageService.add({
-          severity: 'success',
-          summary: 'Succès',
-          detail: 'Journal uploadé avec succès',
-          life: 3000,
-        });
-        this.closeUploadModal();
-        this.loadStageDetails(this.stageId);
-        this.uploadLoading = false;
-      },
-      error: () => {
-        this.messageService.add({
-          severity: 'error',
-          summary: 'Erreur',
-          detail: "Erreur lors de l'upload du journal",
-          life: 5000,
-        });
-        this.uploadLoading = false;
-      },
-    });
+    this.resourceApiService
+      .uploadStageJournal(this.stageId, this.selectedFile, 'Journal de stage')
+      .subscribe({
+        next: () => {
+          this.messageService.add({
+            severity: 'success',
+            summary: 'Succès',
+            detail: 'Journal uploadé avec succès',
+            life: 3000,
+          });
+          this.closeUploadModal();
+          this.loadStageDetails(this.stageId);
+        },
+        error: () => {
+          this.messageService.add({
+            severity: 'error',
+            summary: 'Erreur',
+            detail: "Erreur lors de l'upload du journal",
+            life: 5000,
+          });
+        },
+      });
   }
 
   uploadAttestation(): void {
     if (!this.selectedFile || !this.stageId) return;
-
-    this.uploadLoading = true;
-    this.resourceApiService.uploadStageAttestation(this.stageId, this.selectedFile, 'Attestation de stage').subscribe({
-      next: () => {
-        this.messageService.add({
-          severity: 'success',
-          summary: 'Succès',
-          detail: 'Attestation uploadée avec succès',
-          life: 3000,
-        });
-        this.closeUploadModal();
-        this.loadStageDetails(this.stageId);
-        this.uploadLoading = false;
-      },
-      error: () => {
-        this.messageService.add({
-          severity: 'error',
-          summary: 'Erreur',
-          detail: "Erreur lors de l'upload de l'attestation",
-          life: 5000,
-        });
-        this.uploadLoading = false;
-      },
-    });
+    this.resourceApiService
+      .uploadStageAttestation(
+        this.stageId,
+        this.selectedFile,
+        'Attestation de stage',
+      )
+      .subscribe({
+        next: () => {
+          this.messageService.add({
+            severity: 'success',
+            summary: 'Succès',
+            detail: 'Attestation uploadée avec succès',
+            life: 3000,
+          });
+          this.closeUploadModal();
+          this.loadStageDetails(this.stageId);
+        },
+        error: () => {
+          this.messageService.add({
+            severity: 'error',
+            summary: 'Erreur',
+            detail: "Erreur lors de l'upload de l'attestation",
+            life: 5000,
+          });
+        },
+      });
   }
 
   // ── PDF Modal ──
   openPdfModal(type: 'report' | 'journal' | 'attestation'): void {
-    let url = '';
-    let title = '';
+    const map: Record<typeof type, { url: string; title: string }> = {
+      report: { url: this.reportFileUrl, title: 'Rapport de Stage' },
+      journal: { url: this.journalFileUrl, title: 'Journal de Stage' },
+      attestation: { url: this.attestationFileUrl, title: 'Attestation' },
+    };
 
-    switch (type) {
-      case 'report':
-        url = this.reportFileUrl;
-        title = 'Rapport de Stage';
-        break;
-      case 'journal':
-        url = this.journalFileUrl;
-        title = 'Journal de Stage';
-        break;
-      case 'attestation':
-        url = this.attestationFileUrl;
-        title = 'Attestation';
-        break;
-    }
+    const { url, title } = map[type];
 
-    if (!url || url.trim().length === 0) {
+    if (!url?.trim()) {
       this.messageService.add({
         severity: 'warn',
         summary: 'Attention',

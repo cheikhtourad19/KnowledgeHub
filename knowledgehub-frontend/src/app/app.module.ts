@@ -12,7 +12,7 @@ import { ToastModule } from 'primeng/toast';
 import { ConfirmationService, MessageService } from 'primeng/api';
 import { provideAnimationsAsync } from '@angular/platform-browser/animations/async';
 import Aura from '@primeng/themes/aura';
-import { providePrimeNG } from 'primeng/config';
+import { PrimeNG, PrimeNGConfigType, providePrimeNG } from 'primeng/config';
 import { ProgressSpinnerModule } from 'primeng/progressspinner';
 import { HTTP_INTERCEPTORS } from '@angular/common/http';
 // import { loadingInterceptor } from './core/interceptors/loading.interceptor';
@@ -36,7 +36,8 @@ import { NgxExtendedPdfViewerModule } from 'ngx-extended-pdf-viewer';
     provideHttpClient(
       withInterceptors([
         authInterceptor,
-        errorInterceptor, //loadingInterceptor
+        errorInterceptor,
+        //loadingInterceptor
         // ]),
       ]),
     ),
@@ -45,6 +46,9 @@ import { NgxExtendedPdfViewerModule } from 'ngx-extended-pdf-viewer';
     providePrimeNG({
       theme: {
         preset: Aura,
+        options: {
+          darkModeSelector: '.dark', // 👈 add this
+        },
       },
     }),
   ],

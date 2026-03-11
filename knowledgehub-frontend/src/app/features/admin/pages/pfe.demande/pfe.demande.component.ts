@@ -4,6 +4,7 @@ import { MessageService } from 'primeng/api';
 import { DemandePFE } from '../../../../shared/models/resource-service/entities/demande-pfe.model';
 import { ResourceApiService } from '../../../../shared/services/resource-api.service';
 import { DemandStatus } from '../../../../shared/models/resource-service/enums/demand-status.enum';
+import { AuthService } from '../../../../core/services/auth.service';
 
 @Component({
   selector: 'app-pfe.demande',
@@ -34,6 +35,7 @@ export class PfeDemandeComponent implements OnInit {
     private resourceApiService: ResourceApiService,
     private router: Router,
     private messageService: MessageService,
+    private authService: AuthService,
   ) {}
 
   ngOnInit(): void {
@@ -180,40 +182,36 @@ export class PfeDemandeComponent implements OnInit {
     this.deletePasswordError = '';
 
     // Step 1 — verify password with the backend
-    this.resourceApiService
-      .verifyPassword(this.deleteConfirmPassword)
-      .subscribe({
-        next: () => {
-          // Step 2 — password OK → delete all demandes
-          this.resourceApiService.deleteAllDemandes().subscribe({
-            next: () => {
-              this.deletingAll = false;
-              this.closeDeleteAllModal();
-              this.allDemandes = [];
-              this.demandes = [];
-              this.messageService.add({
-                severity: 'success',
-                summary: 'Suppression réussie',
-                detail: 'Toutes les demandes de PFE ont été supprimées.',
-              });
-            },
-            error: () => {
-              this.deletingAll = false;
-              this.messageService.add({
-                severity: 'error',
-                summary: 'Erreur',
-                detail: 'La suppression a échoué. Veuillez réessayer.',
-              });
-            },
-          });
-        },
-        error: () => {
-          this.deletingAll = false;
-          this.deletePasswordError =
-            'Mot de passe incorrect. Veuillez réessayer.';
-        },
-      });
+    this.authService.verifyPassword(this.deleteConfirmPassword).subscribe({
+      next: () => {
+        // Step 2 — password OK → delete all demandes
+        this.resourceApiService.deleteAllDemandes().subscribe({
+          next: () => {
+            this.deletingAll = false;
+            this.closeDeleteAllModal();
+            this.allDemandes = [];
+            this.demandes = [];
+            this.messageService.add({
+              severity: 'success',
+              summary: 'Suppression réussie',
+              detail: 'Toutes les demandes de PFE ont été supprimées.',
+            });
+          },
+          error: () => {
+            this.deletingAll = false;
+            this.messageService.add({
+              severity: 'error',
+              summary: 'Erreur',
+              detail: 'La suppression a échoué. Veuillez réessayer.',
+            });
+          },
+        });
+      },
+      error: () => {
+        this.deletingAll = false;
+        this.deletePasswordError =
+          'Mot de passe incorrect. Veuillez réessayer.';
+      },
+    });
   }
-
- 
 }
