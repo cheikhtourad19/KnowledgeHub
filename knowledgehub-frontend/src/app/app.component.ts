@@ -4,6 +4,7 @@ import { AuthService } from './core/services/auth.service';
 import { UserRole } from './shared/models/auth-service/entities/auth-user.model';
 import { filter } from 'rxjs/operators';
 import { environment } from '../environments/environment';
+import { HttpClient } from '@angular/common/http';
 
 @Component({
   selector: 'app-root',
@@ -21,9 +22,22 @@ export class AppComponent implements OnInit {
   constructor(
     public authService: AuthService,
     private router: Router,
+    private http: HttpClient,
   ) {}
 
   ngOnInit() {
+    this.http
+      .get(`${environment.apiUrl}/auth-service/actuator/health`)
+      .subscribe();
+    this.http
+      .get(`${environment.apiUrl}/user-service/actuator/health`)
+      .subscribe();
+    this.http
+      .get(`${environment.apiUrl}/ressource-service/actuator/health`)
+      .subscribe();
+    this.http
+      .get(`${environment.apiUrl}/notification-service/actuator/health`)
+      .subscribe();
     // Check if we're on the home page
     this.checkHomePage();
 
