@@ -3,7 +3,7 @@ export const environment = {
   apiUrl: 'https://zoological-quietude-production.up.railway.app',
   apiTimeout: 30000,
   enableDebugLogs: false,
-  app_name: 'KnowledgeHub',
-  app_name_prefix: 'Knowledge',
-  app_name_suffix: 'Hub',
+  app_name: 'EsprimValut',
+  app_name_prefix: 'ESPRIM',
+  app_name_suffix: 'Vault',
 };
