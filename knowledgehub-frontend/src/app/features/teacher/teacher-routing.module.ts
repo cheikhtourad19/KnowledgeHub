@@ -10,6 +10,8 @@ import { PublierComponent } from './pages/bibliotheque/publier/publier.component
 import { ProfileComponent } from '../../shared/components/profile/profile.component';
 import { LibraryComponent } from '../../shared/components/library/library.component';
 import { DocumentComponent } from '../../shared/components/library/document/document.component';
+import { EncadrementDetailsComponent } from './pages/pfe/encadrements/encadrement-details/encadrement-details.component';
+import { PfeDetailsComponent } from './pages/pfe/pfe-details/pfe-details.component';
 const routes: Routes = [
   {
     path: '',
@@ -18,8 +20,12 @@ const routes: Routes = [
       { path: '', redirectTo: 'pfe/encadrements', pathMatch: 'full' },
 
       { path: 'pfe/encadrements', component: EncadrementsComponent },
+      { path: 'pfe/encadrements/:id', component: EncadrementDetailsComponent },
+
       { path: 'pfe/jury', component: JuryComponent },
+      { path: 'pfe/jury/:id', component: PfeDetailsComponent },
       { path: 'pfe/rapporteur', component: RapporteurComponent },
+      { path: 'pfe/rapporteur/:id', component: PfeDetailsComponent },
 
       { path: 'stage/jury', component: StageJuryComponent },
 

@@ -1,1 +1,5 @@
-<p>encadrements works!</p>
+<app-pfe-table
+  [allPfes]="allPfes"
+  title="Mes encadrements"
+  (pfeClick)="viewDetails($event)"
+/>

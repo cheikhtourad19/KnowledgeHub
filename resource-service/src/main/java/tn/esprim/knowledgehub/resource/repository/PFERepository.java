@@ -19,6 +19,10 @@ public interface PFERepository extends JpaRepository<PFE, Long> {
 
     List<PFE> findBySupervisorId(Long supervisorId);
 
+    List<PFE> findByChefDeJuryId(Long juryId);
+
+    List<PFE> findByRapporteurId(Long repporteurId);
+
     List<PFE> findByStatus(SubmissionStatus status);
 
     List<PFE> findBySupervisorIdAndStatus(Long supervisorId, SubmissionStatus status);

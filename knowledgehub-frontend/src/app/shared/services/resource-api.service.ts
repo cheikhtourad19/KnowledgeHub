@@ -549,8 +549,42 @@ export class ResourceApiService {
     );
   }
 
+  getMyDocuments(): Observable<ApiResponse<File[]>> {
+    return this.http.get<ApiResponse<File[]>>(
+      `${this.baseUrl}/api/library/getDocumentsByUser`,
+    );
+  }
+
   // Delete every DemandePFE record
   deleteAllDemandes(): Observable<any> {
     return this.http.delete(`${this.baseUrl}/api/admin/pfe/demandes`);
+  }
+
+  getTeacherSupervisedPFE(): Observable<ApiResponse<PFE[]>> {
+    return this.http.get<ApiResponse<PFE[]>>(
+      `${this.baseUrl}/api/teacher/pfe/supervised`,
+    );
+  }
+
+  getTeacherJuryPFE(): Observable<ApiResponse<PFE[]>> {
+    return this.http.get<ApiResponse<PFE[]>>(
+      `${this.baseUrl}/api/teacher/pfe/jury`,
+    );
+  }
+
+  getTeacherRepporteurPFE(): Observable<ApiResponse<PFE[]>> {
+    return this.http.get<ApiResponse<PFE[]>>(
+      `${this.baseUrl}/api/teacher/pfe/repporteur`,
+    );
+  }
+
+  updatePFESubmissionStatus(
+    pfeId: number,
+    request: UpdatePFEStatusRequest,
+  ): Observable<ApiResponse<PFE>> {
+    return this.http.put<ApiResponse<PFE>>(
+      `${this.baseUrl}/api/teacher/pfe/pfe/${pfeId}/status`,
+      request,
+    );
   }
 }

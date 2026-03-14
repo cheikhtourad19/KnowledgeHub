@@ -1,0 +1,203 @@
+<!-- ── Header ── -->
+<div
+  class="flex items-center gap-3 mb-6 pb-5 border-b border-gray-200 dark:border-gray-700"
+>
+  <p-button
+    icon="pi pi-arrow-left"
+    [rounded]="true"
+    [text]="true"
+    severity="secondary"
+    (onClick)="goBack()"
+    pTooltip="Retour"
+    tooltipPosition="right"
+  />
+  <div>
+    <h2 class="text-lg font-bold text-gray-900 dark:text-white">
+      Révision du PFE
+    </h2>
+    <p class="text-xs text-gray-500 dark:text-gray-400 mt-0.5">
+      Examinez le rapport et prenez une décision
+    </p>
+  </div>
+</div>
+
+<div *ngIf="pfe" class="space-y-5 mb-6">
+  <!-- ── Under Review Banner (shown when already under review) ── -->
+  <div
+    *ngIf="isAlreadyUnderReview"
+    class="flex items-center gap-3 px-4 py-3 bg-yellow-50 dark:bg-yellow-900/10 border border-yellow-200 dark:border-yellow-800/50 rounded-lg"
+  >
+    <i class="pi pi-eye text-yellow-500 text-lg flex-shrink-0"></i>
+    <div class="flex-1">
+      <p class="text-sm font-semibold text-yellow-800 dark:text-yellow-400">
+        Ce PFE est en cours d'examen
+      </p>
+      <p class="text-xs text-yellow-600 dark:text-yellow-500 mt-0.5">
+        L'étudiant ne peut pas modifier son rapport tant qu'une décision finale
+        n'est pas rendue.
+      </p>
+    </div>
+  </div>
+
+  <!-- ── Decision Card ── -->
+  <div
+    class="rounded-lg border border-gray-200 dark:border-gray-700 overflow-hidden"
+  >
+    <div
+      class="flex items-center justify-between px-5 py-3 bg-[#333333] border-l-[4px] border-[#C60C30]"
+    >
+      <div class="flex items-center gap-2.5">
+        <i class="pi pi-check-square text-[#C60C30] text-sm"></i>
+        <h3 class="text-white text-xs font-bold uppercase tracking-widest">
+          Décision de l'encadrant
+        </h3>
+      </div>
+
+      <!-- Mark Under Review button (in header of card) -->
+      <p-button
+        *ngIf="!isAlreadyUnderReview"
+        label="Marquer en cours d'examen"
+        icon="pi pi-eye"
+        size="small"
+        [loading]="markingUnderReview"
+        (onClick)="markAsUnderReview()"
+        [style]="{
+          background: 'transparent',
+          border: '1px solid #facc15',
+          color: '#facc15',
+        }"
+        styleClass="hover:!bg-yellow-400/20 transition-all"
+      />
+      <span
+        *ngIf="isAlreadyUnderReview"
+        class="inline-flex items-center gap-1.5 px-2.5 py-1 rounded-full bg-yellow-400/20 text-yellow-300 text-[11px] font-semibold"
+      >
+        <i class="pi pi-eye text-[10px]"></i>
+        En cours d'examen
+      </span>
+    </div>
+
+    <div class="p-5 bg-white dark:bg-gray-900 space-y-5">
+      <!-- Validate / Reject toggle buttons -->
+      <div>
+        <label
+          class="block text-[10px] font-bold text-gray-400 dark:text-gray-500 uppercase tracking-widest mb-2"
+        >
+          Décision finale
+        </label>
+        <div class="flex gap-3">
+          <button
+            type="button"
+            (click)="selectedStatus = SubmissionStatus.APPROVED"
+            [ngClass]="
+              selectedStatus === SubmissionStatus.APPROVED
+                ? 'bg-green-600 border-green-600 text-white shadow-md'
+                : 'bg-white dark:bg-transparent border-gray-200 dark:border-gray-600 text-gray-600 dark:text-gray-300 hover:border-green-500 hover:text-green-600'
+            "
+            class="flex-1 inline-flex items-center justify-center gap-2 px-4 py-3 text-sm font-semibold rounded-lg border-2 transition-all duration-200"
+          >
+            <i class="pi pi-check"></i>
+            Valider
+          </button>
+
+          <button
+            type="button"
+            (click)="selectedStatus = SubmissionStatus.REJECTED"
+            [ngClass]="
+              selectedStatus === SubmissionStatus.REJECTED
+                ? 'bg-[#C60C30] border-[#C60C30] text-white shadow-md'
+                : 'bg-white dark:bg-transparent border-gray-200 dark:border-gray-600 text-gray-600 dark:text-gray-300 hover:border-[#C60C30] hover:text-[#C60C30]'
+            "
+            class="flex-1 inline-flex items-center justify-center gap-2 px-4 py-3 text-sm font-semibold rounded-lg border-2 transition-all duration-200"
+          >
+            <i class="pi pi-times"></i>
+            Rejeter
+          </button>
+        </div>
+      </div>
+
+      <!-- Feedback -->
+      <div *ngIf="selectedStatus">
+        <label
+          class="block text-[10px] font-bold text-gray-400 dark:text-gray-500 uppercase tracking-widest mb-1.5"
+        >
+          Feedback
+          <span
+            *ngIf="isRejecting"
+            class="text-[#C60C30] normal-case font-normal"
+          >
+            — obligatoire pour un rejet</span
+          >
+          <span
+            *ngIf="!isRejecting"
+            class="text-gray-400 normal-case font-normal"
+          >
+            — optionnel</span
+          >
+        </label>
+        <textarea
+          pInputTextarea
+          [(ngModel)]="supervisorFeedback"
+          rows="4"
+          [placeholder]="
+            isRejecting
+              ? 'Expliquez la raison du rejet…'
+              : 'Commentaire ou remarques pour l\'étudiant (optionnel)…'
+          "
+          class="w-full"
+          [ngClass]="
+            isRejecting && !supervisorFeedback.trim()
+              ? '!border-red-400 focus:!ring-red-400'
+              : 'focus:!ring-[#C60C30]'
+          "
+        ></textarea>
+        <p
+          *ngIf="isRejecting && !supervisorFeedback.trim()"
+          class="text-xs text-[#C60C30] mt-1 flex items-center gap-1"
+        >
+          <i class="pi pi-exclamation-circle text-[11px]"></i>
+          Une raison est obligatoire pour un rejet.
+        </p>
+      </div>
+
+      <!-- Submit -->
+      <div
+        class="flex items-center justify-between pt-2 border-t border-gray-100 dark:border-gray-800"
+      >
+        <p
+          class="text-xs text-gray-400 dark:text-gray-500 italic"
+          *ngIf="!selectedStatus"
+        >
+          Sélectionnez une décision pour continuer.
+        </p>
+        <div class="ml-auto">
+          <p-button
+            [label]="submitting ? 'Enregistrement…' : 'Confirmer la décision'"
+            [icon]="
+              submitting
+                ? 'pi pi-spin pi-spinner'
+                : selectedStatus === SubmissionStatus.REJECTED
+                  ? 'pi pi-times'
+                  : 'pi pi-check'
+            "
+            [disabled]="!canSubmit || submitting"
+            (onClick)="submitStatus()"
+            [style]="{
+              background:
+                selectedStatus === SubmissionStatus.REJECTED
+                  ? '#C60C30'
+                  : '#16a34a',
+              border:
+                selectedStatus === SubmissionStatus.REJECTED
+                  ? '1px solid #C60C30'
+                  : '1px solid #16a34a',
+            }"
+          />
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- ── Shared read-only PFE details ── -->
+<app-pfe-details-view [pfe]="pfe!" />

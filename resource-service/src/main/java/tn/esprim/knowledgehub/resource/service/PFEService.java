@@ -6,6 +6,7 @@ import com.knowledgehub.notification.client.dto.NotificationType;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.context.annotation.Lazy;
 import org.springframework.stereotype.Service;
+import org.springframework.web.client.RestTemplate;
 import org.springframework.web.multipart.MultipartFile;
 import tn.esprim.knowledgehub.resource.client.UserServiceClient;
 import tn.esprim.knowledgehub.resource.client.dto.StudentDTO;
@@ -35,20 +36,23 @@ public class PFEService {
     private final FileService fileService;
     private final UserServiceClient userServiceClient;
     private final NotificationClient notificationClient;
+    private final RestTemplate restTemplate;
 
     public PFEService(
             PFERepository pfeRepository,
             DemandePFERepository demandePFERepository,
             @Lazy FileService fileService,
             UserServiceClient userServiceClient,
-            NotificationClient notificationClient
-    ) {
+            NotificationClient notificationClient,
+            RestTemplate restTemplate) {
         this.pfeRepository = pfeRepository;
         this.demandePFERepository = demandePFERepository;
         this.fileService = fileService;
         this.userServiceClient = userServiceClient;
         this.notificationClient = notificationClient;
+        this.restTemplate = restTemplate;
     }
+
 
 
 
@@ -58,20 +62,11 @@ public class PFEService {
                 .orElseGet(() -> pfeRepository.findByAttestationFile(file).orElse(null));
 
     }
-    public List<Long> getFileUsersAccess(Long fileId){
-        File file = fileService.getFileById(fileId);
-        List<Long> userIds = new ArrayList<>();
-        if (file.getUploadedByUserId() != null) userIds.add(file.getUploadedByUserId());
-        if (file.getFileType()==FileType.PFE_REPORT ) {
-            Long tecaherId = getPFEByFile(fileId).getSupervisorId();
-            Long juryId = getPFEByFile(fileId).getChefDeJuryId();
-            Long rapporteurId = getPFEByFile(fileId).getRapporteurId();
-            if (tecaherId != null) userIds.add(tecaherId);
-            if (juryId != null) userIds.add(juryId);
-            if (rapporteurId != null) userIds.add(rapporteurId);
-        }
-        return userIds;
-
+    public List<PFE> getPFEByJury(Long juryId){
+        return this.pfeRepository.findByChefDeJuryId(juryId);
+    }
+    public List<PFE> getPFEByRapporteur(Long rapporteurId){
+        return this.pfeRepository.findByRapporteurId(rapporteurId);
     }
 
     public PFE savePFE(PFE pfe) {

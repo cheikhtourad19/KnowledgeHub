@@ -363,21 +363,7 @@ public class StudentPFEController {
         );
     }
 
-    @GetMapping("/teacher-PFE")
-    public ResponseEntity<ApiResponse> getTeacherPFE(
-            @RequestHeader(value = "X-User-Role") String role,
-            @RequestHeader(value = "X-User-Id") Long userId
-    ) {
-        if (!role.equals("TEACHER") && !role.equals("ADMIN")) {
-            return ResponseEntity.status(HttpStatus.FORBIDDEN).body(
-                    ApiResponse.error("Forbidden", "Only teachers and admins can access this endpoint")
-            );
-        }
 
-        return ResponseEntity.ok(
-                ApiResponse.success(pfeService.getPFEBySupervisor(userId), "All PFE")
-        );
-    }
 
     @GetMapping("/all-PFE")
     public ResponseEntity<ApiResponse> getAllPFE(

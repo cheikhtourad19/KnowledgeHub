@@ -197,6 +197,10 @@ public class FileService {
         }
     }
 
+    public List<File> getFilesByUserId(Long userId) {
+        return fileRepository.findByUploadedByUserId(userId);
+    }
+
 
     @Transactional
     public void deleteFile(Long fileId) {

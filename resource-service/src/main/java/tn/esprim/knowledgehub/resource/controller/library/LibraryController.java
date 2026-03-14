@@ -134,6 +134,32 @@ public class LibraryController {
                             .build()
             );
         }
-    }}
+    }
+
+    @GetMapping("/getDocumentsByUser")
+    public ResponseEntity<ApiResponse> getUserDocument(
+            @RequestHeader(value = "X-User-Id") Long userId
+    ){
+        if (userId == null) {
+            return ResponseEntity.badRequest().body(
+                    ApiResponse.builder()
+                            .success(false)
+                            .message("User ID is required")
+                            .data(null)
+                            .build()
+            );
+        }
+        List<File> files = fileService.getFilesByUserId(userId);
+        return ResponseEntity.ok(
+                ApiResponse.builder()
+                        .success(true)
+                        .message("Documents retrieved successfully")
+                        .data(files)
+                        .build()
+        );
+
+    }
+
+}
 
 

@@ -1,0 +1,519 @@
+<div *ngIf="pfe">
+  <!-- ── Status Badge Header ── -->
+  <div
+    class="flex items-center justify-end mb-6 pb-5 border-b border-gray-200 dark:border-gray-700"
+  >
+    <span
+      class="px-3 py-1 rounded-full text-xs font-bold tracking-widest uppercase"
+      [ngClass]="getStatusClass(pfe.status)"
+      >{{ getStatusLabel(pfe.status) }}</span
+    >
+  </div>
+
+  <!-- ── Grid ── -->
+  <div class="grid grid-cols-1 lg:grid-cols-3 gap-5">
+    <!-- LEFT COLUMN -->
+    <div class="lg:col-span-2 space-y-5">
+      <!-- PFE Info -->
+      <div
+        class="rounded-lg border border-gray-200 dark:border-gray-700 overflow-hidden"
+      >
+        <div
+          class="flex items-center gap-2.5 px-5 py-3 bg-[#333333] border-l-[4px] border-[#C60C30]"
+        >
+          <svg
+            class="w-4 h-4 text-[#C60C30] flex-shrink-0"
+            fill="none"
+            viewBox="0 0 24 24"
+            stroke="currentColor"
+            stroke-width="2"
+          >
+            <path
+              stroke-linecap="round"
+              stroke-linejoin="round"
+              d="M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z"
+            />
+          </svg>
+          <h3 class="text-white text-xs font-bold uppercase tracking-widest">
+            Informations du PFE
+          </h3>
+        </div>
+        <div class="p-5 space-y-4 bg-white dark:bg-gray-900">
+          <div>
+            <p
+              class="text-[10px] font-bold text-gray-400 dark:text-gray-500 uppercase tracking-widest mb-1"
+            >
+              Titre
+            </p>
+            <p
+              class="text-gray-900 dark:text-white font-semibold text-sm leading-snug"
+            >
+              {{ pfe.title }}
+            </p>
+          </div>
+          <div
+            class="grid grid-cols-2 gap-4 pt-3 border-t border-gray-100 dark:border-gray-800"
+          >
+            <div>
+              <p
+                class="text-[10px] font-bold text-gray-400 dark:text-gray-500 uppercase tracking-widest mb-1"
+              >
+                Année
+              </p>
+              <p class="text-gray-900 dark:text-white text-sm font-medium">
+                {{ pfe.year ?? "—" }}
+              </p>
+            </div>
+            <div>
+              <p
+                class="text-[10px] font-bold text-gray-400 dark:text-gray-500 uppercase tracking-widest mb-1"
+              >
+                Entreprise
+              </p>
+              <p class="text-gray-900 dark:text-white text-sm">
+                {{ pfe.entreprise_name || "—" }}
+              </p>
+            </div>
+            <div>
+              <p
+                class="text-[10px] font-bold text-gray-400 dark:text-gray-500 uppercase tracking-widest mb-1"
+              >
+                Date de Début
+              </p>
+              <p class="text-gray-900 dark:text-white text-sm font-medium">
+                {{ pfe.date_debut | date: "dd/MM/yyyy" }}
+              </p>
+            </div>
+            <div>
+              <p
+                class="text-[10px] font-bold text-gray-400 dark:text-gray-500 uppercase tracking-widest mb-1"
+              >
+                Date de Fin
+              </p>
+              <p class="text-gray-900 dark:text-white text-sm font-medium">
+                {{ pfe.date_fin | date: "dd/MM/yyyy" }}
+              </p>
+            </div>
+          </div>
+
+          <!-- Plagiarism score -->
+          <div
+            *ngIf="
+              pfe.plagiarismScore !== undefined && pfe.plagiarismScore !== null
+            "
+            class="pt-3 border-t border-gray-100 dark:border-gray-800"
+          >
+            <p
+              class="text-[10px] font-bold text-gray-400 dark:text-gray-500 uppercase tracking-widest mb-2"
+            >
+              Score de Plagiat
+            </p>
+            <div class="flex items-center gap-3">
+              <div
+                class="flex-1 bg-gray-100 dark:bg-gray-800 rounded-full h-2 overflow-hidden"
+              >
+                <div
+                  class="h-2 rounded-full transition-all duration-500"
+                  [ngClass]="
+                    pfe.plagiarismScore > 30
+                      ? 'bg-red-500'
+                      : pfe.plagiarismScore > 15
+                        ? 'bg-yellow-400'
+                        : 'bg-green-500'
+                  "
+                  [style.width.%]="pfe.plagiarismScore"
+                ></div>
+              </div>
+              <span
+                class="text-sm font-bold tabular-nums w-12 text-right"
+                [ngClass]="
+                  pfe.plagiarismScore > 30
+                    ? 'text-red-600 dark:text-red-400'
+                    : pfe.plagiarismScore > 15
+                      ? 'text-yellow-600 dark:text-yellow-400'
+                      : 'text-green-600 dark:text-green-400'
+                "
+                >{{ pfe.plagiarismScore }}%</span
+              >
+            </div>
+          </div>
+
+          <!-- Supervisor feedback -->
+          <div
+            *ngIf="pfe.supervisorFeedback"
+            class="pt-3 border-t border-gray-100 dark:border-gray-800"
+          >
+            <p
+              class="text-[10px] font-bold text-gray-400 dark:text-gray-500 uppercase tracking-widest mb-1"
+            >
+              Feedback Encadrant
+            </p>
+            <p
+              class="text-gray-700 dark:text-gray-300 text-sm leading-relaxed whitespace-pre-wrap italic"
+            >
+              {{ pfe.supervisorFeedback }}
+            </p>
+          </div>
+        </div>
+      </div>
+
+      <!-- Documents -->
+      <div
+        class="rounded-lg border border-gray-200 dark:border-gray-700 overflow-hidden"
+      >
+        <div
+          class="flex items-center gap-2.5 px-5 py-3 bg-[#333333] border-l-[4px] border-[#C60C30]"
+        >
+          <svg
+            class="w-4 h-4 text-[#C60C30] flex-shrink-0"
+            fill="none"
+            viewBox="0 0 24 24"
+            stroke="currentColor"
+            stroke-width="2"
+          >
+            <path
+              stroke-linecap="round"
+              stroke-linejoin="round"
+              d="M15.172 7l-6.586 6.586a2 2 0 102.828 2.828l6.414-6.586a4 4 0 00-5.656-5.656l-6.415 6.585a6 6 0 108.486 8.486L20.5 13"
+            />
+          </svg>
+          <h3 class="text-white text-xs font-bold uppercase tracking-widest">
+            Documents
+          </h3>
+        </div>
+        <div class="p-5 bg-white dark:bg-gray-900 space-y-3">
+          <!-- Report file — clickable to open PDF viewer -->
+          <div
+            *ngIf="pfe.reportFile; else noReport"
+            class="flex items-center gap-3 p-3.5 bg-red-50 dark:bg-red-900/10 border border-red-200 dark:border-red-800/50 rounded-lg cursor-pointer hover:bg-red-100 dark:hover:bg-red-900/20 transition-colors"
+            (click)="openPdfModal()"
+          >
+            <svg
+              class="w-8 h-8 text-[#C60C30] flex-shrink-0"
+              fill="none"
+              viewBox="0 0 24 24"
+              stroke="currentColor"
+              stroke-width="1.5"
+            >
+              <path
+                stroke-linecap="round"
+                stroke-linejoin="round"
+                d="M7 21h10a2 2 0 002-2V9.414a1 1 0 00-.293-.707l-5.414-5.414A1 1 0 0012.586 3H7a2 2 0 00-2 2v14a2 2 0 002 2z"
+              />
+            </svg>
+            <div class="flex-1">
+              <p
+                class="text-[10px] font-bold text-gray-400 uppercase tracking-widest mb-0.5"
+              >
+                Rapport PFE
+              </p>
+              <p class="font-semibold text-gray-900 dark:text-white text-sm">
+                {{ pfe.reportFile.originalFileName }}
+              </p>
+              <p class="text-xs text-gray-500 dark:text-gray-400 mt-0.5">
+                {{ pfe.reportFile.fileSize | number }} octets
+              </p>
+            </div>
+            <svg
+              class="w-5 h-5 text-[#C60C30]"
+              fill="none"
+              viewBox="0 0 24 24"
+              stroke="currentColor"
+              stroke-width="2"
+            >
+              <path
+                stroke-linecap="round"
+                stroke-linejoin="round"
+                d="M15 12a3 3 0 11-6 0 3 3 0 016 0z"
+              />
+              <path
+                stroke-linecap="round"
+                stroke-linejoin="round"
+                d="M2.458 12C3.732 7.943 7.523 5 12 5c4.478 0 8.268 2.943 9.542 7-1.274 4.057-5.064 7-9.542 7-4.477 0-8.268-2.943-9.542-7z"
+              />
+            </svg>
+          </div>
+          <ng-template #noReport>
+            <div
+              class="flex items-center gap-2 text-gray-400 dark:text-gray-500 italic text-sm py-1"
+            >
+              <svg
+                class="w-4 h-4"
+                fill="none"
+                viewBox="0 0 24 24"
+                stroke="currentColor"
+                stroke-width="2"
+              >
+                <path
+                  stroke-linecap="round"
+                  stroke-linejoin="round"
+                  d="M13 16h-1v-4h-1m1-4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z"
+                />
+              </svg>
+              Aucun rapport soumis.
+            </div>
+          </ng-template>
+
+          <!-- Attestation file -->
+          <div
+            *ngIf="pfe.attestationFile"
+            class="flex items-center gap-3 p-3.5 bg-gray-50 dark:bg-gray-800 border border-gray-200 dark:border-gray-700 rounded-lg"
+          >
+            <svg
+              class="w-8 h-8 text-gray-400 dark:text-gray-500 flex-shrink-0"
+              fill="none"
+              viewBox="0 0 24 24"
+              stroke="currentColor"
+              stroke-width="1.5"
+            >
+              <path
+                stroke-linecap="round"
+                stroke-linejoin="round"
+                d="M7 21h10a2 2 0 002-2V9.414a1 1 0 00-.293-.707l-5.414-5.414A1 1 0 0012.586 3H7a2 2 0 00-2 2v14a2 2 0 002 2z"
+              />
+            </svg>
+            <div>
+              <p
+                class="text-[10px] font-bold text-gray-400 uppercase tracking-widest mb-0.5"
+              >
+                Attestation
+              </p>
+              <p class="font-semibold text-gray-900 dark:text-white text-sm">
+                {{ pfe.attestationFile.originalFileName }}
+              </p>
+              <p class="text-xs text-gray-500 dark:text-gray-400 mt-0.5">
+                {{ pfe.attestationFile.fileSize | number }} octets
+              </p>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- RIGHT COLUMN -->
+    <div class="space-y-5">
+      <!-- Student -->
+      <div
+        class="rounded-lg border border-gray-200 dark:border-gray-700 overflow-hidden"
+      >
+        <div
+          class="flex items-center gap-2.5 px-5 py-3 bg-[#333333] border-l-[4px] border-[#C60C30]"
+        >
+          <svg
+            class="w-4 h-4 text-[#C60C30] flex-shrink-0"
+            fill="none"
+            viewBox="0 0 24 24"
+            stroke="currentColor"
+            stroke-width="2"
+          >
+            <path
+              stroke-linecap="round"
+              stroke-linejoin="round"
+              d="M16 7a4 4 0 11-8 0 4 4 0 018 0zM12 14a7 7 0 00-7 7h14a7 7 0 00-7-7z"
+            />
+          </svg>
+          <h3 class="text-white text-xs font-bold uppercase tracking-widest">
+            Étudiant
+          </h3>
+        </div>
+        <div class="bg-white dark:bg-gray-900">
+          <div
+            class="flex items-center gap-3 px-5 py-4 border-b border-gray-100 dark:border-gray-800"
+          >
+            <div
+              class="w-10 h-10 rounded-full bg-[#C60C30] flex items-center justify-center text-white font-bold text-sm flex-shrink-0"
+            >
+              {{ (pfe.studentName || "E")[0] }}
+            </div>
+            <div>
+              <p class="text-sm font-semibold text-gray-900 dark:text-white">
+                {{ pfe.studentName || "N/A" }}
+              </p>
+              <p class="text-xs text-gray-500 dark:text-gray-400">
+                {{ pfe.studentEmail || "" }}
+              </p>
+            </div>
+          </div>
+          <div class="px-5 py-3">
+            <p
+              class="text-[10px] font-bold text-gray-400 dark:text-gray-500 uppercase tracking-widest mb-0.5"
+            >
+              ID Étudiant
+            </p>
+            <p class="text-sm text-gray-900 dark:text-white font-mono">
+              {{ pfe.studentId }}
+            </p>
+          </div>
+        </div>
+      </div>
+
+      <!-- Jury Panel — read-only, no assign buttons -->
+      <div
+        class="rounded-lg border border-gray-200 dark:border-gray-700 overflow-hidden"
+      >
+        <div
+          class="flex items-center gap-2.5 px-5 py-3 bg-[#333333] border-l-[4px] border-[#C60C30]"
+        >
+          <svg
+            class="w-4 h-4 text-[#C60C30] flex-shrink-0"
+            fill="none"
+            viewBox="0 0 24 24"
+            stroke="currentColor"
+            stroke-width="2"
+          >
+            <path
+              stroke-linecap="round"
+              stroke-linejoin="round"
+              d="M17 20h5v-2a3 3 0 00-5.356-1.857M17 20H7m10 0v-2c0-.656-.126-1.283-.356-1.857M7 20H2v-2a3 3 0 015.356-1.857M7 20v-2c0-.656.126-1.283.356-1.857m0 0a5.002 5.002 0 019.288 0M15 7a3 3 0 11-6 0 3 3 0 016 0z"
+            />
+          </svg>
+          <h3 class="text-white text-xs font-bold uppercase tracking-widest">
+            Membres du Jury
+          </h3>
+        </div>
+        <div
+          class="divide-y divide-gray-100 dark:divide-gray-800 bg-white dark:bg-gray-900"
+        >
+          <!-- Supervisor -->
+          <div class="px-5 py-3.5">
+            <p
+              class="text-[10px] font-bold text-gray-400 dark:text-gray-500 uppercase tracking-widest mb-2"
+            >
+              Encadrant
+            </p>
+            <div
+              *ngIf="pfe.supervisorName; else noSupervisor"
+              class="flex items-center gap-2.5"
+            >
+              <div
+                class="w-8 h-8 rounded-full bg-[#333333] flex items-center justify-center text-white text-xs font-bold flex-shrink-0"
+              >
+                {{ pfe.supervisorName[0] }}
+              </div>
+              <p class="text-sm text-gray-900 dark:text-white font-medium">
+                {{ pfe.supervisorName }}
+              </p>
+            </div>
+            <ng-template #noSupervisor>
+              <p class="text-xs text-gray-400 dark:text-gray-500 italic">
+                Non assigné
+              </p>
+            </ng-template>
+          </div>
+
+          <!-- Chef de Jury -->
+          <div class="px-5 py-3.5">
+            <p
+              class="text-[10px] font-bold text-gray-400 dark:text-gray-500 uppercase tracking-widest mb-2"
+            >
+              Chef de Jury
+            </p>
+            <div
+              *ngIf="pfe.chefDeJuryName; else noJury"
+              class="flex items-center gap-2.5"
+            >
+              <div
+                class="w-8 h-8 rounded-full bg-[#333333] flex items-center justify-center text-white text-xs font-bold flex-shrink-0"
+              >
+                {{ pfe.chefDeJuryName[0] }}
+              </div>
+              <p class="text-sm text-gray-900 dark:text-white font-medium">
+                {{ pfe.chefDeJuryName }}
+              </p>
+            </div>
+            <ng-template #noJury>
+              <p class="text-xs text-gray-400 dark:text-gray-500 italic">
+                Non assigné
+              </p>
+            </ng-template>
+          </div>
+
+          <!-- Rapporteur -->
+          <div class="px-5 py-3.5">
+            <p
+              class="text-[10px] font-bold text-gray-400 dark:text-gray-500 uppercase tracking-widest mb-2"
+            >
+              Rapporteur
+            </p>
+            <div
+              *ngIf="pfe.rapporteurName; else noRapporteur"
+              class="flex items-center gap-2.5"
+            >
+              <div
+                class="w-8 h-8 rounded-full bg-[#333333] flex items-center justify-center text-white text-xs font-bold flex-shrink-0"
+              >
+                {{ pfe.rapporteurName[0] }}
+              </div>
+              <p class="text-sm text-gray-900 dark:text-white font-medium">
+                {{ pfe.rapporteurName }}
+              </p>
+            </div>
+            <ng-template #noRapporteur>
+              <p class="text-xs text-gray-400 dark:text-gray-500 italic">
+                Non assigné
+              </p>
+            </ng-template>
+          </div>
+        </div>
+      </div>
+
+      <!-- Dates -->
+      <div
+        class="rounded-lg border border-gray-200 dark:border-gray-700 overflow-hidden bg-white dark:bg-gray-900"
+      >
+        <div class="divide-y divide-gray-100 dark:divide-gray-800">
+          <div class="px-5 py-3">
+            <p
+              class="text-[10px] font-bold text-gray-400 dark:text-gray-500 uppercase tracking-widest mb-0.5"
+            >
+              Date de soumission
+            </p>
+            <p class="text-sm text-gray-900 dark:text-white">
+              {{ (pfe.submissionDate | date: "dd/MM/yyyy, HH:mm") || "—" }}
+            </p>
+          </div>
+          <div class="px-5 py-3">
+            <p
+              class="text-[10px] font-bold text-gray-400 dark:text-gray-500 uppercase tracking-widest mb-0.5"
+            >
+              Créé le
+            </p>
+            <p class="text-sm text-gray-900 dark:text-white">
+              {{ pfe.createdDate | date: "dd/MM/yyyy, HH:mm" }}
+            </p>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- Error state -->
+<div
+  *ngIf="!pfe"
+  class="flex flex-col items-center justify-center py-20 text-gray-400"
+>
+  <svg
+    class="w-14 h-14 mb-4 text-gray-200 dark:text-gray-700"
+    fill="none"
+    viewBox="0 0 24 24"
+    stroke="currentColor"
+    stroke-width="1"
+  >
+    <path
+      stroke-linecap="round"
+      stroke-linejoin="round"
+      d="M12 9v2m0 4h.01m-6.938 4h13.856c1.54 0 2.502-1.667 1.732-3L13.732 4c-.77-1.333-2.694-1.333-3.464 0L3.34 16c-.77 1.333.192 3 1.732 3z"
+    />
+  </svg>
+  <p class="text-base text-gray-500 dark:text-gray-400">
+    PFE introuvable ou inaccessible.
+  </p>
+</div>
+
+<!-- PDF Viewer Modal -->
+<app-pdf-viewer-modal
+  [(visible)]="showPdfModal"
+  [pdfUrl]="reportFileUrl"
+  [title]="'Rapport PFE'"
+></app-pdf-viewer-modal>
