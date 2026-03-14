@@ -12,6 +12,23 @@ import { ProgressSpinnerModule } from 'primeng/progressspinner';
 import { ReactiveFormsModule } from '@angular/forms';
 import { DialogModule } from 'primeng/dialog';
 import { PdfViewerModule } from 'ng2-pdf-viewer';
+import { LibraryComponent } from './components/library/library.component';
+import { DocumentComponent } from './components/library/document/document.component';
+import { TableModule } from 'primeng/table';
+import { ButtonModule } from 'primeng/button';
+import { TagModule } from 'primeng/tag';
+import { InputTextModule } from 'primeng/inputtext';
+import { SelectModule } from 'primeng/select';
+import { ToastModule } from 'primeng/toast';
+import { FileUploadModule } from 'primeng/fileupload';
+import { Badge } from 'primeng/badge';
+import { TooltipModule } from 'primeng/tooltip';
+import { FormsModule } from '@angular/forms';
+import { ToggleSwitchModule } from 'primeng/toggleswitch';
+import { CardModule } from 'primeng/card';
+import { TopbarComponent } from './components/topbar/topbar.component';
+import { SidebarComponent } from './components/sidebar/sidebar.component';
+import { LogoutModalComponent } from './components/logout-modal/logout-modal.component';
 
 @NgModule({
   declarations: [
@@ -21,6 +38,8 @@ import { PdfViewerModule } from 'ng2-pdf-viewer';
     NotFoundComponent,
     ProfileComponent,
     PdfViewerModalComponent,
+    LibraryComponent,
+    DocumentComponent,
   ],
   imports: [
     CommonModule,
@@ -30,6 +49,21 @@ import { PdfViewerModule } from 'ng2-pdf-viewer';
     ReactiveFormsModule,
     DialogModule,
     PdfViewerModule,
+    TableModule,
+    ButtonModule,
+    TagModule,
+    InputTextModule,
+    SelectModule,
+    ToastModule,
+    FileUploadModule,
+    Badge,
+    TooltipModule,
+    FormsModule,
+    ToggleSwitchModule,
+    CardModule,
+    TopbarComponent,
+    SidebarComponent,
+    LogoutModalComponent,
   ],
   exports: [
     FileSizePipe,
@@ -39,6 +73,11 @@ import { PdfViewerModule } from 'ng2-pdf-viewer';
     LoadingOverlayComponent,
     ProfileComponent,
     PdfViewerModalComponent,
+    LibraryComponent,
+    DocumentComponent,
+    TopbarComponent,
+    SidebarComponent,
+    LogoutModalComponent,
   ],
 })
 export class SharedModule {}

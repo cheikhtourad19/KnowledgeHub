@@ -26,6 +26,9 @@ import { FileUploadModule } from 'primeng/fileupload';
 import { Badge } from 'primeng/badge';
 import { TooltipModule } from 'primeng/tooltip';
 import { PfeDetailsComponent } from './pages/pfe.gestion/pfe-details/pfe-details.component';
+import { TopbarComponent } from '../../shared/components/topbar/topbar.component';
+import { SidebarComponent } from '../../shared/components/sidebar/sidebar.component';
+import { LogoutModalComponent } from '../../shared/components/logout-modal/logout-modal.component';
 
 @NgModule({
   declarations: [
@@ -43,6 +46,9 @@ import { PfeDetailsComponent } from './pages/pfe.gestion/pfe-details/pfe-details
   ],
   imports: [
     CommonModule,
+    TopbarComponent,
+    SidebarComponent,
+    LogoutModalComponent,
     FormsModule,
     PasswordModule,
     AdminRoutingModule,

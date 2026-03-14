@@ -1,1 +1,223 @@
-<router-outlet></router-outlet>
+<app-topbar
+  homeRoute="/teacher/pfe/encadrements"
+  [currentUser]="currentUser"
+  [userInitials]="userInitials"
+  [isDarkMode]="isDarkMode"
+  avatarColor="dark"
+  (toggleDark)="toggleDarkMode()"
+  (toggleDrawer)="toggleDrawer()"
+>
+</app-topbar>
+
+<app-sidebar
+  [isOpen]="isDrawerOpen"
+  [currentUser]="currentUser"
+  [userInitials]="userInitials"
+  avatarColor="dark"
+  (close)="closeDrawer()"
+  (logout)="showLogoutModal = true"
+>
+  <p
+    class="text-[9px] font-bold text-[#666666] uppercase tracking-[0.15em] px-2 mb-2"
+  >
+    Enseignement
+  </p>
+
+  <!-- PFE Dropdown -->
+  <div>
+    <button
+      (click)="toggleDropdown('pfe')"
+      class="flex items-center gap-3 w-full px-3 py-2.5 rounded-lg transition-all duration-200 group"
+      [ngClass]="
+        isDropdownActive('pfe')
+          ? 'bg-[#C60C30] text-white shadow-sm'
+          : 'text-[#333333] dark:text-gray-300 hover:bg-[#F0F0F0] dark:hover:bg-gray-800'
+      "
+    >
+      <i
+        class="pi pi-file text-base"
+        [ngClass]="
+          isDropdownActive('pfe')
+            ? 'text-white'
+            : 'text-[#666666] dark:text-gray-400 group-hover:text-[#C60C30]'
+        "
+      ></i>
+      <span class="text-sm font-medium flex-1 text-left">PFE</span>
+      <i
+        class="pi pi-chevron-down text-xs transition-transform duration-200"
+        [class.rotate-180]="openDropdowns['pfe']"
+        [ngClass]="isDropdownActive('pfe') ? 'text-white' : 'text-[#666666]'"
+      ></i>
+    </button>
+    @if (openDropdowns["pfe"]) {
+      <div class="mt-1 ml-4 pl-3 border-l-2 border-[#C60C30]/30 space-y-1">
+        <a
+          routerLink="pfe/encadrements"
+          (click)="closeDrawer()"
+          class="flex items-center gap-2 px-3 py-2 rounded-lg text-sm transition-all duration-200"
+          [ngClass]="
+            isActive('pfe/encadrements')
+              ? 'bg-red-50 dark:bg-red-900/20 text-[#C60C30] font-semibold'
+              : 'text-[#666666] dark:text-gray-400 hover:bg-[#F0F0F0] dark:hover:bg-gray-800 hover:text-[#333333]'
+          "
+        >
+          <i class="pi pi-users text-xs"></i> Mes Encadrements
+        </a>
+        <a
+          routerLink="pfe/jury"
+          (click)="closeDrawer()"
+          class="flex items-center gap-2 px-3 py-2 rounded-lg text-sm transition-all duration-200"
+          [ngClass]="
+            isActive('pfe/jury')
+              ? 'bg-red-50 dark:bg-red-900/20 text-[#C60C30] font-semibold'
+              : 'text-[#666666] dark:text-gray-400 hover:bg-[#F0F0F0] dark:hover:bg-gray-800 hover:text-[#333333]'
+          "
+        >
+          <i class="pi pi-star text-xs"></i> Président de Jury
+        </a>
+        <a
+          routerLink="pfe/rapporteur"
+          (click)="closeDrawer()"
+          class="flex items-center gap-2 px-3 py-2 rounded-lg text-sm transition-all duration-200"
+          [ngClass]="
+            isActive('pfe/rapporteur')
+              ? 'bg-red-50 dark:bg-red-900/20 text-[#C60C30] font-semibold'
+              : 'text-[#666666] dark:text-gray-400 hover:bg-[#F0F0F0] dark:hover:bg-gray-800 hover:text-[#333333]'
+          "
+        >
+          <i class="pi pi-pen-to-square text-xs"></i> Rapporteur
+        </a>
+      </div>
+    }
+  </div>
+
+  <!-- Stage Jury -->
+  <a
+    routerLink="stage/jury"
+    (click)="closeDrawer()"
+    class="flex items-center gap-3 px-3 py-2.5 rounded-lg transition-all duration-200 group"
+    [ngClass]="
+      isActive('stage/jury')
+        ? 'bg-[#C60C30] text-white shadow-sm'
+        : 'text-[#333333] dark:text-gray-300 hover:bg-[#F0F0F0] dark:hover:bg-gray-800'
+    "
+  >
+    <i
+      class="pi pi-briefcase text-base"
+      [ngClass]="
+        isActive('stage/jury')
+          ? 'text-white'
+          : 'text-[#666666] dark:text-gray-400 group-hover:text-[#C60C30]'
+      "
+    ></i>
+    <span class="text-sm font-medium">Jury de Stage</span>
+    @if (isActive("stage/jury")) {
+      <span class="ms-auto w-1.5 h-1.5 bg-white rounded-full opacity-80"></span>
+    }
+  </a>
+
+  <p
+    class="text-[9px] font-bold text-[#666666] uppercase tracking-[0.15em] px-2 pt-3 mb-2"
+  >
+    Ressources
+  </p>
+
+  <!-- Bibliothèque Dropdown -->
+  <div>
+    <button
+      (click)="toggleDropdown('bibliotheque')"
+      class="flex items-center gap-3 w-full px-3 py-2.5 rounded-lg transition-all duration-200 group"
+      [ngClass]="
+        isDropdownActive('bibliotheque')
+          ? 'bg-[#C60C30] text-white shadow-sm'
+          : 'text-[#333333] dark:text-gray-300 hover:bg-[#F0F0F0] dark:hover:bg-gray-800'
+      "
+    >
+      <i
+        class="pi pi-book text-base"
+        [ngClass]="
+          isDropdownActive('bibliotheque')
+            ? 'text-white'
+            : 'text-[#666666] dark:text-gray-400 group-hover:text-[#C60C30]'
+        "
+      ></i>
+      <span class="text-sm font-medium flex-1 text-left">Bibliothèque</span>
+      <i
+        class="pi pi-chevron-down text-xs transition-transform duration-200"
+        [class.rotate-180]="openDropdowns['bibliotheque']"
+        [ngClass]="
+          isDropdownActive('bibliotheque') ? 'text-white' : 'text-[#666666]'
+        "
+      ></i>
+    </button>
+    @if (openDropdowns["bibliotheque"]) {
+      <div class="mt-1 ml-4 pl-3 border-l-2 border-[#C60C30]/30 space-y-1">
+        <a
+          routerLink="bibliotheque/consulter"
+          (click)="closeDrawer()"
+          class="flex items-center gap-2 px-3 py-2 rounded-lg text-sm transition-all duration-200"
+          [ngClass]="
+            isActive('bibliotheque/consulter')
+              ? 'bg-red-50 dark:bg-red-900/20 text-[#C60C30] font-semibold'
+              : 'text-[#666666] dark:text-gray-400 hover:bg-[#F0F0F0] dark:hover:bg-gray-800 hover:text-[#333333]'
+          "
+        >
+          <i class="pi pi-search text-xs"></i> Consulter
+        </a>
+        <a
+          routerLink="bibliotheque/publier"
+          (click)="closeDrawer()"
+          class="flex items-center gap-2 px-3 py-2 rounded-lg text-sm transition-all duration-200"
+          [ngClass]="
+            isActive('bibliotheque/publier')
+              ? 'bg-red-50 dark:bg-red-900/20 text-[#C60C30] font-semibold'
+              : 'text-[#666666] dark:text-gray-400 hover:bg-[#F0F0F0] dark:hover:bg-gray-800 hover:text-[#333333]'
+          "
+        >
+          <i class="pi pi-upload text-xs"></i> Publier
+        </a>
+      </div>
+    }
+  </div>
+
+  <!-- Profil -->
+  <a
+    routerLink="profile"
+    (click)="closeDrawer()"
+    class="flex items-center gap-3 px-3 py-2.5 rounded-lg transition-all duration-200 group"
+    [ngClass]="
+      isActive('profile')
+        ? 'bg-[#C60C30] text-white shadow-sm'
+        : 'text-[#333333] dark:text-gray-300 hover:bg-[#F0F0F0] dark:hover:bg-gray-800'
+    "
+  >
+    <i
+      class="pi pi-user text-base"
+      [ngClass]="
+        isActive('profile')
+          ? 'text-white'
+          : 'text-[#666666] dark:text-gray-400 group-hover:text-[#C60C30]'
+      "
+    ></i>
+    <span class="text-sm font-medium">Profil</span>
+    @if (isActive("profile")) {
+      <span class="ms-auto w-1.5 h-1.5 bg-white rounded-full opacity-80"></span>
+    }
+  </a>
+</app-sidebar>
+
+<app-logout-modal [(visible)]="showLogoutModal" (confirm)="confirmLogout()">
+</app-logout-modal>
+
+<!-- Main Content -->
+<div
+  class="pt-16 min-h-screen bg-[#F0F0F0] dark:bg-gray-950 transition-colors duration-200"
+>
+  <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-6">
+    <div
+      class="bg-white dark:bg-gray-900 rounded-xl shadow-sm border border-gray-200 dark:border-gray-700 p-6 transition-colors duration-200"
+    >
+      <router-outlet></router-outlet>
+    </div>
+  </div>
+</div>

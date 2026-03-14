@@ -1,7 +1,6 @@
 import { Component, OnInit } from '@angular/core';
 import { Router } from '@angular/router';
 import { AuthService } from '../../../core/services/auth.service';
-import { initFlowbite } from 'flowbite';
 
 @Component({
   selector: 'app-student-layout',
@@ -34,7 +33,6 @@ export class StudentLayoutComponent implements OnInit {
       this.isDarkMode = true;
       document.documentElement.classList.add('dark');
     }
-    initFlowbite();
     this.loadUserData();
   }
 
@@ -51,52 +49,37 @@ export class StudentLayoutComponent implements OnInit {
 
   loadUserData(): void {
     const authState = this.authService.getUser();
-    if (authState && authState.username && authState.email) {
+    if (authState?.username && authState?.email) {
       this.currentUser = {
-        firstName: this.extractFirstName(authState.username),
-        lastName: this.extractLastName(authState.username),
+        firstName: authState.username.split(/[_\s]/)[0] || authState.username,
+        lastName: authState.username.split(/[_\s]/)[1] || '',
         email: authState.email,
         role: authState.role,
       };
-      const firstInitial = this.currentUser.firstName.charAt(0).toUpperCase();
-      const lastInitial = this.currentUser.lastName.charAt(0).toUpperCase();
-      this.userInitials = `${firstInitial}${lastInitial}`;
+      this.userInitials =
+        `${this.currentUser.firstName.charAt(0)}${this.currentUser.lastName.charAt(0)}`.toUpperCase();
     }
-  }
-
-  extractFirstName(username: string): string {
-    const parts = username.split(/[_\s]/);
-    return parts[0] || username;
-  }
-
-  extractLastName(username: string): string {
-    const parts = username.split(/[_\s]/);
-    return parts[1] || '';
   }
 
   toggleDrawer(): void {
     this.isDrawerOpen = !this.isDrawerOpen;
   }
-
   closeDrawer(): void {
     this.isDrawerOpen = false;
   }
-
-  toggleDropdown(dropdown: string): void {
-    this.openDropdowns[dropdown] = !this.openDropdowns[dropdown];
+  toggleDropdown(key: string): void {
+    this.openDropdowns[key] = !this.openDropdowns[key];
   }
-
-  isDropdownActive(dropdown: string): boolean {
-    return this.router.url.includes(`/${dropdown}/`);
+  isDropdownActive(key: string): boolean {
+    return this.router.url.includes(`/${key}/`);
+  }
+  isActive(route: string): boolean {
+    return this.router.url.includes(route);
   }
 
   confirmLogout(): void {
     this.showLogoutModal = false;
     this.authService.clearAuthState();
     this.router.navigate(['/auth/login']);
-  }
-
-  isActive(route: string): boolean {
-    return this.router.url.includes(route);
   }
 }

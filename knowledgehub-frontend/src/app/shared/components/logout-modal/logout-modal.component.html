@@ -1,0 +1,48 @@
+<p-dialog
+  [(visible)]="visible"
+  [modal]="true"
+  [closable]="true"
+  [draggable]="false"
+  [resizable]="false"
+  [style]="{ width: '440px' }"
+  [contentStyle]="{ padding: '0' }"
+  (visibleChange)="visibleChange.emit($event)"
+  [showHeader]="false"
+>
+  <div class="flex flex-col items-center text-center px-10 pt-10 pb-8 gap-6">
+    <!-- Icon -->
+    <div
+      class="w-16 h-16 bg-red-50 dark:bg-red-900/20 rounded-2xl flex items-center justify-center flex-shrink-0"
+    >
+      <i class="pi pi-sign-out text-[#C60C30] text-2xl"></i>
+    </div>
+
+    <!-- Text -->
+    <div class="flex flex-col gap-2">
+      <h3 class="text-lg font-bold text-[#333333] dark:text-white">
+        Déconnexion
+      </h3>
+      <p class="text-sm text-[#666666] dark:text-gray-400 leading-relaxed">
+        Êtes-vous sûr de vouloir vous déconnecter ? Vous devrez vous reconnecter
+        pour accéder à votre compte.
+      </p>
+    </div>
+
+    <!-- Buttons -->
+    <div class="flex flex-col sm:flex-row gap-3 w-full pt-1">
+      <button
+        (click)="visibleChange.emit(false)"
+        class="flex-1 px-4 py-3 rounded-xl text-sm font-medium text-[#666666] dark:text-gray-400 bg-[#F0F0F0] dark:bg-gray-800 hover:bg-gray-200 dark:hover:bg-gray-700 transition-colors duration-200"
+      >
+        Annuler
+      </button>
+      <button
+        (click)="confirm.emit()"
+        class="flex-1 px-4 py-3 rounded-xl text-sm font-medium text-white bg-[#C60C30] hover:bg-[#a50a28] transition-colors duration-200 flex items-center justify-center gap-2"
+      >
+        <i class="pi pi-sign-out text-sm"></i>
+        Se déconnecter
+      </button>
+    </div>
+  </div>
+</p-dialog>

@@ -7,6 +7,8 @@ import { AuthService } from '../../../../core/services/auth.service';
 import { LoginRequest } from '../../../../shared/models/auth-service/requests/login-request.model';
 
 import { MessageService } from 'primeng/api';
+import { environment } from '../../../../../environments/environment';
+
 @Component({
   selector: 'app-login',
   templateUrl: './login.component.html',
@@ -17,6 +19,8 @@ export class LoginComponent {
   loginForm: FormGroup;
   isLoading: boolean = false;
   errorMessage: string = '';
+  appNamePrefix = environment.app_name_prefix;
+  appNameSuffix = environment.app_name_suffix;
 
   constructor(
     private authApiService: AuthApiService,

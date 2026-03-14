@@ -1,0 +1,65 @@
+<nav
+  class="fixed top-0 z-50 w-full bg-white dark:bg-gray-900 border-b border-gray-200 dark:border-gray-700 shadow-sm transition-colors duration-200"
+>
+  <div class="px-4 py-2.5 flex items-center justify-between">
+    <div class="flex items-center gap-3">
+      <button
+        (click)="toggleDrawer.emit()"
+        type="button"
+        class="p-2 rounded-lg text-gray-500 dark:text-gray-400 hover:bg-[#C60C30] hover:text-white transition-all duration-200"
+        pTooltip="Menu"
+        tooltipPosition="bottom"
+      >
+        <i class="pi pi-bars text-lg"></i>
+      </button>
+      <a [routerLink]="homeRoute" class="flex items-center gap-2.5">
+        <img
+          src="assets/images/logo_esprim.jpg"
+          class="h-10"
+          alt="Logo ESPRIM"
+        />
+        <div class="hidden sm:block">
+          <span
+            class="text-base font-black text-[#333333] dark:text-white tracking-tight"
+          >
+            {{ appNamePrefix
+            }}<span class="text-[#C60C30]">{{ appNameSuffix }}</span>
+          </span>
+        </div>
+      </a>
+    </div>
+    <div class="flex items-center gap-2">
+      <button
+        (click)="toggleDark.emit()"
+        type="button"
+        class="p-2 rounded-lg text-gray-500 dark:text-gray-400 hover:bg-gray-100 dark:hover:bg-gray-700 transition-colors"
+        [pTooltip]="isDarkMode ? 'Mode clair' : 'Mode sombre'"
+        tooltipPosition="bottom"
+      >
+        <i
+          [class]="isDarkMode ? 'pi pi-sun text-lg' : 'pi pi-moon text-lg'"
+        ></i>
+      </button>
+      <div
+        class="flex items-center gap-2.5 bg-[#F0F0F0] dark:bg-gray-800 rounded-xl px-3 py-1.5 border border-gray-200 dark:border-gray-600"
+      >
+        <div
+          class="w-8 h-8 rounded-full flex items-center justify-center text-white text-xs font-bold flex-shrink-0"
+          [ngClass]="avatarColor === 'red' ? 'bg-[#C60C30]' : 'bg-[#333333]'"
+        >
+          {{ userInitials }}
+        </div>
+        <div class="hidden md:block leading-tight">
+          <p class="text-sm font-semibold text-[#333333] dark:text-white">
+            {{ currentUser?.firstName }} {{ currentUser?.lastName }}
+          </p>
+          <p
+            class="text-[10px] text-[#666666] dark:text-gray-400 uppercase tracking-widest"
+          >
+            {{ currentUser?.role || "Admin" }}
+          </p>
+        </div>
+      </div>
+    </div>
+  </div>
+</nav>

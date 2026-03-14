@@ -3,6 +3,7 @@ import { Router, NavigationEnd } from '@angular/router';
 import { AuthService } from './core/services/auth.service';
 import { UserRole } from './shared/models/auth-service/entities/auth-user.model';
 import { filter } from 'rxjs/operators';
+import { environment } from '../environments/environment';
 
 @Component({
   selector: 'app-root',
@@ -13,6 +14,9 @@ import { filter } from 'rxjs/operators';
 export class AppComponent implements OnInit {
   title = 'knowledgehub';
   isHomePage = true;
+  appName = environment.app_name;
+  appNamePrefix = environment.app_name_prefix;
+  appNameSuffix = environment.app_name_suffix;
 
   constructor(
     public authService: AuthService,

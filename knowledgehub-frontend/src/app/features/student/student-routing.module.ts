@@ -3,11 +3,11 @@ import { RouterModule, Routes } from '@angular/router';
 import { StudentLayoutComponent } from './student-layout/student-layout.component';
 import { PfeComponent } from './pages/pfe/pfe.component';
 import { StageComponent } from './pages/stage/stage.component';
-import { LibraryComponent } from './pages/library/library.component';
+import { LibraryComponent } from '../../shared/components/library/library.component';
 import { DemandePfeComponent } from './pages/demande.pfe/demande.pfe.component';
 import { ProfileComponent } from '../../shared/components/profile/profile.component';
 import { StudentStageDetailsComponent } from './pages/stage/stage-details/stage-details.component';
-import { DocumentComponent } from './pages/library/document/document.component';
+import { DocumentComponent } from '../../shared/components/library/document/document.component';
 
 const routes: Routes = [
   {

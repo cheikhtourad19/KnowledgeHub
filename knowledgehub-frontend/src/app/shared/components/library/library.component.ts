@@ -1,8 +1,10 @@
 import { Component, OnInit } from '@angular/core';
 import { Router } from '@angular/router';
-import { ResourceApiService } from '../../../../shared/services/resource-api.service';
-import { File } from '../../../../shared/models/resource-service/entities/file.model';
-import { FileType } from '../../../../shared/models/resource-service/enums/file-type.enum';
+import { ResourceApiService } from '../../services/resource-api.service';
+import { File } from '../../models/resource-service/entities/file.model';
+import { FileType } from '../../models/resource-service/enums/file-type.enum';
+import { Input, Output, EventEmitter } from '@angular/core';
+import { AuthService } from '../../../core/services/auth.service';
 
 @Component({
   selector: 'app-library',
@@ -17,6 +19,7 @@ export class LibraryComponent implements OnInit {
   public aiSearchEnabled: boolean = false;
   public isAiLoading: boolean = false;
   public isAiResults: boolean = false;
+  @Input() documentRoute: string = 'student/document'; // default, can be overridden
 
   public displayableTypes: FileType[] = [
     FileType.PFA_REPORT,
@@ -60,6 +63,7 @@ export class LibraryComponent implements OnInit {
   constructor(
     private ressourceService: ResourceApiService,
     private router: Router,
+    private authService: AuthService,
   ) {}
 
   ngOnInit(): void {
@@ -185,7 +189,13 @@ export class LibraryComponent implements OnInit {
   // ── Helpers ──────────────────────────────────────────────────
 
   openDocument(doc: File): void {
-    this.router.navigate(['student/document', doc.id]);
+    const role = this.authService.currentAuthState?.role;
+
+    if (role === 'STUDENT') {
+      this.router.navigate([`student/document`, doc.id]);
+    } else if (role === 'TEACHER') {
+      this.router.navigate([`teacher/bibliotheque/consulter`, doc.id]);
+    }
   }
 
   getTypeImage(fileType: FileType): string | null {

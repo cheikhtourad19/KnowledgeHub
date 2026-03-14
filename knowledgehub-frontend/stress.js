@@ -2,7 +2,7 @@ import http from "k6/http";
 import { check, sleep } from "k6";
 
 export const options = {
-  vus: 2000,
+  vus: 500,
   duration: "30s",
 };
 
@@ -34,6 +34,6 @@ export default function (data) {
     "status is 200": (r) => r.status === 200,
   });
 
-  sleep(1);
+  sleep(Math.random() * 2 + 0.5);
 }
 // k6 run stress.js

@@ -22,10 +22,11 @@ import { RouterModule } from '@angular/router';
 import { PfeComponent } from './pages/pfe/pfe.component';
 import { StageComponent } from './pages/stage/stage.component';
 import { StudentStageDetailsComponent } from './pages/stage/stage-details/stage-details.component';
-import { LibraryComponent } from './pages/library/library.component';
 import { DemandePfeComponent } from './pages/demande.pfe/demande.pfe.component';
 import { SharedModule } from '../../shared/shared.module';
-import { DocumentComponent } from './pages/library/document/document.component';
+import { TopbarComponent } from '../../shared/components/topbar/topbar.component';
+import { SidebarComponent } from '../../shared/components/sidebar/sidebar.component';
+import { LogoutModalComponent } from '../../shared/components/logout-modal/logout-modal.component';
 
 @NgModule({
   declarations: [
@@ -33,13 +34,15 @@ import { DocumentComponent } from './pages/library/document/document.component';
     PfeComponent,
     StageComponent,
     StudentStageDetailsComponent,
-    LibraryComponent,
     DemandePfeComponent,
-    DocumentComponent,
   ],
   imports: [
     CommonModule,
     DatePickerModule,
+    TopbarComponent,
+    SidebarComponent,
+    LogoutModalComponent,
+
     TagModule,
     FormsModule,
     TableModule,

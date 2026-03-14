@@ -1,7 +1,7 @@
 import { Component, OnInit } from '@angular/core';
 import { ActivatedRoute, Router } from '@angular/router';
-import { ResourceApiService } from '../../../../../shared/services/resource-api.service';
-import { File } from '../../../../../shared/models/resource-service/entities/file.model';
+import { ResourceApiService } from '../../../services/resource-api.service';
+import { File } from '../../../models/resource-service/entities/file.model';
 import { MessageService } from 'primeng/api';
 
 @Component({
@@ -31,7 +31,7 @@ export class DocumentComponent implements OnInit {
     private route: ActivatedRoute,
     private router: Router,
     private resourceApiService: ResourceApiService,
-    private messageService: MessageService
+    private messageService: MessageService,
   ) {}
 
   ngOnInit(): void {
@@ -80,7 +80,7 @@ export class DocumentComponent implements OnInit {
 
   openPdfModal(): void {
     if (!this.pdfUrl) {
-      this.showError('Le document n\'est pas encore chargé');
+      this.showError("Le document n'est pas encore chargé");
       return;
     }
     this.showPdfModal = true;
@@ -93,7 +93,9 @@ export class DocumentComponent implements OnInit {
   }
 
   goBack(): void {
-    this.router.navigate(['/student/library']);
+    this.router.navigate(['../'], { relativeTo: this.route }).catch((error) => {
+      console.error('Navigation error:', error);
+    });
   }
 
   formatFileSize(bytes: number): string {

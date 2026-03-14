@@ -74,6 +74,11 @@
         },
         "serve": {
           "builder": "@angular/build:dev-server",
+          "options": {
+            "allowedHosts": [
+              "9555-2c0f-4280-6010-236a-2895-6c83-ff0b-610d.ngrok-free.app"
+            ]
+          },
           "configurations": {
             "production": {
               "buildTarget": "knowledgehub-frontend:build:production"

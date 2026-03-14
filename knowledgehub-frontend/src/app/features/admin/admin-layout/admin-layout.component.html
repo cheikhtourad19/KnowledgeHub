@@ -1,411 +1,253 @@
-<!-- admin-layout.component.html -->
-
-<!-- ── Topbar ── -->
-<nav
-  class="fixed top-0 z-50 w-full bg-white dark:bg-gray-900 border-b border-gray-200 dark:border-gray-700 shadow-sm transition-colors duration-200"
+<app-topbar
+  homeRoute="/admin/students/gestion"
+  [currentUser]="currentUser"
+  [userInitials]="userInitials"
+  [isDarkMode]="isDarkMode"
+  avatarColor="dark"
+  (toggleDark)="toggleDarkMode()"
+  (toggleDrawer)="toggleDrawer()"
 >
-  <div class="px-4 py-2.5 flex items-center justify-between">
-    <!-- Left: Hamburger + Logo -->
-    <div class="flex items-center gap-3">
-      <button
-        (click)="toggleDrawer()"
-        type="button"
-        class="p-2 rounded-lg text-gray-500 dark:text-gray-400 hover:bg-[#C60C30] hover:text-white transition-all duration-200"
-        pTooltip="Menu"
-        tooltipPosition="bottom"
-      >
-        <i class="pi pi-bars text-lg"></i>
-      </button>
+</app-topbar>
 
-      <a routerLink="/admin/students/gestion" class="flex items-center gap-2.5">
-        <img
-          src="assets/images/logo_esprim.jpg"
-          class="h-10"
-          alt="Logo ESPRIM"
-        />
-        <div class="hidden sm:block">
-          <span
-            class="text-base font-black text-[#333333] dark:text-white tracking-tight"
-          >
-            Knowledge<span class="text-[#C60C30]">Hub</span>
-          </span>
-          <p
-            class="text-[9px] text-[#666666] dark:text-gray-500 uppercase tracking-widest"
-          >
-            Administration
-          </p>
-        </div>
-      </a>
-    </div>
-
-    <!-- Right: Dark mode + User -->
-    <div class="flex items-center gap-2">
-      <button
-        (click)="toggleDarkMode()"
-        type="button"
-        class="p-2 rounded-lg text-gray-500 dark:text-gray-400 hover:bg-gray-100 dark:hover:bg-gray-700 transition-colors"
-        [pTooltip]="isDarkMode ? 'Mode clair' : 'Mode sombre'"
-        tooltipPosition="bottom"
-      >
-        <i
-          [class]="isDarkMode ? 'pi pi-sun text-lg' : 'pi pi-moon text-lg'"
-        ></i>
-      </button>
-
-      <!-- User chip -->
-      <div
-        class="flex items-center gap-2.5 bg-[#F0F0F0] dark:bg-gray-800 rounded-xl px-3 py-1.5 border border-gray-200 dark:border-gray-600"
-      >
-        <div
-          class="w-8 h-8 bg-[#333333] rounded-full flex items-center justify-center text-white text-xs font-bold flex-shrink-0"
-        >
-          {{ userInitials }}
-        </div>
-        <div class="hidden md:block leading-tight">
-          <p class="text-sm font-semibold text-[#333333] dark:text-white">
-            {{ currentUser?.firstName }} {{ currentUser?.lastName }}
-          </p>
-          <p
-            class="text-[10px] text-[#666666] dark:text-gray-400 uppercase tracking-widest"
-          >
-            {{ currentUser?.role || "Admin" }}
-          </p>
-        </div>
-      </div>
-    </div>
-  </div>
-</nav>
-
-<!-- ── Sidebar ── -->
-<aside
-  [class.translate-x-0]="isDrawerOpen"
-  [class.-translate-x-full]="!isDrawerOpen"
-  class="fixed top-0 left-0 z-40 w-64 h-screen pt-16 transition-transform duration-300 ease-in-out bg-white dark:bg-gray-900 border-r border-gray-200 dark:border-gray-700 shadow-xl flex flex-col"
-  aria-label="Sidebar"
+<app-sidebar
+  [isOpen]="isDrawerOpen"
+  [currentUser]="currentUser"
+  [userInitials]="userInitials"
+  avatarColor="dark"
+  (close)="closeDrawer()"
+  (logout)="showLogoutModal = true"
 >
-  <!-- Red top accent bar -->
-  <div class="h-1 bg-[#C60C30] w-full"></div>
+  <p
+    class="text-[9px] font-bold text-[#666666] uppercase tracking-[0.15em] px-2 mb-2"
+  >
+    Gestion
+  </p>
 
-  <!-- User panel -->
-  <div class="px-4 py-4 border-b border-gray-100 dark:border-gray-800">
-    <div class="flex items-center gap-3">
-      <div
-        class="w-10 h-10 bg-[#333333] rounded-full flex items-center justify-center text-white font-bold text-sm flex-shrink-0"
-      >
-        {{ userInitials }}
-      </div>
-      <div class="min-w-0">
-        <p class="text-sm font-bold text-[#333333] dark:text-white truncate">
-          {{ currentUser?.firstName }} {{ currentUser?.lastName }}
-        </p>
-        <p
-          class="text-[10px] text-[#666666] dark:text-gray-400 uppercase tracking-widest"
-        >
-          {{ currentUser?.role || "Administrateur" }}
-        </p>
-      </div>
-    </div>
-  </div>
-
-  <!-- Nav items -->
-  <nav class="flex-1 overflow-y-auto px-3 py-4 space-y-1">
-    <p
-      class="text-[9px] font-bold text-[#666666] uppercase tracking-[0.15em] px-2 mb-2"
+  <!-- Étudiants Dropdown -->
+  <div>
+    <button
+      (click)="toggleDropdown('students/gestion')"
+      class="flex items-center gap-3 w-full px-3 py-2.5 rounded-lg transition-all duration-200 group"
+      [ngClass]="
+        isDropdownActive('students/gestion')
+          ? 'bg-[#C60C30] text-white shadow-sm'
+          : 'text-[#333333] dark:text-gray-300 hover:bg-[#F0F0F0] dark:hover:bg-gray-800'
+      "
     >
-      Gestion
-    </p>
-
-    <!-- Étudiants Dropdown -->
-    <div>
-      <button
-        (click)="toggleDropdown('students/gestion')"
-        class="flex items-center gap-3 w-full px-3 py-2.5 rounded-lg transition-all duration-200 group"
+      <i
+        class="pi pi-graduation-cap text-base"
         [ngClass]="
           isDropdownActive('students/gestion')
-            ? 'bg-[#C60C30] text-white shadow-sm'
-            : 'text-[#333333] dark:text-gray-300 hover:bg-[#F0F0F0] dark:hover:bg-gray-800'
+            ? 'text-white'
+            : 'text-[#666666] dark:text-gray-400 group-hover:text-[#C60C30]'
         "
-      >
-        <i
-          class="pi pi-graduation-cap text-base"
+      ></i>
+      <span class="text-sm font-medium flex-1 text-left">Étudiants</span>
+      <i
+        class="pi pi-chevron-down text-xs transition-transform duration-200"
+        [class.rotate-180]="openDropdowns['students/gestion']"
+        [ngClass]="
+          isDropdownActive('students/gestion') ? 'text-white' : 'text-[#666666]'
+        "
+      ></i>
+    </button>
+    @if (openDropdowns["students/gestion"]) {
+      <div class="mt-1 ml-4 pl-3 border-l-2 border-[#C60C30]/30 space-y-1">
+        <a
+          routerLink="students/gestion"
+          (click)="closeDrawer()"
+          class="flex items-center gap-2 px-3 py-2 rounded-lg text-sm transition-all duration-200"
           [ngClass]="
-            isDropdownActive('students/gestion')
-              ? 'text-white'
-              : 'text-[#666666] dark:text-gray-400 group-hover:text-[#C60C30]'
+            isActive('students/gestion')
+              ? 'bg-red-50 dark:bg-red-900/20 text-[#C60C30] font-semibold'
+              : 'text-[#666666] dark:text-gray-400 hover:bg-[#F0F0F0] dark:hover:bg-gray-800 hover:text-[#333333]'
           "
-        ></i>
-        <span class="text-sm font-medium flex-1 text-left">Étudiants</span>
-        <i
-          class="pi pi-chevron-down text-xs transition-transform duration-200"
-          [class.rotate-180]="openDropdowns['students/gestion']"
+        >
+          <i class="pi pi-users text-xs"></i> Gestion Étudiants
+        </a>
+        <a
+          routerLink="students/classes"
+          (click)="closeDrawer()"
+          class="flex items-center gap-2 px-3 py-2 rounded-lg text-sm transition-all duration-200"
           [ngClass]="
-            isDropdownActive('students/gestion')
-              ? 'text-white'
-              : 'text-[#666666]'
+            isActive('students/classes')
+              ? 'bg-red-50 dark:bg-red-900/20 text-[#C60C30] font-semibold'
+              : 'text-[#666666] dark:text-gray-400 hover:bg-[#F0F0F0] dark:hover:bg-gray-800 hover:text-[#333333]'
           "
-        ></i>
-      </button>
-      @if (openDropdowns["students/gestion"]) {
-        <div class="mt-1 ml-4 pl-3 border-l-2 border-[#C60C30]/30 space-y-1">
-          <a
-            routerLink="students/gestion"
-            (click)="closeDrawer()"
-            class="flex items-center gap-2 px-3 py-2 rounded-lg text-sm transition-all duration-200"
-            [ngClass]="
-              isActive('students/gestion')
-                ? 'bg-red-50 dark:bg-red-900/20 text-[#C60C30] font-semibold'
-                : 'text-[#666666] dark:text-gray-400 hover:bg-[#F0F0F0] dark:hover:bg-gray-800 hover:text-[#333333]'
-            "
-          >
-            <i class="pi pi-users text-xs"></i>
-            Gestion Étudiants
-          </a>
-          <a
-            routerLink="students/classes"
-            (click)="closeDrawer()"
-            class="flex items-center gap-2 px-3 py-2 rounded-lg text-sm transition-all duration-200"
-            [ngClass]="
-              isActive('students/classes')
-                ? 'bg-red-50 dark:bg-red-900/20 text-[#C60C30] font-semibold'
-                : 'text-[#666666] dark:text-gray-400 hover:bg-[#F0F0F0] dark:hover:bg-gray-800 hover:text-[#333333]'
-            "
-          >
-            <i class="pi pi-th-large text-xs"></i>
-            Gestion Classes
-          </a>
-        </div>
-      }
-    </div>
+        >
+          <i class="pi pi-th-large text-xs"></i> Gestion Classes
+        </a>
+      </div>
+    }
+  </div>
 
-    <!-- Enseignants -->
-    <a
-      routerLink="teachers"
-      (click)="closeDrawer()"
-      class="flex items-center gap-3 px-3 py-2.5 rounded-lg transition-all duration-200 group"
+  <!-- Enseignants -->
+  <a
+    routerLink="teachers"
+    (click)="closeDrawer()"
+    class="flex items-center gap-3 px-3 py-2.5 rounded-lg transition-all duration-200 group"
+    [ngClass]="
+      isActive('teachers')
+        ? 'bg-[#C60C30] text-white shadow-sm'
+        : 'text-[#333333] dark:text-gray-300 hover:bg-[#F0F0F0] dark:hover:bg-gray-800'
+    "
+  >
+    <i
+      class="pi pi-id-card text-base"
       [ngClass]="
         isActive('teachers')
+          ? 'text-white'
+          : 'text-[#666666] dark:text-gray-400 group-hover:text-[#C60C30]'
+      "
+    ></i>
+    <span class="text-sm font-medium">Enseignants</span>
+    @if (isActive("teachers")) {
+      <span class="ms-auto w-1.5 h-1.5 bg-white rounded-full opacity-80"></span>
+    }
+  </a>
+
+  <!-- PFE Dropdown -->
+  <div>
+    <button
+      (click)="toggleDropdown('pfe')"
+      class="flex items-center gap-3 w-full px-3 py-2.5 rounded-lg transition-all duration-200 group"
+      [ngClass]="
+        isDropdownActive('pfe')
           ? 'bg-[#C60C30] text-white shadow-sm'
           : 'text-[#333333] dark:text-gray-300 hover:bg-[#F0F0F0] dark:hover:bg-gray-800'
       "
     >
       <i
-        class="pi pi-id-card text-base"
-        [ngClass]="
-          isActive('teachers')
-            ? 'text-white'
-            : 'text-[#666666] dark:text-gray-400 group-hover:text-[#C60C30]'
-        "
-      ></i>
-      <span class="text-sm font-medium">Enseignants</span>
-      <span
-        *ngIf="isActive('teachers')"
-        class="ms-auto w-1.5 h-1.5 bg-white rounded-full opacity-80"
-      ></span>
-    </a>
-
-    <!-- PFE Dropdown -->
-    <div>
-      <button
-        (click)="toggleDropdown('pfe')"
-        class="flex items-center gap-3 w-full px-3 py-2.5 rounded-lg transition-all duration-200 group"
+        class="pi pi-file text-base"
         [ngClass]="
           isDropdownActive('pfe')
-            ? 'bg-[#C60C30] text-white shadow-sm'
-            : 'text-[#333333] dark:text-gray-300 hover:bg-[#F0F0F0] dark:hover:bg-gray-800'
+            ? 'text-white'
+            : 'text-[#666666] dark:text-gray-400 group-hover:text-[#C60C30]'
         "
-      >
-        <i
-          class="pi pi-file text-base"
+      ></i>
+      <span class="text-sm font-medium flex-1 text-left">PFE</span>
+      <i
+        class="pi pi-chevron-down text-xs transition-transform duration-200"
+        [class.rotate-180]="openDropdowns['pfe']"
+        [ngClass]="isDropdownActive('pfe') ? 'text-white' : 'text-[#666666]'"
+      ></i>
+    </button>
+    @if (openDropdowns["pfe"]) {
+      <div class="mt-1 ml-4 pl-3 border-l-2 border-[#C60C30]/30 space-y-1">
+        <a
+          routerLink="pfe/gestion"
+          (click)="closeDrawer()"
+          class="flex items-center gap-2 px-3 py-2 rounded-lg text-sm transition-all duration-200"
           [ngClass]="
-            isDropdownActive('pfe')
-              ? 'text-white'
-              : 'text-[#666666] dark:text-gray-400 group-hover:text-[#C60C30]'
+            isActive('pfe/gestion')
+              ? 'bg-red-50 dark:bg-red-900/20 text-[#C60C30] font-semibold'
+              : 'text-[#666666] dark:text-gray-400 hover:bg-[#F0F0F0] dark:hover:bg-gray-800 hover:text-[#333333]'
           "
-        ></i>
-        <span class="text-sm font-medium flex-1 text-left">PFE</span>
-        <i
-          class="pi pi-chevron-down text-xs transition-transform duration-200"
-          [class.rotate-180]="openDropdowns['pfe']"
-          [ngClass]="isDropdownActive('pfe') ? 'text-white' : 'text-[#666666]'"
-        ></i>
-      </button>
-      @if (openDropdowns["pfe"]) {
-        <div class="mt-1 ml-4 pl-3 border-l-2 border-[#C60C30]/30 space-y-1">
-          <a
-            routerLink="pfe/gestion"
-            (click)="closeDrawer()"
-            class="flex items-center gap-2 px-3 py-2 rounded-lg text-sm transition-all duration-200"
-            [ngClass]="
-              isActive('pfe/gestion')
-                ? 'bg-red-50 dark:bg-red-900/20 text-[#C60C30] font-semibold'
-                : 'text-[#666666] dark:text-gray-400 hover:bg-[#F0F0F0] dark:hover:bg-gray-800 hover:text-[#333333]'
-            "
-          >
-            <i class="pi pi-folder-open text-xs"></i>
-            Gestion PFE
-          </a>
-          <a
-            routerLink="pfe/demandes"
-            (click)="closeDrawer()"
-            class="flex items-center gap-2 px-3 py-2 rounded-lg text-sm transition-all duration-200"
-            [ngClass]="
-              isActive('pfe/demandes')
-                ? 'bg-red-50 dark:bg-red-900/20 text-[#C60C30] font-semibold'
-                : 'text-[#666666] dark:text-gray-400 hover:bg-[#F0F0F0] dark:hover:bg-gray-800 hover:text-[#333333]'
-            "
-          >
-            <i class="pi pi-send text-xs"></i>
-            Gestion Demandes
-          </a>
-        </div>
-      }
-    </div>
+        >
+          <i class="pi pi-folder-open text-xs"></i> Gestion PFE
+        </a>
+        <a
+          routerLink="pfe/demandes"
+          (click)="closeDrawer()"
+          class="flex items-center gap-2 px-3 py-2 rounded-lg text-sm transition-all duration-200"
+          [ngClass]="
+            isActive('pfe/demandes')
+              ? 'bg-red-50 dark:bg-red-900/20 text-[#C60C30] font-semibold'
+              : 'text-[#666666] dark:text-gray-400 hover:bg-[#F0F0F0] dark:hover:bg-gray-800 hover:text-[#333333]'
+          "
+        >
+          <i class="pi pi-send text-xs"></i> Gestion Demandes
+        </a>
+      </div>
+    }
+  </div>
 
-    <!-- Stage -->
-    <a
-      routerLink="stage"
-      (click)="closeDrawer()"
-      class="flex items-center gap-3 px-3 py-2.5 rounded-lg transition-all duration-200 group"
+  <!-- Stage -->
+  <a
+    routerLink="stage"
+    (click)="closeDrawer()"
+    class="flex items-center gap-3 px-3 py-2.5 rounded-lg transition-all duration-200 group"
+    [ngClass]="
+      isActive('stage')
+        ? 'bg-[#C60C30] text-white shadow-sm'
+        : 'text-[#333333] dark:text-gray-300 hover:bg-[#F0F0F0] dark:hover:bg-gray-800'
+    "
+  >
+    <i
+      class="pi pi-briefcase text-base"
       [ngClass]="
         isActive('stage')
-          ? 'bg-[#C60C30] text-white shadow-sm'
-          : 'text-[#333333] dark:text-gray-300 hover:bg-[#F0F0F0] dark:hover:bg-gray-800'
+          ? 'text-white'
+          : 'text-[#666666] dark:text-gray-400 group-hover:text-[#C60C30]'
       "
-    >
-      <i
-        class="pi pi-briefcase text-base"
-        [ngClass]="
-          isActive('stage')
-            ? 'text-white'
-            : 'text-[#666666] dark:text-gray-400 group-hover:text-[#C60C30]'
-        "
-      ></i>
-      <span class="text-sm font-medium">Stage</span>
-      <span
-        *ngIf="isActive('stage')"
-        class="ms-auto w-1.5 h-1.5 bg-white rounded-full opacity-80"
-      ></span>
-    </a>
+    ></i>
+    <span class="text-sm font-medium">Stage</span>
+    @if (isActive("stage")) {
+      <span class="ms-auto w-1.5 h-1.5 bg-white rounded-full opacity-80"></span>
+    }
+  </a>
 
-    <p
-      class="text-[9px] font-bold text-[#666666] uppercase tracking-[0.15em] px-2 pt-3 mb-2"
-    >
-      Ressources
-    </p>
+  <p
+    class="text-[9px] font-bold text-[#666666] uppercase tracking-[0.15em] px-2 pt-3 mb-2"
+  >
+    Ressources
+  </p>
 
-    <!-- Documents -->
-    <a
-      routerLink="documents"
-      (click)="closeDrawer()"
-      class="flex items-center gap-3 px-3 py-2.5 rounded-lg transition-all duration-200 group"
+  <!-- Documents -->
+  <a
+    routerLink="documents"
+    (click)="closeDrawer()"
+    class="flex items-center gap-3 px-3 py-2.5 rounded-lg transition-all duration-200 group"
+    [ngClass]="
+      isActive('documents')
+        ? 'bg-[#C60C30] text-white shadow-sm'
+        : 'text-[#333333] dark:text-gray-300 hover:bg-[#F0F0F0] dark:hover:bg-gray-800'
+    "
+  >
+    <i
+      class="pi pi-database text-base"
       [ngClass]="
         isActive('documents')
-          ? 'bg-[#C60C30] text-white shadow-sm'
-          : 'text-[#333333] dark:text-gray-300 hover:bg-[#F0F0F0] dark:hover:bg-gray-800'
+          ? 'text-white'
+          : 'text-[#666666] dark:text-gray-400 group-hover:text-[#C60C30]'
       "
-    >
-      <i
-        class="pi pi-database text-base"
-        [ngClass]="
-          isActive('documents')
-            ? 'text-white'
-            : 'text-[#666666] dark:text-gray-400 group-hover:text-[#C60C30]'
-        "
-      ></i>
-      <span class="text-sm font-medium">Documents</span>
-      <span
-        *ngIf="isActive('documents')"
-        class="ms-auto w-1.5 h-1.5 bg-white rounded-full opacity-80"
-      ></span>
-    </a>
+    ></i>
+    <span class="text-sm font-medium">Documents</span>
+    @if (isActive("documents")) {
+      <span class="ms-auto w-1.5 h-1.5 bg-white rounded-full opacity-80"></span>
+    }
+  </a>
 
-    <!-- Profile -->
-    <a
-      routerLink="profile"
-      (click)="closeDrawer()"
-      class="flex items-center gap-3 px-3 py-2.5 rounded-lg transition-all duration-200 group"
+  <!-- Profil -->
+  <a
+    routerLink="profile"
+    (click)="closeDrawer()"
+    class="flex items-center gap-3 px-3 py-2.5 rounded-lg transition-all duration-200 group"
+    [ngClass]="
+      isActive('profile')
+        ? 'bg-[#C60C30] text-white shadow-sm'
+        : 'text-[#333333] dark:text-gray-300 hover:bg-[#F0F0F0] dark:hover:bg-gray-800'
+    "
+  >
+    <i
+      class="pi pi-user text-base"
       [ngClass]="
         isActive('profile')
-          ? 'bg-[#C60C30] text-white shadow-sm'
-          : 'text-[#333333] dark:text-gray-300 hover:bg-[#F0F0F0] dark:hover:bg-gray-800'
+          ? 'text-white'
+          : 'text-[#666666] dark:text-gray-400 group-hover:text-[#C60C30]'
       "
-    >
-      <i
-        class="pi pi-user text-base"
-        [ngClass]="
-          isActive('profile')
-            ? 'text-white'
-            : 'text-[#666666] dark:text-gray-400 group-hover:text-[#C60C30]'
-        "
-      ></i>
-      <span class="text-sm font-medium">Profil</span>
-      <span
-        *ngIf="isActive('profile')"
-        class="ms-auto w-1.5 h-1.5 bg-white rounded-full opacity-80"
-      ></span>
-    </a>
-  </nav>
+    ></i>
+    <span class="text-sm font-medium">Profil</span>
+    @if (isActive("profile")) {
+      <span class="ms-auto w-1.5 h-1.5 bg-white rounded-full opacity-80"></span>
+    }
+  </a>
+</app-sidebar>
 
-  <!-- Logout -->
-  <div class="px-3 py-4 border-t border-gray-100 dark:border-gray-800">
-    <button
-      (click)="showLogoutModal = true"
-      class="flex items-center gap-3 w-full px-3 py-2.5 rounded-lg text-[#666666] dark:text-gray-400 hover:bg-red-50 dark:hover:bg-red-900/20 hover:text-[#C60C30] dark:hover:text-red-400 transition-all duration-200 group"
-    >
-      <i class="pi pi-sign-out text-base group-hover:text-[#C60C30]"></i>
-      <span class="text-sm font-medium">Déconnexion</span>
-    </button>
-  </div>
-</aside>
+<app-logout-modal [(visible)]="showLogoutModal" (confirm)="confirmLogout()">
+</app-logout-modal>
 
-<!-- ── Overlay ── -->
-@if (isDrawerOpen) {
-  <div
-    (click)="closeDrawer()"
-    class="fixed inset-0 z-30 bg-gray-900/40 backdrop-blur-sm transition-opacity"
-  ></div>
-}
-
-<!-- ── Logout Modal ── -->
-<p-dialog
-  [(visible)]="showLogoutModal"
-  [modal]="true"
-  [closable]="true"
-  [draggable]="false"
-  [resizable]="false"
-  [style]="{ width: '420px' }"
-  header="Confirmer la déconnexion"
->
-  <div class="flex flex-col items-center text-center py-4 gap-4">
-    <div
-      class="w-14 h-14 bg-red-50 dark:bg-red-900/20 rounded-full flex items-center justify-center"
-    >
-      <i class="pi pi-sign-out text-[#C60C30] text-2xl"></i>
-    </div>
-    <p
-      class="text-sm text-[#666666] dark:text-gray-400 max-w-xs leading-relaxed"
-    >
-      Êtes-vous sûr de vouloir vous déconnecter ? Vous devrez vous reconnecter
-      pour accéder à votre compte.
-    </p>
-  </div>
-  <ng-template pTemplate="footer">
-    <p-button
-      label="Annuler"
-      severity="secondary"
-      [outlined]="true"
-      (onClick)="showLogoutModal = false"
-    />
-    <p-button
-      label="Se déconnecter"
-      icon="pi pi-sign-out"
-      [style]="{ 'background-color': '#C60C30', 'border-color': '#C60C30' }"
-      (onClick)="confirmLogout()"
-    />
-  </ng-template>
-</p-dialog>
-
-<!-- ── Main Content ── -->
+<!-- Main Content -->
 <div
   class="pt-16 min-h-screen bg-[#F0F0F0] dark:bg-gray-950 transition-colors duration-200"
 >
