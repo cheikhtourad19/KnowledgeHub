@@ -4,6 +4,7 @@ export const environment = {
   apiUrl: 'http://localhost:8080',
   // apiUrl: 'http://192.168.1.32:8080',
   apiTimeout: 30000,
+  minioPublicUrl: 'http://localhost:9000',
   enableDebugLogs: true,
   app_name: 'EsprimVault',
   app_name_prefix: 'Esprim',
