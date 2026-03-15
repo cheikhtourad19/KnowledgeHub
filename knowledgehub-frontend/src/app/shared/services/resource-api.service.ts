@@ -122,11 +122,12 @@ export class ResourceApiService {
       .pipe(
         map((response) => {
           if (response.data) {
-            const minioUrl = new URL(response.data);
-            const apiUrl = new URL(environment.apiUrl);
-            minioUrl.hostname = apiUrl.hostname;
-            minioUrl.port = '9000';
-            response.data = minioUrl.toString();
+            const presignedUrl = new URL(response.data);
+            const publicUrl = new URL(environment.minioPublicUrl);
+            presignedUrl.hostname = publicUrl.hostname;
+            presignedUrl.port = publicUrl.port;
+            presignedUrl.protocol = publicUrl.protocol;
+            response.data = presignedUrl.toString();
           }
           console.log('Presigned URL:', response.data);
           return response;
