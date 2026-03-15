@@ -12,6 +12,7 @@ import { LibraryComponent } from '../../shared/components/library/library.compon
 import { DocumentComponent } from '../../shared/components/library/document/document.component';
 import { EncadrementDetailsComponent } from './pages/pfe/encadrements/encadrement-details/encadrement-details.component';
 import { PfeDetailsComponent } from './pages/pfe/pfe-details/pfe-details.component';
+import { StageDetailsComponent } from './pages/stage/jury/stage-details/stage-details.component';
 const routes: Routes = [
   {
     path: '',
@@ -28,6 +29,7 @@ const routes: Routes = [
       { path: 'pfe/rapporteur/:id', component: PfeDetailsComponent },
 
       { path: 'stage/jury', component: StageJuryComponent },
+      { path: 'stage/jury/:id', component: StageDetailsComponent },
 
       { path: 'bibliotheque/consulter', component: LibraryComponent },
       { path: 'bibliotheque/consulter/:id', component: DocumentComponent },

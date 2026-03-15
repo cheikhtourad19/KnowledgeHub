@@ -3,7 +3,7 @@ import { CommonModule } from '@angular/common';
 import { PasswordModule } from 'primeng/password';
 import { TableModule } from 'primeng/table';
 import { ButtonModule } from 'primeng/button';
-import { Dialog, DialogModule } from 'primeng/dialog';
+import { DialogModule } from 'primeng/dialog';
 import { InputTextModule } from 'primeng/inputtext';
 import { SelectModule } from 'primeng/select';
 import { ToastModule } from 'primeng/toast';
@@ -27,16 +27,20 @@ import { EncadrementDetailsComponent } from './pages/pfe/encadrements/encadremen
 import { PfeDetailsViewComponent } from '../../shared/components/pfe-details-view/pfe-details-view.component';
 import { PfeTableComponent } from '../../shared/components/pfe-table/pfe-table.component';
 import { FormsModule } from '@angular/forms';
+import { JuryComponent as StageJuryComponent } from './pages/stage/jury/jury.component';
+import { StageDetailsComponent } from './pages/stage/jury/stage-details/stage-details.component';
 @NgModule({
   declarations: [
     TeacherLayoutComponent,
     EncadrementsComponent,
     JuryComponent,
     RapporteurComponent,
+    StageJuryComponent,
     ConsulterComponent,
     PublierComponent,
     PfeDetailsComponent,
     EncadrementDetailsComponent,
+    StageDetailsComponent,
   ],
   imports: [
     PfeDetailsViewComponent,
@@ -55,7 +59,7 @@ import { FormsModule } from '@angular/forms';
     TooltipModule,
     SharedModule,
     CommonModule,
-    CommonModule,
+
     TopbarComponent,
     SidebarComponent,
     LogoutModalComponent,

@@ -222,7 +222,7 @@ export class StageComponent implements OnInit {
           this.messageService.add({
             severity: 'error',
             summary: 'Erreur',
-            detail: 'Impossible d\'autoriser la classe',
+            detail: "Impossible d'autoriser la classe",
             life: 5000,
           });
           this.loading = false;
@@ -236,7 +236,8 @@ export class StageComponent implements OnInit {
   }
 
   getTypeStageClass(typeStage?: TypeStage): string {
-    if (!typeStage) return 'bg-gray-100 text-gray-600 dark:bg-gray-800 dark:text-gray-400';
+    if (!typeStage)
+      return 'bg-gray-100 text-gray-600 dark:bg-gray-800 dark:text-gray-400';
     return typeStage === TypeStage.TECHNICIEN
       ? 'bg-blue-100 text-blue-700 dark:bg-blue-900/30 dark:text-blue-400'
       : 'bg-orange-100 text-orange-700 dark:bg-orange-900/30 dark:text-orange-400';
@@ -312,8 +313,7 @@ export class StageComponent implements OnInit {
             severity: 'success',
             summary: 'Succès',
             detail:
-              response.message ||
-              'Toutes les autorisations ont été supprimées',
+              response.message || 'Toutes les autorisations ont été supprimées',
             life: 3000,
           });
           this.closeRemoveAuthorizationsModal();

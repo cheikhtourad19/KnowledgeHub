@@ -133,7 +133,11 @@
                 Durée
               </p>
               <p class="text-gray-900 dark:text-white text-sm font-medium">
-                {{ stage_details.durationMonths ? stage_details.durationMonths + ' mois' : '—' }}
+                {{
+                  stage_details.durationMonths
+                    ? stage_details.durationMonths + " mois"
+                    : "—"
+                }}
               </p>
             </div>
             <div>
@@ -143,7 +147,7 @@
                 Année
               </p>
               <p class="text-gray-900 dark:text-white text-sm font-medium">
-                {{ stage_details.year || '—' }}
+                {{ stage_details.year || "—" }}
               </p>
             </div>
           </div>
@@ -598,7 +602,6 @@
 <app-pdf-viewer-modal
   [(visible)]="showPdfModal"
   [pdfUrl]="currentPdfUrl"
-  [title]="currentPdfTitle">
+  [title]="currentPdfTitle"
+>
 </app-pdf-viewer-modal>
-
-

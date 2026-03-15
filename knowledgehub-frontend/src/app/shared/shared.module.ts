@@ -1,19 +1,32 @@
 import { NgModule } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { RouterModule } from '@angular/router';
+import { FormsModule, ReactiveFormsModule } from '@angular/forms';
+
+// Pipes
 import { FileSizePipe } from './pipes/file-size.pipe';
 import { DateFormatPipe } from './pipes/date-format.pipe';
+
+// Non-standalone components (declared here)
 import { UnauthorizedComponent } from './components/unauthorized/unauthorized.component';
 import { NotFoundComponent } from './components/not-found/not-found.component';
-import { LoadingOverlayComponent } from './components/loading-overlay/loading-overlay.component';
 import { ProfileComponent } from './components/profile/profile.component';
 import { PdfViewerModalComponent } from './components/pdf-viewer-modal/pdf-viewer-modal.component';
-import { ProgressSpinnerModule } from 'primeng/progressspinner';
-import { ReactiveFormsModule } from '@angular/forms';
-import { DialogModule } from 'primeng/dialog';
-import { PdfViewerModule } from 'ng2-pdf-viewer';
 import { LibraryComponent } from './components/library/library.component';
 import { DocumentComponent } from './components/library/document/document.component';
+
+// Standalone components (imported + re-exported)
+import { LoadingOverlayComponent } from './components/loading-overlay/loading-overlay.component';
+import { TopbarComponent } from './components/topbar/topbar.component';
+import { SidebarComponent } from './components/sidebar/sidebar.component';
+import { LogoutModalComponent } from './components/logout-modal/logout-modal.component';
+import { StageListComponent } from './components/stage-list/stage-list.component';
+import { StageDetailsCardComponent } from './components/stage-details-card/stage-details-card.component';
+
+// PrimeNG only what SharedModule's own declared components need
+import { ProgressSpinnerModule } from 'primeng/progressspinner';
+import { DialogModule } from 'primeng/dialog';
+import { PdfViewerModule } from 'ng2-pdf-viewer';
 import { TableModule } from 'primeng/table';
 import { ButtonModule } from 'primeng/button';
 import { TagModule } from 'primeng/tag';
@@ -23,12 +36,8 @@ import { ToastModule } from 'primeng/toast';
 import { FileUploadModule } from 'primeng/fileupload';
 import { Badge } from 'primeng/badge';
 import { TooltipModule } from 'primeng/tooltip';
-import { FormsModule } from '@angular/forms';
 import { ToggleSwitchModule } from 'primeng/toggleswitch';
 import { CardModule } from 'primeng/card';
-import { TopbarComponent } from './components/topbar/topbar.component';
-import { SidebarComponent } from './components/sidebar/sidebar.component';
-import { LogoutModalComponent } from './components/logout-modal/logout-modal.component';
 
 @NgModule({
   declarations: [
@@ -37,16 +46,26 @@ import { LogoutModalComponent } from './components/logout-modal/logout-modal.com
     UnauthorizedComponent,
     NotFoundComponent,
     ProfileComponent,
-    PdfViewerModalComponent,
+
     LibraryComponent,
     DocumentComponent,
   ],
   imports: [
     CommonModule,
     RouterModule,
-    ProgressSpinnerModule,
-    LoadingOverlayComponent,
+    FormsModule,
     ReactiveFormsModule,
+    PdfViewerModalComponent,
+
+    // Standalone components used inside declared components' templates
+    LoadingOverlayComponent,
+    TopbarComponent,
+    SidebarComponent,
+    LogoutModalComponent,
+    StageListComponent,
+    StageDetailsCardComponent,
+    // PrimeNG needed by declared components above
+    ProgressSpinnerModule,
     DialogModule,
     PdfViewerModule,
     TableModule,
@@ -58,16 +77,19 @@ import { LogoutModalComponent } from './components/logout-modal/logout-modal.com
     FileUploadModule,
     Badge,
     TooltipModule,
-    FormsModule,
     ToggleSwitchModule,
     CardModule,
-    TopbarComponent,
-    SidebarComponent,
-    LogoutModalComponent,
   ],
   exports: [
+    // Angular essentials
+    CommonModule,
+    RouterModule,
+    FormsModule,
+    ReactiveFormsModule,
+    // Pipes
     FileSizePipe,
     DateFormatPipe,
+    // Components
     UnauthorizedComponent,
     NotFoundComponent,
     LoadingOverlayComponent,
@@ -75,9 +97,12 @@ import { LogoutModalComponent } from './components/logout-modal/logout-modal.com
     PdfViewerModalComponent,
     LibraryComponent,
     DocumentComponent,
+    StageListComponent,
+    StageDetailsCardComponent,
     TopbarComponent,
     SidebarComponent,
     LogoutModalComponent,
   ],
+  // No PrimeNG in exports — each feature module imports what it needs directly
 })
 export class SharedModule {}

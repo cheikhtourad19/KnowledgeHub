@@ -588,4 +588,10 @@ export class ResourceApiService {
       request,
     );
   }
+
+  getTeacherSupervisedStages(): Observable<ApiResponse<Stage[]>> {
+    return this.http.get<ApiResponse<Stage[]>>(
+      `${this.baseUrl}/api/teacher/stage/supervised`,
+    );
+  }
 }

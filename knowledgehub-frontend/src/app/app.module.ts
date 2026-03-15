@@ -47,7 +47,7 @@ import { NgxExtendedPdfViewerModule } from 'ngx-extended-pdf-viewer';
       theme: {
         preset: Aura,
         options: {
-          darkModeSelector: '.dark', // 👈 add this
+          darkModeSelector: '.dark', 
         },
       },
     }),
