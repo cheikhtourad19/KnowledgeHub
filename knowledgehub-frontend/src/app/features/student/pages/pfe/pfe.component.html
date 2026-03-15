@@ -324,49 +324,6 @@
                 {{ pfe.reportFile ? "Re-uploader" : "Uploader" }}
               </button>
             </div>
-
-            <!-- Attestation File -->
-            <div
-              class="border-2 rounded-lg p-4 transition-all"
-              [ngClass]="
-                pfe.attestationFile
-                  ? 'border-green-500 dark:border-green-600 bg-green-50 dark:bg-green-900/20'
-                  : 'border-dashed border-gray-300 dark:border-gray-600'
-              "
-            >
-              <div class="flex items-center justify-between">
-                <div class="flex items-center gap-3">
-                  <i
-                    class="pi pi-file-pdf text-2xl"
-                    [ngClass]="
-                      pfe.attestationFile
-                        ? 'text-green-600 dark:text-green-400'
-                        : 'text-gray-400'
-                    "
-                  >
-                  </i>
-                  <div>
-                    <p class="font-medium text-gray-900 dark:text-white">
-                      Attestation
-                    </p>
-                    <p class="text-sm text-gray-500 dark:text-gray-400">
-                      {{
-                        pfe.attestationFile
-                          ? pfe.attestationFile.title
-                          : "Non uploadé"
-                      }}
-                    </p>
-                  </div>
-                </div>
-                <button
-                  *ngIf="pfe.attestationFile && attestationFileUrl"
-                  (click)="viewAttestation()"
-                  class="text-[#C60C30] hover:text-[#a00927] p-2 rounded-lg transition-colors"
-                >
-                  <i class="pi pi-eye text-xl"></i>
-                </button>
-              </div>
-            </div>
           </div>
         </div>
       </div>
@@ -467,6 +424,6 @@
 <app-pdf-viewer-modal
   [(visible)]="showPdfModal"
   [pdfUrl]="pdfUrl"
-  [title]="pdfTitle">
+  [title]="pdfTitle"
+>
 </app-pdf-viewer-modal>
-
