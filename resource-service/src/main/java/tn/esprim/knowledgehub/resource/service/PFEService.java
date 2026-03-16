@@ -150,7 +150,8 @@ public class PFEService {
                 studentName,
                 "pfe",
                 request.getPfeTitle(),
-                "Demande PFE - " + request.getPfeTitle()
+                "Demande PFE - " + request.getPfeTitle(),
+                false
         );
 
         log.info("File uploaded successfully: {}", fileUploadResponse.getFileName());

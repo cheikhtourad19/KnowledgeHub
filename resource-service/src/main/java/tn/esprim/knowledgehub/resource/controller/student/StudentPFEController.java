@@ -250,7 +250,8 @@ public class StudentPFEController {
                 student.getEmail(),
                 "pfe",
                 title,
-                description
+                description,
+                false
         );
 
         File uploadedFile = fileService.getFileById(response.getFileId());
@@ -321,7 +322,8 @@ public class StudentPFEController {
                 student.getEmail(),
                 "attestation",
                 title,
-                description
+                description,
+                false
         );
 
         File uploadedFile = fileService.getFileById(response.getFileId());

@@ -109,7 +109,8 @@ public class StudentPFAController {
                 student.getEmail(),
                 "pfa",
                 title,
-                description
+                description,
+                false
         );
         File uploaded_file = fileService.getFileById(response.getFileId());
         pfa.setReportFile(uploaded_file);

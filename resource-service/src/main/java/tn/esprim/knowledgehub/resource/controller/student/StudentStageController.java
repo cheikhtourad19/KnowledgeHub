@@ -191,7 +191,8 @@ public class StudentStageController {
                     student.getEmail(),
                     "stage",
                     title != null ? title : "Rapport de stage - " + stage.getTitle(),
-                    description
+                    description,
+                    false
             );
 
             File uploadedFile = fileService.getFileById(response.getFileId());
@@ -256,7 +257,8 @@ public class StudentStageController {
                     student.getEmail(),
                     "journal",
                     title != null ? title : "Journal de stage - " + stage.getTitle(),
-                    description
+                    description,
+                    false
             );
 
             File uploadedFile = fileService.getFileById(response.getFileId());
@@ -321,7 +323,8 @@ public class StudentStageController {
                     student.getEmail(),
                     "attestation",
                     title != null ? title : "Attestation de stage - " + stage.getTitle(),
-                    description
+                    description,
+                    false
             );
 
             File uploadedFile = fileService.getFileById(response.getFileId());

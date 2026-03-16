@@ -88,7 +88,8 @@ public class FileService {
             String uploadedByUserName,
             String bucketType,
             String title,
-            String description
+            String description,
+            boolean published
     ) {
         try {
 

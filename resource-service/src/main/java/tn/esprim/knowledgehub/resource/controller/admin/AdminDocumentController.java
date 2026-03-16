@@ -15,6 +15,7 @@ import tn.esprim.knowledgehub.resource.enums.FileType;
 import tn.esprim.knowledgehub.resource.service.*;
 
 import java.util.List;
+import java.util.Objects;
 
 @RestController
 @RequestMapping("/api/admin/documents")
@@ -60,6 +61,7 @@ public class AdminDocumentController {
             @Parameter(description = "File title") @RequestParam(value = "title", required = false) String title,
             @Parameter(description = "File description") @RequestParam(value = "description", required = false) String description,
             @RequestHeader(value = "X-User-Id", required = false) String userId,
+            @RequestHeader(value = "X-User-Role") String role,
             @RequestHeader(value = "X-User-Name", required = false) String userEmail
     ) {
         try {
@@ -79,7 +81,8 @@ public class AdminDocumentController {
             String uploaderEmail = (userEmail != null && !userEmail.trim().isEmpty())
                     ? userEmail
                     : "admin@esprim.tn";
-
+            boolean published = false;
+            published = Objects.equals(role, "TEACHER");
             FileUploadResponse response = fileService.uploadFile(
                     file,
                     fileType,
@@ -87,7 +90,8 @@ public class AdminDocumentController {
                     uploaderEmail,
                     bucketType,
                     title,
-                    description
+                    description,
+                    published
             );
 
             return ResponseEntity.ok(tn.esprim.knowledgehub.resource.dto.response.ApiResponse.success(response, "File uploaded successfully"));
