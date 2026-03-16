@@ -154,8 +154,7 @@ public class FileService {
                     .uploadedByUserId(uploadedByUserId)
                     .uploadedByUserName(uploadedByUserName)
                     .pageCount(pageCount)
-                    .isPublished(false)
-
+                    .isPublished(published)
                     .message("File uploaded successfully")
                     .build();
 
