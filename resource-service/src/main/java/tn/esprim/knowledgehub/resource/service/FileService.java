@@ -135,7 +135,7 @@ public class FileService {
                     .uploadedByUserId(uploadedByUserId)
                     .uploadedByUserName(uploadedByUserName)
                     .pageCount(pageCount)
-                    .isPublished(false)
+                    .isPublished(published)
                     .isScanned(false)
                     .build();
             file = fileRepository.save(file);
