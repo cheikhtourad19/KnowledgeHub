@@ -40,6 +40,16 @@
             <artifactId>spring-boot-starter-validation</artifactId>
         </dependency>
 
+        <!-- Actuator + Prometheus metrics -->
+        <dependency>
+            <groupId>org.springframework.boot</groupId>
+            <artifactId>spring-boot-starter-actuator</artifactId>
+        </dependency>
+        <dependency>
+            <groupId>io.micrometer</groupId>
+            <artifactId>micrometer-registry-prometheus</artifactId>
+        </dependency>
+
         <!-- Spring Dotenv - Load .env files automatically -->
         <dependency>
             <groupId>me.paulschwarz</groupId>
@@ -73,11 +83,6 @@
             <scope>runtime</scope>
             <optional>true</optional>
         </dependency>
-
-        <!-- Spring Boot Starter Test -->
-
-
-
     </dependencies>
 
     <build>

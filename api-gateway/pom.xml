@@ -41,6 +41,12 @@
             <artifactId>spring-boot-starter-actuator</artifactId>
         </dependency>
 
+        <!-- Prometheus registry for Micrometer -->
+        <dependency>
+            <groupId>io.micrometer</groupId>
+            <artifactId>micrometer-registry-prometheus</artifactId>
+        </dependency>
+
         <!-- Spring Dotenv - Load .env files automatically -->
         <dependency>
             <groupId>me.paulschwarz</groupId>

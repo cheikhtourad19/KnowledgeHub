@@ -47,6 +47,20 @@ springdoc:
     path: /swagger-ui.html
     enabled: true
 
+management:
+  endpoints:
+    web:
+      exposure:
+        include: health,info,metrics,prometheus
+  endpoint:
+    health:
+      show-details: when-authorized
+    prometheus:
+      enabled: true
+  metrics:
+    tags:
+      application: ${spring.application.name}
+
 ---
 # Docker Profile (runs in Docker Compose containers)
 spring:
