@@ -340,6 +340,40 @@ services:
       retries: 3
       start_period: 10s
 
+  prometheus:
+    image: prom/prometheus:latest
+    container_name: knowledgehub-prometheus
+    ports:
+      - "${PROMETHEUS_PORT:-9090}:9090"
+    volumes:
+      - ./prometheus/prometheus.yml:/etc/prometheus/prometheus.yml:ro
+      - prometheus_data:/prometheus
+    extra_hosts:
+      - "host.docker.internal:host-gateway"   # Linux needs this; Mac/Win have it automatically
+    command:
+      - '--config.file=/etc/prometheus/prometheus.yml'
+      - '--storage.tsdb.retention.time=15d'
+      - '--web.enable-lifecycle'
+    networks:
+      - knowledgehub-network
+    restart: unless-stopped
+
+
+  grafana:
+    image: grafana/grafana:latest
+    container_name: knowledgehub-grafana
+    ports:
+      - "${GRAFANA_PORT:-3000}:3000"
+    environment:
+      GF_SECURITY_ADMIN_USER: ${GRAFANA_USER:-admin}
+      GF_SECURITY_ADMIN_PASSWORD: ${GRAFANA_PASSWORD:-admin}
+    volumes:
+      - grafana_data:/var/lib/grafana
+    depends_on:
+      - prometheus
+    networks:
+      - knowledgehub-network
+    restart: unless-stopped
 # ========================================
 # Networks
 # ========================================
@@ -364,3 +398,9 @@ volumes:
   chromadb_data:
     driver: local
     name: knowledgehub-chromadb-data
+  prometheus_data:
+    driver: local
+    name: knowledgehub-prometheus-data
+  grafana_data:
+    driver: local
+    name: knowledgehub-grafana-data
