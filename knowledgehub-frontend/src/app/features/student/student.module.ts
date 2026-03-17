@@ -27,7 +27,7 @@ import { SharedModule } from '../../shared/shared.module';
 import { TopbarComponent } from '../../shared/components/topbar/topbar.component';
 import { SidebarComponent } from '../../shared/components/sidebar/sidebar.component';
 import { LogoutModalComponent } from '../../shared/components/logout-modal/logout-modal.component';
-
+import { MarkdownModule } from 'ngx-markdown';
 @NgModule({
   declarations: [
     StudentLayoutComponent,
@@ -42,7 +42,7 @@ import { LogoutModalComponent } from '../../shared/components/logout-modal/logou
     TopbarComponent,
     SidebarComponent,
     LogoutModalComponent,
-
+    MarkdownModule.forChild(),
     TagModule,
     FormsModule,
     TableModule,

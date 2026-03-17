@@ -18,6 +18,9 @@ import { HTTP_INTERCEPTORS } from '@angular/common/http';
 // import { loadingInterceptor } from './core/interceptors/loading.interceptor';
 import { LoadingOverlayComponent } from './shared/components/loading-overlay/loading-overlay.component';
 import { NgxExtendedPdfViewerModule } from 'ngx-extended-pdf-viewer';
+import { MarkdownModule } from 'ngx-markdown';
+
+// in imports array:
 
 @NgModule({
   declarations: [AppComponent],
@@ -29,6 +32,7 @@ import { NgxExtendedPdfViewerModule } from 'ngx-extended-pdf-viewer';
     BrowserAnimationsModule,
     ToastModule,
     ProgressSpinnerModule,
+    MarkdownModule.forRoot(),
     LoadingOverlayComponent,
     NgxExtendedPdfViewerModule,
   ],
@@ -47,7 +51,7 @@ import { NgxExtendedPdfViewerModule } from 'ngx-extended-pdf-viewer';
       theme: {
         preset: Aura,
         options: {
-          darkModeSelector: '.dark', 
+          darkModeSelector: '.dark',
         },
       },
     }),

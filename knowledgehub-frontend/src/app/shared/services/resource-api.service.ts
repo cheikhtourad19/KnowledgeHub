@@ -594,4 +594,37 @@ export class ResourceApiService {
       `${this.baseUrl}/api/teacher/stage/supervised`,
     );
   }
+  summarizeDocument(
+    documentId: number,
+  ): Observable<ApiResponse<{ success: boolean; data: string }>> {
+    return this.http.post<ApiResponse<{ success: boolean; data: string }>>(
+      `${this.baseUrl}/api/library/summarize/${documentId}`,
+      {},
+    );
+  }
+
+  askDocumentQuestion(
+    documentId: number,
+    question: string,
+  ): Observable<ApiResponse<{ success: boolean; data: string }>> {
+    return this.http
+      .post<
+        ApiResponse<{
+          file_id: number;
+          query: string;
+          answer: string;
+          source: string;
+          characters_in_document: number;
+        }>
+      >(`${this.baseUrl}/api/library/ask-ai/${documentId}`, { question })
+      .pipe(
+        map((response) => ({
+          ...response,
+          data: {
+            success: response.success,
+            data: response.data?.answer ?? '',
+          },
+        })),
+      );
+  }
 }

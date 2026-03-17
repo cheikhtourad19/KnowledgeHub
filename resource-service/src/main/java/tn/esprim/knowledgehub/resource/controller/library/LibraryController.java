@@ -1,13 +1,15 @@
 package tn.esprim.knowledgehub.resource.controller.library;
 
 
+import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.http.ResponseEntity;
-import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 import tn.esprim.knowledgehub.resource.client.dto.ApiResponse;
+import tn.esprim.knowledgehub.resource.client.dto.AskResponse;
 import tn.esprim.knowledgehub.resource.client.dto.SearchRequest;
+import tn.esprim.knowledgehub.resource.dto.request.AskDocumentQuestionRequest;
 import tn.esprim.knowledgehub.resource.entity.File;
 import tn.esprim.knowledgehub.resource.enums.FileType;
 import tn.esprim.knowledgehub.resource.service.AIandSearchService;
@@ -68,6 +70,43 @@ public class LibraryController {
                             .data(null)
                             .message("No results found: " + e.getMessage())
                             .build());
+        }
+    }
+
+    @PostMapping("/ask-ai/{documentId}")
+    public ResponseEntity<ApiResponse> askDocumentQuestion(
+            @PathVariable Long documentId,
+            @Valid @RequestBody AskDocumentQuestionRequest request
+    ) {
+        try {
+            File file = fileService.getFileById(documentId);
+            if (file == null || !Boolean.TRUE.equals(file.getIsPublished())) {
+                return ResponseEntity.ok(
+                        ApiResponse.builder()
+                                .success(false)
+                                .message("Document not found or not published")
+                                .data(null)
+                                .build()
+                );
+            }
+
+            AskResponse askResponse = aiandSearchService.askQuestionAboutDocument(documentId, request.getQuestion());
+            return ResponseEntity.ok(
+                    ApiResponse.builder()
+                            .success(true)
+                            .message("Question answered successfully")
+                            .data(askResponse)
+                            .build()
+            );
+        } catch (Exception e) {
+            log.error("Error while asking AI for document {}: {}", documentId, e.getMessage(), e);
+            return ResponseEntity.ok(
+                    ApiResponse.builder()
+                            .success(false)
+                            .message("Error while asking AI: " + e.getMessage())
+                            .data(null)
+                            .build()
+            );
         }
     }
 
@@ -161,5 +200,3 @@ public class LibraryController {
     }
 
 }
-
-

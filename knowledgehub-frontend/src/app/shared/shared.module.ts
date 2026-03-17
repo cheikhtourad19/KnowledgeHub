@@ -20,8 +20,6 @@ import { LoadingOverlayComponent } from './components/loading-overlay/loading-ov
 import { TopbarComponent } from './components/topbar/topbar.component';
 import { SidebarComponent } from './components/sidebar/sidebar.component';
 import { LogoutModalComponent } from './components/logout-modal/logout-modal.component';
-import { StageListComponent } from './components/stage-list/stage-list.component';
-import { StageDetailsCardComponent } from './components/stage-details-card/stage-details-card.component';
 
 // PrimeNG only what SharedModule's own declared components need
 import { ProgressSpinnerModule } from 'primeng/progressspinner';
@@ -38,6 +36,7 @@ import { Badge } from 'primeng/badge';
 import { TooltipModule } from 'primeng/tooltip';
 import { ToggleSwitchModule } from 'primeng/toggleswitch';
 import { CardModule } from 'primeng/card';
+import { MarkdownModule } from 'ngx-markdown';
 
 @NgModule({
   declarations: [
@@ -56,14 +55,15 @@ import { CardModule } from 'primeng/card';
     FormsModule,
     ReactiveFormsModule,
     PdfViewerModalComponent,
+    FormsModule,
+    MarkdownModule.forChild(),
 
     // Standalone components used inside declared components' templates
     LoadingOverlayComponent,
     TopbarComponent,
     SidebarComponent,
     LogoutModalComponent,
-    StageListComponent,
-    StageDetailsCardComponent,
+
     // PrimeNG needed by declared components above
     ProgressSpinnerModule,
     DialogModule,
@@ -97,8 +97,7 @@ import { CardModule } from 'primeng/card';
     PdfViewerModalComponent,
     LibraryComponent,
     DocumentComponent,
-    StageListComponent,
-    StageDetailsCardComponent,
+
     TopbarComponent,
     SidebarComponent,
     LogoutModalComponent,

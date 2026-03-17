@@ -6,6 +6,8 @@ from fastapi import FastAPI
 from fastapi.middleware.cors import CORSMiddleware
 from app.config import settings
 from app.routers.search import router as search_router
+from app.routers.ask import router as ask_router
+from app.services.mongo_service import mongo_text_cache
 import logging
 
 # Configure logging
@@ -36,6 +38,7 @@ app.add_middleware(
 
 # Include routers
 app.include_router(search_router, prefix="/api/v1")
+app.include_router(ask_router, prefix="/api/v1")
 
 @app.on_event("startup")
 async def startup_event():
@@ -45,11 +48,15 @@ async def startup_event():
     logger.info(f"Embedding model: {settings.EMBEDDING_MODEL}")
     logger.info(f"Chunk size: {settings.CHUNK_SIZE}, Overlap: {settings.CHUNK_OVERLAP}")
     logger.info(f"MinIO endpoint: {settings.MINIO_ENDPOINT}")
+    # Connect to MongoDB text cache
+    await mongo_text_cache.connect()
+    logger.info(f"MongoDB URI: {settings.MONGO_URI}")
 
 @app.on_event("shutdown")
 async def shutdown_event():
     """Cleanup on shutdown"""
     logger.info(f"Shutting down {settings.SERVICE_NAME}")
+    await mongo_text_cache.disconnect()
 
 @app.get("/")
 async def root():

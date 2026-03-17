@@ -10,6 +10,7 @@ from app.services.minio_service import minio_service
 from app.services.pdf_service import pdf_extraction_service
 from app.services.text_chunking_service import text_chunking_service
 from app.services.vector_db_service import vector_db_service
+from app.services.mongo_service import mongo_text_cache
 from app.config import settings
 import logging
 
@@ -44,6 +45,11 @@ async def index_document(request: IndexRequest):
 
         # Step 2: Extract text using PyMuPDF
         text = pdf_extraction_service.extract_text_from_bytes(pdf_bytes)
+        logger.info(f"Extracted {len(text)} characters from {request.file_id}")
+        # Step 2b: Cache the raw extracted text in MongoDB for future Q&A queries
+        await mongo_text_cache.save_text(file_id=request.file_id, extracted_text=text)
+
+        logger.info(f"Cached extracted text for file_id={request.file_id}")
 
         # Step 3: Split text into chunks
         chunks = text_chunking_service.chunk_text(text)

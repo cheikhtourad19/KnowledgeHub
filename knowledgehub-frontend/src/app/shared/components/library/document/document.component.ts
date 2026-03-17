@@ -15,6 +15,10 @@ export class DocumentComponent implements OnInit {
   documentId: number = 0;
   pdfUrl: string = '';
   showPdfModal = false;
+  aiQuestion: string = '';
+  aiResponse: string = '';
+  isSummarizing: boolean = false;
+  isAskingAi: boolean = false;
 
   typeLabels: Record<string, string> = {
     PFA_REPORT: 'Rapport PFA',
@@ -111,5 +115,49 @@ export class DocumentComponent implements OnInit {
       detail: message,
       life: 3000,
     });
+  }
+  summarizeDocument(): void {
+    if (!this.document) return;
+    this.isSummarizing = true;
+    this.aiResponse = '';
+
+    this.resourceApiService
+      .askDocumentQuestion(this.document.id, 'Résumez ce document ')
+      .subscribe({
+        next: (response) => {
+          if (response.success && response.data) {
+            this.aiResponse = response.data.data;
+          }
+          this.isSummarizing = false;
+        },
+        error: (error) => {
+          console.error('Error summarizing document:', error);
+          this.showError('Erreur lors de la génération du résumé');
+          this.isSummarizing = false;
+        },
+      });
+  }
+
+  askAI(): void {
+    if (!this.document || !this.aiQuestion.trim()) return;
+    this.isAskingAi = true;
+    this.aiResponse = '';
+
+    this.resourceApiService
+      .askDocumentQuestion(this.document.id, this.aiQuestion)
+      .subscribe({
+        next: (response) => {
+          if (response.success && response.data) {
+            this.aiResponse = response.data.data;
+          }
+          this.aiQuestion = '';
+          this.isAskingAi = false;
+        },
+        error: (error) => {
+          console.error('Error asking AI:', error);
+          this.showError("Erreur lors de la communication avec l'IA");
+          this.isAskingAi = false;
+        },
+      });
   }
 }

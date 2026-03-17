@@ -29,6 +29,8 @@ import { PfeTableComponent } from '../../shared/components/pfe-table/pfe-table.c
 import { FormsModule } from '@angular/forms';
 import { JuryComponent as StageJuryComponent } from './pages/stage/jury/jury.component';
 import { StageDetailsComponent } from './pages/stage/jury/stage-details/stage-details.component';
+
+import { MarkdownModule } from 'ngx-markdown';
 @NgModule({
   declarations: [
     TeacherLayoutComponent,
@@ -44,6 +46,7 @@ import { StageDetailsComponent } from './pages/stage/jury/stage-details/stage-de
   ],
   imports: [
     PfeDetailsViewComponent,
+    MarkdownModule.forChild(),
     FormsModule,
     PfeTableComponent,
     PasswordModule,

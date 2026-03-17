@@ -29,8 +29,6 @@ import { PfeDetailsComponent } from './pages/pfe.gestion/pfe-details/pfe-details
 import { TopbarComponent } from '../../shared/components/topbar/topbar.component';
 import { SidebarComponent } from '../../shared/components/sidebar/sidebar.component';
 import { LogoutModalComponent } from '../../shared/components/logout-modal/logout-modal.component';
-import { StageDetailsCardComponent } from '../../shared/components/stage-details-card/stage-details-card.component';
-import { StageListComponent } from '../../shared/components/stage-list/stage-list.component';
 @NgModule({
   declarations: [
     AdminLayoutComponent,
@@ -48,8 +46,6 @@ import { StageListComponent } from '../../shared/components/stage-list/stage-lis
   imports: [
     CommonModule,
     SharedModule,
-    StageDetailsCardComponent,
-    StageListComponent,
     TopbarComponent,
     SidebarComponent,
     LogoutModalComponent,

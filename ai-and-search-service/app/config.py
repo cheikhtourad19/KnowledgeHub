@@ -1,5 +1,6 @@
 """Configuration settings for the AI and Search Service"""
-from pydantic_settings import BaseSettings
+from pydantic_settings import BaseSettings, SettingsConfigDict
+from pydantic import Field
 
 
 class Settings(BaseSettings):
@@ -14,6 +15,11 @@ class Settings(BaseSettings):
     API_HOST: str = "0.0.0.0"
     API_PORT: int = 8000
 
+    # MongoDB configuration (text cache)
+    MONGO_URI: str = "mongodb://localhost:27017"
+    MONGO_DB_NAME: str = "knowledge_hub"
+    MONGO_COLLECTION_NAME: str = "pdf_text_cache"
+
     # MinIO configuration (for fetching PDFs)
     MINIO_ENDPOINT: str = "localhost:9000"
     MINIO_ACCESS_KEY: str = "minioadmin"
@@ -27,6 +33,10 @@ class Settings(BaseSettings):
     # Embedding model configuration (Local execution as per specification)
     EMBEDDING_MODEL: str = "sentence-transformers/paraphrase-multilingual-MiniLM-L12-v2"
 
+    # Google Gemini configuration
+    GEMINI_API_KEY: str = Field(..., description="Google Gemini API key")
+    GEMINI_MODEL: str = "gemini-2.5-flash"
+
     # PDF processing configuration
     MAX_FILE_SIZE_MB: int = 50
 
@@ -35,9 +45,7 @@ class Settings(BaseSettings):
     CHUNK_SIZE: int = 800
     CHUNK_OVERLAP: int = 150
 
-    class Config:
-        env_file = ".env"
-        case_sensitive = True
+    model_config = SettingsConfigDict(env_file=".env", case_sensitive=True)
 
 
 settings = Settings()

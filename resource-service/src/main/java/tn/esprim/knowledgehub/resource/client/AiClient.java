@@ -23,4 +23,7 @@ public interface AiClient {
 
     @DeleteMapping("/api/v1/index/{fileId}")
     DeleteResponse deleteDocument(@PathVariable("fileId") Integer fileId);
+
+    @PostMapping("/api/v1/ask")
+    AskResponse askDocumentQuestion(@RequestBody AskRequest request);
 }
