@@ -15,7 +15,8 @@ export class PfeGestionComponent implements OnInit {
   pfes: PFE[] = [];
   SubmissionStatus = SubmissionStatus;
 
-  selectedYear: number = new Date().getFullYear();
+  searchQuery: string = '';
+  selectedYear: number | null = new Date().getFullYear();
   selectedStatus: SubmissionStatus | null = null;
 
   yearOptions: { label: string; value: number | null }[] = [];
@@ -73,18 +74,34 @@ export class PfeGestionComponent implements OnInit {
   }
 
   applyFilters(): void {
+    const query = this.searchQuery.trim().toLowerCase();
+
     this.pfes = this.allPfes.filter((p) => {
       const pYear = p.year ?? new Date(p.createdDate).getFullYear();
       const matchYear =
         this.selectedYear === null || pYear === this.selectedYear;
       const matchStatus =
         this.selectedStatus === null || p.status === this.selectedStatus;
-      return matchYear && matchStatus;
+      const matchSearch =
+        !query ||
+        p.title?.toLowerCase().includes(query) ||
+        p.studentName?.toLowerCase().includes(query) ||
+        p.studentEmail?.toLowerCase().includes(query) ||
+        p.supervisorName?.toLowerCase().includes(query) ||
+        p.entreprise_name?.toLowerCase().includes(query) ||
+        p.id?.toString().includes(query);
+
+      return matchYear && matchStatus && matchSearch;
     });
   }
 
+  onSearchChange(value: string): void {
+    this.searchQuery = value;
+    this.applyFilters();
+  }
+
   onYearChange(year: number | null): void {
-    this.selectedYear = year!;
+    this.selectedYear = year;
     this.applyFilters();
   }
 
@@ -94,6 +111,7 @@ export class PfeGestionComponent implements OnInit {
   }
 
   clearFilters(): void {
+    this.searchQuery = '';
     this.selectedYear = new Date().getFullYear();
     this.selectedStatus = null;
     this.applyFilters();
@@ -101,6 +119,7 @@ export class PfeGestionComponent implements OnInit {
 
   get activeFilterCount(): number {
     let count = 0;
+    if (this.searchQuery.trim()) count++;
     if (this.selectedYear !== new Date().getFullYear()) count++;
     if (this.selectedStatus !== null) count++;
     return count;
@@ -118,7 +137,7 @@ export class PfeGestionComponent implements OnInit {
         return 'bg-blue-100 text-blue-800 dark:bg-blue-900/30 dark:text-blue-400';
       case SubmissionStatus.APPROVED:
         return 'bg-green-100 text-green-800 dark:bg-green-900/30 dark:text-green-400';
-      case SubmissionStatus.REVISION_REQUIRED:
+      case SubmissionStatus.REJECTED:
         return 'bg-red-100 text-red-800 dark:bg-red-900/30 dark:text-red-400';
       default:
         return 'bg-gray-100 text-gray-800 dark:bg-gray-800 dark:text-gray-400';
@@ -133,7 +152,7 @@ export class PfeGestionComponent implements OnInit {
         return 'Soumis';
       case SubmissionStatus.APPROVED:
         return 'Validé';
-      case SubmissionStatus.REVISION_REQUIRED:
+      case SubmissionStatus.REJECTED:
         return 'A revoir';
       default:
         return status;

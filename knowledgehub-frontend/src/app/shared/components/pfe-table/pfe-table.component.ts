@@ -1,10 +1,16 @@
-import { Component, Input, Output, EventEmitter } from '@angular/core';
+import {
+  Component,
+  Input,
+  Output,
+  EventEmitter,
+  OnChanges,
+} from '@angular/core';
 import { CommonModule } from '@angular/common';
+import { FormsModule } from '@angular/forms';
 import { PFE } from '../../models/resource-service/entities/pfe.model';
 import { SubmissionStatus } from '../../models/resource-service/enums/submission-status.enum';
 import { TooltipModule } from 'primeng/tooltip';
 import { SelectModule } from 'primeng/select';
-import { FormsModule } from '@angular/forms';
 
 @Component({
   selector: 'app-pfe-table',
@@ -12,7 +18,7 @@ import { FormsModule } from '@angular/forms';
   imports: [CommonModule, TooltipModule, SelectModule, FormsModule],
   templateUrl: './pfe-table.component.html',
 })
-export class PfeTableComponent {
+export class PfeTableComponent implements OnChanges {
   @Input() pfes: PFE[] = [];
   @Input() allPfes: PFE[] = [];
   @Input() title: string = 'Gestion des PFE';
@@ -20,6 +26,7 @@ export class PfeTableComponent {
 
   @Output() pfeClick = new EventEmitter<PFE>();
 
+  searchQuery: string = '';
   selectedYear: number | null = new Date().getFullYear();
   selectedStatus: SubmissionStatus | null = null;
 
@@ -31,7 +38,7 @@ export class PfeTableComponent {
     { label: 'En Attente', value: SubmissionStatus.DRAFT },
     { label: 'Soumis', value: SubmissionStatus.SUBMITTED },
     { label: 'Validé', value: SubmissionStatus.APPROVED },
-    { label: 'A revoir', value: SubmissionStatus.REVISION_REQUIRED },
+    { label: 'A revoir', value: SubmissionStatus.REJECTED },
   ];
 
   ngOnChanges(): void {
@@ -63,26 +70,45 @@ export class PfeTableComponent {
   }
 
   applyFilters(): void {
+    const query = this.searchQuery.trim().toLowerCase();
+
     this.filteredPfes = this.allPfes.filter((p) => {
       const pYear = p.year ?? new Date(p.createdDate).getFullYear();
       const matchYear =
         this.selectedYear === null || pYear === this.selectedYear;
       const matchStatus =
         this.selectedStatus === null || p.status === this.selectedStatus;
-      return matchYear && matchStatus;
+
+      const matchSearch =
+        !query ||
+        p.title?.toLowerCase().includes(query) ||
+        p.studentName?.toLowerCase().includes(query) ||
+        p.studentEmail?.toLowerCase().includes(query) ||
+        p.supervisorName?.toLowerCase().includes(query) ||
+        p.entreprise_name?.toLowerCase().includes(query) ||
+        p.id?.toString().includes(query);
+
+      return matchYear && matchStatus && matchSearch;
     });
+  }
+
+  onSearchChange(value: string): void {
+    this.searchQuery = value;
+    this.applyFilters();
   }
 
   onYearChange(year: number | null): void {
     this.selectedYear = year;
     this.applyFilters();
   }
+
   onStatusChange(status: SubmissionStatus | null): void {
     this.selectedStatus = status;
     this.applyFilters();
   }
 
   clearFilters(): void {
+    this.searchQuery = '';
     this.selectedYear = new Date().getFullYear();
     this.selectedStatus = null;
     this.applyFilters();
@@ -90,6 +116,7 @@ export class PfeTableComponent {
 
   get activeFilterCount(): number {
     let count = 0;
+    if (this.searchQuery.trim()) count++;
     if (this.selectedYear !== new Date().getFullYear()) count++;
     if (this.selectedStatus !== null) count++;
     return count;
@@ -107,7 +134,7 @@ export class PfeTableComponent {
         return 'bg-blue-100 text-blue-800 dark:bg-blue-900/30 dark:text-blue-400';
       case SubmissionStatus.APPROVED:
         return 'bg-green-100 text-green-800 dark:bg-green-900/30 dark:text-green-400';
-      case SubmissionStatus.REVISION_REQUIRED:
+      case SubmissionStatus.REJECTED:
         return 'bg-red-100 text-red-800 dark:bg-red-900/30 dark:text-red-400';
       default:
         return 'bg-gray-100 text-gray-800 dark:bg-gray-800 dark:text-gray-400';
@@ -122,7 +149,7 @@ export class PfeTableComponent {
         return 'Soumis';
       case SubmissionStatus.APPROVED:
         return 'Validé';
-      case SubmissionStatus.REVISION_REQUIRED:
+      case SubmissionStatus.REJECTED:
         return 'A revoir';
       default:
         return status;

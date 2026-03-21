@@ -31,7 +31,6 @@ export class StageComponent implements OnInit {
     durationMonths: null as number | null,
   };
 
-
   constructor(
     private resourceApi: ResourceApiService,
     private router: Router,
@@ -119,7 +118,8 @@ export class StageComponent implements OnInit {
   }
 
   getTypeStageClass(typeStage?: TypeStage): string {
-    if (!typeStage) return 'bg-gray-100 text-gray-600 dark:bg-gray-800 dark:text-gray-400';
+    if (!typeStage)
+      return 'bg-gray-100 text-gray-600 dark:bg-gray-800 dark:text-gray-400';
     return typeStage === TypeStage.TECHNICIEN
       ? 'bg-blue-100 text-blue-700 dark:bg-blue-900/30 dark:text-blue-400'
       : 'bg-orange-100 text-orange-700 dark:bg-orange-900/30 dark:text-orange-400';
@@ -145,7 +145,11 @@ export class StageComponent implements OnInit {
   }
 
   createStage(): void {
-    if (!this.stageForm.title || !this.stageForm.companyName || !this.stageForm.durationMonths) {
+    if (
+      !this.stageForm.title ||
+      !this.stageForm.companyName ||
+      !this.stageForm.durationMonths
+    ) {
       this.messageService.add({
         severity: 'warn',
         summary: 'Attention',
@@ -194,13 +198,13 @@ export class StageComponent implements OnInit {
   }
 
   hasCurrentYearStage(): boolean {
-    return this.stages.some(stage => stage.year === this.currentYear);
+    return this.stages.some((stage) => stage.year === this.currentYear);
   }
 
   getYearOptions(): { label: string; value: number }[] {
-    return this.availableYears.map(year => ({
+    return this.availableYears.map((year) => ({
       label: year.toString(),
-      value: year
+      value: year,
     }));
   }
 }

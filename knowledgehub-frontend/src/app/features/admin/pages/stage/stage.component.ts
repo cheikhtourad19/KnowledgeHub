@@ -19,9 +19,20 @@ export class StageComponent implements OnInit {
   filteredStages: Stage[] = [];
   loading = false;
 
+  // Search
+  searchQuery: string = '';
+
   // Year filter
   selectedYear: number | null = null;
   availableYears: number[] = [];
+
+  // Type filter
+  selectedType: TypeStage | null = null;
+  typeFilterOptions: { label: string; value: TypeStage | null }[] = [
+    { label: 'Tous les types', value: null },
+    { label: 'Technicien', value: TypeStage.TECHNICIEN },
+    { label: 'Ouvrier', value: TypeStage.OUVRIER },
+  ];
 
   // Modal state
   showAuthorizationModal = false;
@@ -38,7 +49,7 @@ export class StageComponent implements OnInit {
   selectedClassId: number | null = null;
   classes: Classe[] = [];
 
-  // Type de stage
+  // Type de stage (for modal)
   selectedTypeStage: TypeStage | null = null;
   typeStageOptions = [
     { label: 'Technicien', value: TypeStage.TECHNICIEN },
@@ -65,7 +76,7 @@ export class StageComponent implements OnInit {
         if (response.success && response.data) {
           this.stages = response.data;
           this.extractYears();
-          this.applyFilter();
+          this.applyFilters();
           this.messageService.add({
             severity: 'success',
             summary: 'Succès',
@@ -91,28 +102,79 @@ export class StageComponent implements OnInit {
   loadClasses(): void {
     this.userApiService.getAllClasses().subscribe({
       next: (response) => {
-        if (response.success && response.data) {
-          this.classes = response.data;
-        }
+        if (response.success && response.data) this.classes = response.data;
       },
-      error: (error) => {
-        console.error('Error loading classes:', error);
-      },
+      error: (error) => console.error('Error loading classes:', error),
     });
   }
 
   loadStudents(): void {
     this.userApiService.getAllStudents().subscribe({
       next: (response) => {
-        if (response.success && response.data) {
-          this.students = response.data;
-        }
+        if (response.success && response.data) this.students = response.data;
       },
-      error: (error) => {
-        console.error('Error loading students:', error);
-      },
+      error: (error) => console.error('Error loading students:', error),
     });
   }
+
+  extractYears(): void {
+    const years = new Set<number>();
+    this.stages.forEach((s) => {
+      if (s.year) years.add(s.year);
+    });
+    this.availableYears = Array.from(years).sort((a, b) => b - a);
+  }
+
+  applyFilters(): void {
+    const query = this.searchQuery.trim().toLowerCase();
+
+    this.filteredStages = this.stages.filter((s) => {
+      const matchYear =
+        this.selectedYear === null || s.year === this.selectedYear;
+      const matchType =
+        this.selectedType === null || s.typeStage === this.selectedType;
+      const matchSearch =
+        !query ||
+        s.title?.toLowerCase().includes(query) ||
+        s.studentName?.toLowerCase().includes(query) ||
+        s.studentEmail?.toLowerCase().includes(query) ||
+        s.companyName?.toLowerCase().includes(query) ||
+        s.supervisorName?.toLowerCase().includes(query) ||
+        s.id?.toString().includes(query);
+
+      return matchYear && matchType && matchSearch;
+    });
+  }
+
+  onSearchChange(value: string): void {
+    this.searchQuery = value;
+    this.applyFilters();
+  }
+
+  onYearChange(): void {
+    this.applyFilters();
+  }
+
+  onTypeChange(): void {
+    this.applyFilters();
+  }
+
+  clearFilters(): void {
+    this.searchQuery = '';
+    this.selectedYear = null;
+    this.selectedType = null;
+    this.applyFilters();
+  }
+
+  get activeFilterCount(): number {
+    let count = 0;
+    if (this.searchQuery.trim()) count++;
+    if (this.selectedYear !== null) count++;
+    if (this.selectedType !== null) count++;
+    return count;
+  }
+
+  // ── Modal methods (unchanged) ──
 
   openAuthorizationModal(): void {
     this.showAuthorizationModal = true;
@@ -140,12 +202,8 @@ export class StageComponent implements OnInit {
       });
       return;
     }
-
-    if (this.authorizationType === 'student') {
-      this.authorizeStudent();
-    } else {
-      this.authorizeClass();
-    }
+    if (this.authorizationType === 'student') this.authorizeStudent();
+    else this.authorizeClass();
   }
 
   authorizeStudent(): void {
@@ -158,7 +216,6 @@ export class StageComponent implements OnInit {
       });
       return;
     }
-
     this.loading = true;
     this.resourceApiService
       .authorizeStudent(this.selectedStudentId, this.selectedTypeStage)
@@ -198,7 +255,6 @@ export class StageComponent implements OnInit {
       });
       return;
     }
-
     this.loading = true;
     this.resourceApiService
       .authorizeClass(this.selectedClassId, this.selectedTypeStage)
@@ -228,6 +284,42 @@ export class StageComponent implements OnInit {
           this.loading = false;
         },
       });
+  }
+
+  openRemoveAuthorizationsModal(): void {
+    this.showRemoveAuthorizationsModal = true;
+  }
+  closeRemoveAuthorizationsModal(): void {
+    this.showRemoveAuthorizationsModal = false;
+  }
+
+  confirmRemoveAllAuthorizations(): void {
+    this.loading = true;
+    this.resourceApiService.removeAllStageAuthorizations().subscribe({
+      next: (response) => {
+        if (response.success) {
+          this.messageService.add({
+            severity: 'success',
+            summary: 'Succès',
+            detail:
+              response.message || 'Toutes les autorisations ont été supprimées',
+            life: 3000,
+          });
+          this.closeRemoveAuthorizationsModal();
+        }
+        this.loading = false;
+      },
+      error: (error) => {
+        console.error('Error removing authorizations:', error);
+        this.messageService.add({
+          severity: 'error',
+          summary: 'Erreur',
+          detail: 'Impossible de supprimer les autorisations',
+          life: 5000,
+        });
+        this.loading = false;
+      },
+    });
   }
 
   getTypeStageLabel(typeStage?: TypeStage): string {
@@ -263,73 +355,5 @@ export class StageComponent implements OnInit {
     if (stage.journalFile || stage.journalFileId) count++;
     if (stage.attestationFile || stage.attestationFileId) count++;
     return `${count}/3`;
-  }
-
-  // ── Year Filter Methods ──
-  extractYears(): void {
-    const years = new Set<number>();
-    this.stages.forEach((stage) => {
-      if (stage.year) {
-        years.add(stage.year);
-      }
-    });
-    this.availableYears = Array.from(years).sort((a, b) => b - a); // Desc order
-  }
-
-  applyFilter(): void {
-    if (this.selectedYear === null) {
-      this.filteredStages = [...this.stages];
-    } else {
-      this.filteredStages = this.stages.filter(
-        (stage) => stage.year === this.selectedYear,
-      );
-    }
-  }
-
-  onYearChange(): void {
-    this.applyFilter();
-  }
-
-  clearFilter(): void {
-    this.selectedYear = null;
-    this.applyFilter();
-  }
-
-  // ── Remove All Authorizations Modal ──
-  openRemoveAuthorizationsModal(): void {
-    this.showRemoveAuthorizationsModal = true;
-  }
-
-  closeRemoveAuthorizationsModal(): void {
-    this.showRemoveAuthorizationsModal = false;
-  }
-
-  confirmRemoveAllAuthorizations(): void {
-    this.loading = true;
-    this.resourceApiService.removeAllStageAuthorizations().subscribe({
-      next: (response) => {
-        if (response.success) {
-          this.messageService.add({
-            severity: 'success',
-            summary: 'Succès',
-            detail:
-              response.message || 'Toutes les autorisations ont été supprimées',
-            life: 3000,
-          });
-          this.closeRemoveAuthorizationsModal();
-        }
-        this.loading = false;
-      },
-      error: (error) => {
-        console.error('Error removing authorizations:', error);
-        this.messageService.add({
-          severity: 'error',
-          summary: 'Erreur',
-          detail: 'Impossible de supprimer les autorisations',
-          life: 5000,
-        });
-        this.loading = false;
-      },
-    });
   }
 }
