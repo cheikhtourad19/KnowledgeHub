@@ -2,6 +2,7 @@ package tn.esprim.knowledgehub.user.controller;
 
 
 import jakarta.validation.Valid;
+import lombok.extern.slf4j.Slf4j;
 import org.hibernate.Hibernate;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.ResponseEntity;
@@ -16,6 +17,7 @@ import tn.esprim.knowledgehub.user.service.StudentService;
 import java.util.ArrayList;
 import java.util.List;
 
+@Slf4j
 @RestController
 @RequestMapping("/api/students")
 public class StudentController {
@@ -90,9 +92,10 @@ public class StudentController {
     public ResponseEntity<ApiResponse> getStudentByAuthId(@PathVariable String authId) {
         Student student = studentService.getStudentByAuthId(authId);
         return ResponseEntity.ok(
-                ApiResponse.builder().success(true)
+                ApiResponse.builder()
+                        .success(true)
                         .message("Student retrieved successfully")
-                        .data(student)
+                        .data(StudentDTO.fromEntity(student))
                         .build()
         );
     }

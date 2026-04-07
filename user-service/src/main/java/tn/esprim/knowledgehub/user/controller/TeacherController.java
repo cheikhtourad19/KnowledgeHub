@@ -9,6 +9,7 @@ import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 import tn.esprim.knowledgehub.user.dto.request.CreateStudentRequest;
 import tn.esprim.knowledgehub.user.dto.response.ApiResponse;
+import tn.esprim.knowledgehub.user.dto.response.TeacherDTO;
 import tn.esprim.knowledgehub.user.entity.Student;
 import tn.esprim.knowledgehub.user.entity.Teacher;
 import tn.esprim.knowledgehub.user.service.StudentService;
@@ -83,12 +84,13 @@ public class TeacherController {
     }
 
     @GetMapping("/by-auth-id/{authId}")
-    public ResponseEntity<ApiResponse> getTeacherByAuthId(@PathVariable Long authId) {
-        Teacher teacher = teacherService.getTeacherByAuthId(authId);
+    public ResponseEntity<ApiResponse> getTeacherByAuthId(@PathVariable String authId) {
+        Teacher teacher = teacherService.getTeacherByAuthId(Long.valueOf(authId));
         return ResponseEntity.ok(
-                ApiResponse.builder().success(true)
+                ApiResponse.builder()
+                        .success(true)
                         .message("Teacher retrieved successfully")
-                        .data(teacher)
+                        .data(TeacherDTO.fromEntity(teacher))
                         .build()
         );
     }
