@@ -347,4 +347,9 @@ public class FileService {
             return null;
         }
     }
+
+
+    public File saveFile(File file) {
+        return fileRepository.save(file);
+    }
 }
