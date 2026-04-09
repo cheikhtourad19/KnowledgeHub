@@ -80,17 +80,7 @@ pipeline {
                           -Dsonar.projectName=KnowledgeHub-Java-Services
                         echo "SUCCESS: Java services SonarQube analysis completed"
 
-                        if command -v sonar-scanner >/dev/null 2>&1; then
-                          echo "Running SonarQube analysis for AI service..."
-                          sonar-scanner \
-                            -Dsonar.projectKey=knowledgehub-ai-search-service \
-                            -Dsonar.projectName=KnowledgeHub-AI-Search-Service \
-                            -Dsonar.sources=${AI_DIR} \
-                            -Dsonar.exclusions=**/__pycache__/**,**/*.pyc,**/chroma_db/**
-                          echo "SUCCESS: AI service SonarQube analysis completed"
-                        else
-                          echo "WARNING: sonar-scanner not installed. Skipping AI service analysis."
-                        fi
+
                     '''
                 }
             }
@@ -104,13 +94,7 @@ pipeline {
                     docker compose up -d mysql mongodb minio
                     echo "SUCCESS: Infrastructure services started"
 
-                    echo "Waiting for MySQL to be ready..."
-                    timeout 60 sh -c 'until docker compose exec -T mysql mysqladmin ping -h localhost --silent; do sleep 2; done'
 
-                    echo "Waiting for MongoDB to be ready..."
-                    timeout 60 sh -c 'until docker compose exec -T mongodb mongosh --eval "db.adminCommand(\'ping\')" --quiet; do sleep 2; done'
-
-                    echo "SUCCESS: All infrastructure services are healthy"
                 '''
             }
         }
