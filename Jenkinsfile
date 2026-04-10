@@ -42,16 +42,36 @@ pipeline {
             steps {
                 sh '''
                     set -e
+
+                    # Start MySQL for tests with your specific configuration
+                    docker run -d --name mysql-test \
+                      -e MYSQL_ROOT_PASSWORD=JYzNL0Tfb5r65W3dayz03/xDwS34yj6Z \
+                      -e MYSQL_DATABASE=knowledgeHub-test \
+                      -p 3306:3306 mysql:8.0
+
+                    # Wait for MySQL to be ready
+                    echo "Waiting for MySQL to be ready..."
+                    sleep 30
+
+                    # Verify MySQL is accepting connections
+                    docker exec mysql-test mysqladmin ping -h localhost -u root -pJYzNL0Tfb5r65W3dayz03/xDwS34yj6Z --silent || exit 1
+                    echo "MySQL is ready!"
+
+                    # Run tests for each service
                     for service in ${JAVA_SERVICES}; do
                       echo "Testing ${service}..."
                       mvn -B -f "${service}/pom.xml" test
                       echo "SUCCESS: ${service} tests passed"
                     done
+
+                    # Cleanup
+                    echo "Cleaning up MySQL container..."
+                    docker stop mysql-test && docker rm mysql-test
                 '''
             }
             post {
                 always {
-                    junit allowEmptyResults: true, testResults: '**/target/surefire-reports/*.xml'
+                    junit testResults: '**/target/surefire-reports/*.xml', allowEmptyResults: true
                 }
             }
         }
