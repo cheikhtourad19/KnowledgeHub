@@ -21,7 +21,7 @@ pipeline {
         }
 
         stage('Build') {
-            parallel {
+
                 stage('Build Java Microservices') {
                     steps {
                         sh '''
@@ -35,19 +35,7 @@ pipeline {
                     }
                 }
 
-                stage('Build AI Service Dependencies') {
-                    steps {
-                        sh '''
-                            set -e
-                            python3 -m venv "${AI_VENV}"
-                            . "${AI_VENV}/bin/activate"
-                            python -m pip install --upgrade pip
-                            pip install -r "${AI_DIR}/requirements.txt"
-                            echo "SUCCESS: AI service dependencies built"
-                        '''
-                    }
-                }
-            }
+
         }
 
         stage('Test Java Microservices') {
@@ -86,43 +74,19 @@ pipeline {
             }
         }
 
-        stage('Start Infrastructure') {
-            steps {
-                sh '''
-                    set -e
-                    echo "Starting infrastructure services..."
-                    docker compose up -d mysql mongodb minio
-                    echo "SUCCESS: Infrastructure services started"
 
 
-                '''
-            }
-        }
-
-        stage('Launch Microservices') {
+        stage('Build and Start Services') {
             steps {
                 sh '''
                     set -e
                     mkdir -p logs
 
                     echo "Starting Java microservices..."
-                    docker compose up -d api-gateway auth-service user-service resource-service notification-service
+                    docker compose build && docker compose up -d
                     echo "SUCCESS: Java microservices started"
 
-                    echo "Starting AI service..."
-                    . "${AI_VENV}/bin/activate"
-                    cd "${AI_DIR}"
-                    nohup python3 main.py > ../logs/ai-search-service.log 2>&1 &
-                    echo $! > ../ai-search-service.pid
-                    cd ..
 
-                    sleep 5
-                    if [ -f ai-search-service.pid ] && kill -0 "$(cat ai-search-service.pid)" 2>/dev/null; then
-                        echo "SUCCESS: AI service started (PID: $(cat ai-search-service.pid))"
-                    else
-                        echo "ERROR: AI service failed to start"
-                        exit 1
-                    fi
                 '''
             }
         }

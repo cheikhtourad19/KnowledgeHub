@@ -59,7 +59,7 @@ services:
       MINIO_ROOT_USER: ${MINIO_ROOT_USER}
       MINIO_ROOT_PASSWORD: ${MINIO_ROOT_PASSWORD}
     volumes:
-      - ${HOME}/knowledgehub-minio-backup:/data         # ← bind mount replaces the named volume
+      - ${HOME}/knowledgehub-minio-backup:/data
     command: server /data --console-address ":9001"
     healthcheck:
       test: [ "CMD", "curl", "-f", "http://localhost:9000/minio/health/live" ]
