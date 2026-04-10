@@ -359,12 +359,38 @@
       <label class="text-sm font-medium text-gray-700 dark:text-gray-300"
         >Mots clés</label
       >
-      <input
-        pInputText
-        formControlName="motCles"
-        placeholder="ex: Angular, Spring Boot, IA"
-        class="w-full"
-      />
+      <div class="flex flex-col md:flex-row gap-2">
+        <p-autoComplete
+          [(ngModel)]="keywordQuery"
+          [ngModelOptions]="{ standalone: true }"
+          [suggestions]="keywordSuggestions"
+          [dropdown]="true"
+          placeholder="Tapez un mot clé puis sélectionnez ou ajoutez"
+          styleClass="w-full"
+          (completeMethod)="searchKeywords($event)"
+          (onSelect)="onKeywordSelect($event)"
+          (keydown.enter)="addTypedKeyword(); $event.preventDefault()"
+        />
+      </div>
+      <small class="text-xs text-gray-500 dark:text-gray-400">
+        Sélectionnez une suggestion ou saisissez un nouveau mot clé puis cliquez
+        sur Ajouter.
+      </small>
+
+      <div *ngIf="selectedKeywords.length" class="flex flex-wrap gap-2 pt-1">
+        <div
+          *ngFor="let keyword of selectedKeywords"
+          class="inline-flex items-center gap-1.5 bg-[#C60C30]/10 text-[#C60C30] px-2.5 py-1 rounded-full text-xs font-medium"
+        >
+          <span>{{ keyword }}</span>
+          <button
+            type="button"
+            class="pi pi-times text-[10px] hover:opacity-70"
+            (click)="removeKeyword(keyword)"
+            aria-label="Supprimer le mot clé"
+          ></button>
+        </div>
+      </div>
     </div>
 
     <!-- Dates -->

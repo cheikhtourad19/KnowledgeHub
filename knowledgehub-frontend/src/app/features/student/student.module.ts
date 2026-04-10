@@ -13,6 +13,7 @@ import { ToastModule } from 'primeng/toast';
 import { FileUploadModule } from 'primeng/fileupload';
 import { Badge } from 'primeng/badge';
 import { TooltipModule } from 'primeng/tooltip';
+import { AutoCompleteModule } from 'primeng/autocomplete';
 import { FormGroup, FormsModule, ReactiveFormsModule } from '@angular/forms';
 import { ToggleSwitchModule } from 'primeng/toggleswitch';
 import { CardModule } from 'primeng/card';
@@ -59,6 +60,7 @@ import { MarkdownModule } from 'ngx-markdown';
     ReactiveFormsModule,
     TooltipModule,
     CardModule,
+    AutoCompleteModule,
     StudentRoutingModule,
     RouterModule,
     SharedModule,

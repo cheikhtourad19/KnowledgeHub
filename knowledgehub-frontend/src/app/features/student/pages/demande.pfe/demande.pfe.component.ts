@@ -49,6 +49,31 @@ export class DemandePfeComponent implements OnInit {
   demande: DemandePFE | null = null;
   showModal = false;
   selectedFile: globalThis.File | null = null;
+  keywordQuery = '';
+  keywordSuggestions: string[] = [];
+  selectedKeywords: string[] = [];
+  readonly availableKeywords: string[] = [
+    'Angular',
+    'Spring Boot',
+    'Intelligence Artificielle',
+    'Machine Learning',
+    'Deep Learning',
+    'Data Science',
+    'Big Data',
+    'Cloud',
+    'DevOps',
+    'Docker',
+    'Kubernetes',
+    'Microservices',
+    'REST API',
+    'Cybersécurité',
+    'Blockchain',
+    'IoT',
+    'Mobile',
+    'Flutter',
+    'Réseaux',
+    'Vision par Ordinateur',
+  ];
   demandeForm: FormGroup;
   DemandStatus = DemandStatus;
   currentYear = new Date().getFullYear();
@@ -104,7 +129,79 @@ export class DemandePfeComponent implements OnInit {
   openModal(): void {
     this.demandeForm.reset();
     this.selectedFile = null;
+    this.keywordQuery = '';
+    this.keywordSuggestions = [];
+    this.selectedKeywords = [];
+    this.updateMotClesControl();
     this.showModal = true;
+  }
+
+  searchKeywords(event: { query: string }): void {
+    const query = (event.query ?? '').trim().toLowerCase();
+
+    const matches = this.availableKeywords.filter(
+      (keyword) =>
+        keyword.toLowerCase().includes(query) &&
+        !this.selectedKeywords.includes(keyword),
+    );
+
+    if (!query) {
+      this.keywordSuggestions = matches;
+      return;
+    }
+
+    const hasExactMatch = this.availableKeywords.some(
+      (keyword) => keyword.toLowerCase() === query,
+    );
+
+    this.keywordSuggestions = hasExactMatch
+      ? matches
+      : [event.query.trim(), ...matches];
+  }
+
+  onKeywordSelect(event: { value: string }): void {
+    this.addKeyword(event.value);
+  }
+
+  addTypedKeyword(): void {
+    this.addKeyword(this.keywordQuery);
+  }
+
+  removeKeyword(keywordToRemove: string): void {
+    this.selectedKeywords = this.selectedKeywords.filter(
+      (keyword) => keyword !== keywordToRemove,
+    );
+    this.updateMotClesControl();
+  }
+
+  private addKeyword(rawKeyword: string): void {
+    const keyword = rawKeyword?.trim();
+
+    if (!keyword) {
+      return;
+    }
+
+    const exists = this.selectedKeywords.some(
+      (selected) => selected.toLowerCase() === keyword.toLowerCase(),
+    );
+
+    if (!exists) {
+      this.selectedKeywords = [...this.selectedKeywords, keyword];
+      const knownKeyword = this.availableKeywords.some(
+        (item) => item.toLowerCase() === keyword.toLowerCase(),
+      );
+      if (!knownKeyword) {
+        this.availableKeywords.push(keyword);
+      }
+    }
+
+    this.keywordQuery = '';
+    this.keywordSuggestions = [];
+    this.updateMotClesControl();
+  }
+
+  private updateMotClesControl(): void {
+    this.demandeForm.get('motCles')?.setValue(this.selectedKeywords.join(', '));
   }
 
   submitDemande(): void {
