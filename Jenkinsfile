@@ -40,42 +40,56 @@ pipeline {
 
         stage('Test Java Microservices') {
             steps {
-                sh '''
-                    set -e
+        sh '''
+            set -e
 
-                    # Start MySQL for tests with your specific configuration
-                    docker run -d --name mysql-test \
-                      -e MYSQL_ROOT_PASSWORD=JYzNL0Tfb5r65W3dayz03/xDwS34yj6Z \
-                      -e MYSQL_DATABASE=knowledgeHub-test \
-                      -p 3306:3306 mysql:8.0
+            echo "Cleaning up existing MySQL container if present..."
+            docker stop mysql-test || true
+            docker rm mysql-test || true
 
-                    # Wait for MySQL to be ready
-                    echo "Waiting for MySQL to be ready..."
-                    sleep 30
+            # Start MySQL 8.0 with native password authentication
+            echo "Starting MySQL container..."
+            docker run -d --name mysql-test \
+              -e MYSQL_ROOT_PASSWORD=JYzNL0Tfb5r65W3dayz03/xDwS34yj6Z \
+              -e MYSQL_DATABASE=knowledgeHub-test \
+              -p 3306:3306 mysql:8.0 \
+              --default-authentication-plugin=mysql_native_password
 
-                    # Verify MySQL is accepting connections
-                    docker exec mysql-test mysqladmin ping -h localhost -u root -pJYzNL0Tfb5r65W3dayz03/xDwS34yj6Z --silent || exit 1
-                    echo "MySQL is ready!"
+            # Wait for MySQL to be ready
+            echo "Waiting for MySQL to be ready..."
+            timeout=60
+            while ! docker exec mysql-test mysqladmin ping -h localhost -u root \
+                -pJYzNL0Tfb5r65W3dayz03/xDwS34yj6Z --silent 2>/dev/null; do
+                echo "Waiting for MySQL... ($timeout seconds left)"
+                sleep 5
+                timeout=$((timeout - 5))
+                if [ $timeout -le 0 ]; then
+                    echo "MySQL failed to start"
+                    docker logs mysql-test
+                    exit 1
+                fi
+            done
+            echo "MySQL is ready!"
 
-                    # Run tests for each service
-                    for service in ${JAVA_SERVICES}; do
-                      echo "Testing ${service}..."
-                      mvn -B -f "${service}/pom.xml" test
-                      echo "SUCCESS: ${service} tests passed"
-                    done
-
-                    # Cleanup
-                    echo "Cleaning up MySQL container..."
-                    docker stop mysql-test && docker rm mysql-test
-                '''
-            }
-            post {
-                always {
-                    junit testResults: '**/target/surefire-reports/*.xml', allowEmptyResults: true
-                }
-            }
+            # Run tests for each service
+            for service in ${JAVA_SERVICES}; do
+              echo "Testing ${service}..."
+              mvn -B -f "${service}/pom.xml" test
+              echo "SUCCESS: ${service} tests passed"
+            done
+        '''
+    }
+    post {
+        always {
+            sh '''
+                # Always clean up MySQL container
+                docker stop mysql-test || true
+                docker rm mysql-test || true
+            '''
+            junit testResults: '**/target/surefire-reports/*.xml', allowEmptyResults: true
         }
-
+    }
+}
         stage('SonarQube Analysis') {
             steps {
                 withSonarQubeEnv("${SONARQUBE_ENV}") {
