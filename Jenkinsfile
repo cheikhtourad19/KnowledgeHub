@@ -7,8 +7,6 @@ pipeline {
 
     environment {
         JAVA_SERVICES = 'notification-client api-gateway auth-service user-service resource-service notification-service'
-        AI_DIR = 'ai-and-search-service'
-        AI_VENV = '.venv-ai'
         SONARQUBE_ENV = 'sonarQube'
     }
 
@@ -42,15 +40,11 @@ pipeline {
             steps {
                 sh '''
                     set -e
-
                     echo "Starting test dependencies (MySQL, MongoDB, MinIO)..."
-                    docker compose up mysql mongodb minio -d
+                    docker compose -f docker-compose.yml up mysql mongodb minio -d
+
+                    echo "Starting SonarQube..."
                     docker compose -f docker-compose.sonarqube.yml up -d
-
-
-
-
-
 
                     echo "All test dependencies are ready!"
                 '''
@@ -61,8 +55,6 @@ pipeline {
             steps {
                 sh '''
                     set -e
-
-                    # Run tests for each service
                     for service in ${JAVA_SERVICES}; do
                       echo "Testing ${service}..."
                       mvn -B -f "${service}/pom.xml" test
@@ -70,15 +62,19 @@ pipeline {
                     done
                 '''
             }
-
+            post {
+                always {
+                    junit allowEmptyResults: true, testResults: '**/target/surefire-reports/*.xml'
+                }
+            }
         }
 
         stage('Stop Test Dependencies') {
             steps {
                 sh '''
                     echo "Stopping test dependencies..."
-                    docker compose down -v
-                    echo "Test dependencies stopped and cleaned up"
+                    docker compose -f docker-compose.yml down -v   # ← only stops main compose, NOT sonarqube
+                    echo "Test dependencies stopped"
                 '''
             }
         }
@@ -88,11 +84,11 @@ pipeline {
                 withSonarQubeEnv("${SONARQUBE_ENV}") {
                     sh '''
                         set -e
-                        echo "Running SonarQube analysis for Java services..."
-                        mvn -B -pl api-gateway,auth-service,user-service,resource-service,notification-service,notification-client -am sonar:sonar \
+                        echo "Running SonarQube analysis..."
+                        mvn -B -f pom.xml sonar:sonar \
                           -Dsonar.projectKey=knowledgehub-java-services \
                           -Dsonar.projectName=KnowledgeHub-Java-Services
-                        echo "SUCCESS: Java services SonarQube analysis completed"
+                        echo "SUCCESS: SonarQube analysis completed"
                     '''
                 }
             }
@@ -103,9 +99,9 @@ pipeline {
                 sh '''
                     set -e
                     mkdir -p logs
-                    echo "Starting Java microservices..."
-                    sudo docker compose build && sudo docker compose up -d
-                    echo "SUCCESS: Java microservices started"
+                    echo "Starting all services..."
+                    docker compose -f docker-compose.yml build && docker compose -f docker-compose.yml up -d
+                    echo "SUCCESS: Services started"
                 '''
             }
         }
@@ -115,15 +111,12 @@ pipeline {
         always {
             sh '''
                 set +e
-
-                # Clean up test dependencies if still running
-                docker compose down -v 2>/dev/null || true
-
-
-
                 echo "Current service status:"
-                docker compose ps || true
-                docker compose down || true
+                docker compose -f docker-compose.yml ps || true
+
+                echo "Stopping all services..."
+                docker compose -f docker-compose.yml down -v || true
+                docker compose -f docker-compose.sonarqube.yml down || true
             '''
             archiveArtifacts allowEmptyArchive: true, artifacts: 'logs/**/*.log'
         }
