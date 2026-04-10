@@ -1,7 +1,7 @@
 export const environment = {
   production: true,
-  apiUrl: 'https://zoological-quietude-production.up.railway.app',
-  minioPublicUrl: 'https://minio.elghoth.live',
+  apiUrl: 'https://http://192.168.56.11:8080',
+  minioPublicUrl: 'http://http://192.168.56.11:9000',
   apiTimeout: 30000,
   enableDebugLogs: false,
   app_name: 'EsprimValut',
