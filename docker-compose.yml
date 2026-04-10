@@ -287,35 +287,35 @@ services:
       start_period: 60s
 
   # AI & Search Service
-  ai-search-service:
-    image: ${REGISTRY:-docker.io}/${REGISTRY_USERNAME}/knowledgehub-ai-search-service:${IMAGE_TAG:-latest}
-    build:
-      context: ./ai-and-search-service
-      dockerfile: Dockerfile
-    container_name: knowledgehub-ai-search-service
-    env_file:
-      - ./ai-and-search-service/.env
-    environment:
-      MINIO_ENDPOINT: minio:9000
-      MINIO_ACCESS_KEY: ${MINIO_ACCESS_KEY}
-      MINIO_SECRET_KEY: ${MINIO_SECRET_KEY}
-      MINIO_SECURE: "false"
-    ports:
-      - "${AI_SEARCH_SERVICE_PORT:-8000}:8000"
-    volumes:
-      - chromadb_data:/app/chroma_db
-    depends_on:
-      minio:
-        condition: service_healthy
-    networks:
-      - knowledgehub-network
-    restart: unless-stopped
-    healthcheck:
-      test: ["CMD", "curl", "-f", "http://localhost:8000/api/v1/health"]
-      interval: 30s
-      timeout: 10s
-      retries: 3
-      start_period: 60s
+#  ai-search-service:
+#    image: ${REGISTRY:-docker.io}/${REGISTRY_USERNAME}/knowledgehub-ai-search-service:${IMAGE_TAG:-latest}
+#    build:
+#      context: ./ai-and-search-service
+#      dockerfile: Dockerfile
+#    container_name: knowledgehub-ai-search-service
+#    env_file:
+#      - ./ai-and-search-service/.env
+#    environment:
+#      MINIO_ENDPOINT: minio:9000
+#      MINIO_ACCESS_KEY: ${MINIO_ACCESS_KEY}
+#      MINIO_SECRET_KEY: ${MINIO_SECRET_KEY}
+#      MINIO_SECURE: "false"
+#    ports:
+#      - "${AI_SEARCH_SERVICE_PORT:-8000}:8000"
+#    volumes:
+#      - chromadb_data:/app/chroma_db
+#    depends_on:
+#      minio:
+#        condition: service_healthy
+#    networks:
+#      - knowledgehub-network
+#    restart: unless-stopped
+#    healthcheck:
+#      test: ["CMD", "curl", "-f", "http://localhost:8000/api/v1/health"]
+#      interval: 30s
+#      timeout: 10s
+#      retries: 3
+#      start_period: 60s
 
   # Angular Frontend
   frontend:
@@ -394,9 +394,9 @@ volumes:
 #  minio_data:
 #    driver: local
 #    name: knowledgehub-minio-data
-  chromadb_data:
-    driver: local
-    name: knowledgehub-chromadb-data
+#  chromadb_data:
+#    driver: local
+#    name: knowledgehub-chromadb-data
   prometheus_data:
     driver: local
     name: knowledgehub-prometheus-data
