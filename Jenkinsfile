@@ -44,7 +44,7 @@ pipeline {
                     set -e
 
                     echo "Starting test dependencies (MySQL, MongoDB, MinIO)..."
-                    docker-compose up mysql mongodb minio -d
+                    docker compose up mysql mongodb minio -d
 
 
 
@@ -81,7 +81,7 @@ pipeline {
             steps {
                 sh '''
                     echo "Stopping test dependencies..."
-                    docker-compose down -v
+                    docker compose down -v
                     echo "Test dependencies stopped and cleaned up"
                 '''
             }
@@ -121,7 +121,7 @@ pipeline {
                 set +e
 
                 # Clean up test dependencies if still running
-                docker-compose down -v 2>/dev/null || true
+                docker compose down -v 2>/dev/null || true
 
 
 
