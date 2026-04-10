@@ -62,11 +62,7 @@ pipeline {
                     done
                 '''
             }
-            post {
-                always {
-                    junit allowEmptyResults: true, testResults: '**/target/surefire-reports/*.xml'
-                }
-            }
+
         }
 
         stage('Stop Test Dependencies') {
