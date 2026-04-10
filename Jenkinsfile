@@ -21,21 +21,21 @@ pipeline {
         }
 
         stage('Build') {
+            steps {
+                sh '''
+                    set -e
 
+                    echo "Installing parent POM..."
+                    mvn -B -f pom.xml install -N
+                    echo "SUCCESS: parent POM installed"
 
-                    steps {
-                        sh '''
-                            set -e
-                            for service in ${JAVA_SERVICES}; do
-                              echo "Building ${service}..."
-                              mvn -B -f "${service}/pom.xml" clean install -DskipTests
-                              echo "SUCCESS: ${service} built"
-                            done
-                        '''
-                    }
-
-
-
+                    for service in ${JAVA_SERVICES}; do
+                      echo "Building ${service}..."
+                      mvn -B -f "${service}/pom.xml" clean install -DskipTests
+                      echo "SUCCESS: ${service} built"
+                    done
+                '''
+            }
         }
 
         stage('Test Java Microservices') {
@@ -83,7 +83,7 @@ pipeline {
                     mkdir -p logs
 
                     echo "Starting Java microservices..."
-                    docker compose build && docker compose up -d
+                    sudo docker compose build && docker compose up -d
                     echo "SUCCESS: Java microservices started"
 
 
