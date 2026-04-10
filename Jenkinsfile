@@ -22,7 +22,7 @@ pipeline {
 
         stage('Build') {
 
-                stage('Build Java Microservices') {
+
                     steps {
                         sh '''
                             set -e
@@ -33,7 +33,7 @@ pipeline {
                             done
                         '''
                     }
-                }
+
 
 
         }
