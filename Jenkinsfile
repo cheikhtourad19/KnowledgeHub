@@ -6,7 +6,7 @@ pipeline {
     }
 
     environment {
-        JAVA_SERVICES = 'api-gateway auth-service user-service resource-service notification-service notification-client'
+        JAVA_SERVICES = 'notification-client api-gateway auth-service user-service resource-service notification-service '
         AI_DIR = 'ai-and-search-service'
         AI_VENV = '.venv-ai'
         SONARQUBE_ENV = 'sonarQube'
