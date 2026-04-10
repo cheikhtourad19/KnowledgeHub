@@ -62,14 +62,13 @@ pipeline {
                     done
                 '''
             }
-
         }
 
         stage('Stop Test Dependencies') {
             steps {
                 sh '''
                     echo "Stopping test dependencies..."
-                    docker compose -f docker-compose.yml down -v   # ← only stops main compose, NOT sonarqube
+                    docker compose -f docker-compose.yml down -v
                     echo "Test dependencies stopped"
                 '''
             }
@@ -90,14 +89,20 @@ pipeline {
             }
         }
 
-        stage('Build and Start Services') {
+        stage('Deploy Services') {
             steps {
                 sh '''
                     set -e
                     mkdir -p logs
-                    echo "Starting all services..."
-                    docker compose -f docker-compose.yml build && docker compose -f docker-compose.yml up -d
-                    echo "SUCCESS: Services started"
+
+                    echo "Stopping any previously running services..."
+                    docker compose -f docker-compose.yml down -v || true
+
+                    echo "Building and starting updated services..."
+                    docker compose -f docker-compose.yml build
+                    docker compose -f docker-compose.yml up -d
+
+                    echo "SUCCESS: Services are up and running"
                 '''
             }
         }
@@ -109,10 +114,6 @@ pipeline {
                 set +e
                 echo "Current service status:"
                 docker compose -f docker-compose.yml ps || true
-
-                echo "Stopping all services..."
-                docker compose -f docker-compose.yml down -v || true
-                docker compose -f docker-compose.sonarqube.yml down || true
             '''
             archiveArtifacts allowEmptyArchive: true, artifacts: 'logs/**/*.log'
         }
@@ -124,6 +125,12 @@ pipeline {
         }
 
         failure {
+            sh '''
+                set +e
+                echo "Pipeline failed — tearing down all services..."
+                docker compose -f docker-compose.yml down -v || true
+                docker compose -f docker-compose.sonarqube.yml down || true
+            '''
             echo "========================================="
             echo "         PIPELINE FAILED"
             echo "========================================="
