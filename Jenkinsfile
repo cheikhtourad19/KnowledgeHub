@@ -45,7 +45,7 @@ pipeline {
 
                     echo "Starting test dependencies (MySQL, MongoDB, MinIO)..."
                     docker compose up mysql mongodb minio -d
-
+                    docker compose -f docker-compose.sonarqube.yml up -d
 
 
 
