@@ -15,15 +15,15 @@ import tn.esprim.knowledgehub.resource.config.FeignConfig;
 )
 public interface AiClient {
 
-    @PostMapping("/api/v1/index")
+    @PostMapping("/api/v2/index")
     IndexResponse indexDocument(@RequestBody IndexRequest request);
 
-    @PostMapping("/api/v1/search")
+    @PostMapping("/api/v2/search")
     SearchResponse semanticSearch(@RequestBody SearchRequest request);
 
-    @DeleteMapping("/api/v1/index/{fileId}")
+    @DeleteMapping("/api/v2/index/{fileId}")
     DeleteResponse deleteDocument(@PathVariable("fileId") Integer fileId);
 
-    @PostMapping("/api/v1/ask")
+    @PostMapping("/api/v2/ask")
     AskResponse askDocumentQuestion(@RequestBody AskRequest request);
 }

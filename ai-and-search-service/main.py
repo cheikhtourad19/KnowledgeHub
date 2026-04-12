@@ -7,6 +7,7 @@ from fastapi.middleware.cors import CORSMiddleware
 from app.config import settings
 from app.routers.search import router as search_router
 from app.routers.ask import router as ask_router
+from app.routers.search_v2 import router as search_router_v2
 from app.services.mongo_service import mongo_text_cache
 import logging
 
@@ -39,6 +40,7 @@ app.add_middleware(
 # Include routers
 app.include_router(search_router, prefix="/api/v1")
 app.include_router(ask_router, prefix="/api/v1")
+app.include_router(search_router_v2, prefix="/api/v2")
 
 @app.on_event("startup")
 async def startup_event():
