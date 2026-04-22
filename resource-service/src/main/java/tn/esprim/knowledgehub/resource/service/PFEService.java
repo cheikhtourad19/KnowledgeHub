@@ -6,7 +6,6 @@ import com.knowledgehub.notification.client.dto.NotificationType;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.context.annotation.Lazy;
 import org.springframework.stereotype.Service;
-import org.springframework.web.client.RestTemplate;
 import org.springframework.web.multipart.MultipartFile;
 import tn.esprim.knowledgehub.resource.client.UserServiceClient;
 import tn.esprim.knowledgehub.resource.client.dto.StudentDTO;
@@ -23,7 +22,6 @@ import tn.esprim.knowledgehub.resource.enums.FileType;
 import tn.esprim.knowledgehub.resource.repository.DemandePFERepository;
 import tn.esprim.knowledgehub.resource.repository.PFERepository;
 
-import java.util.ArrayList;
 import java.util.Date;
 import java.util.List;
 
@@ -36,21 +34,18 @@ public class PFEService {
     private final FileService fileService;
     private final UserServiceClient userServiceClient;
     private final NotificationClient notificationClient;
-    private final RestTemplate restTemplate;
 
     public PFEService(
             PFERepository pfeRepository,
             DemandePFERepository demandePFERepository,
             @Lazy FileService fileService,
             UserServiceClient userServiceClient,
-            NotificationClient notificationClient,
-            RestTemplate restTemplate) {
+            NotificationClient notificationClient) {
         this.pfeRepository = pfeRepository;
         this.demandePFERepository = demandePFERepository;
         this.fileService = fileService;
         this.userServiceClient = userServiceClient;
         this.notificationClient = notificationClient;
-        this.restTemplate = restTemplate;
     }
 
 
@@ -64,6 +59,12 @@ public class PFEService {
     }
     public List<PFE> getPFEByJury(Long juryId){
         return this.pfeRepository.findByChefDeJuryId(juryId);
+    }
+    public DemandePFE getDemandePFEByStudentId(Long studentId) {
+        return this.demandePFERepository.findByStudentId(studentId).stream().findFirst().orElse(null);
+    }
+    public void removeDemandePFE(Long id){
+        this.demandePFERepository.deleteById(id);
     }
     public List<PFE> getPFEByRapporteur(Long rapporteurId){
         return this.pfeRepository.findByRapporteurId(rapporteurId);
@@ -336,5 +337,36 @@ public class PFEService {
         }
 
         return updated;
+    }
+
+    public PFE addRapporteurFeedback(PFE pfe, String feedback) {
+        if (pfe.getRapporteurId() == null) {
+            throw new IllegalStateException("No rapporteur assigned to this PFE");
+        }
+
+        pfe.setReporteurFeedback(feedback);
+        return pfeRepository.save(pfe);
+    }
+
+    public PFE closePFE(PFE pfe) {
+        if (Boolean.TRUE.equals(pfe.getCloture())) {
+            throw new IllegalStateException("PFE is already closed");
+        }
+
+        pfe.setCloture(true);
+        return pfeRepository.save(pfe);
+    }
+
+    public PFE cancelPFECloture(PFE pfe) {
+        if (!Boolean.TRUE.equals(pfe.getCloture())) {
+            throw new IllegalStateException("PFE is not closed");
+        }
+
+        pfe.setCloture(false);
+        return pfeRepository.save(pfe);
+    }
+
+    public void deletePFE(Long id) {
+        pfeRepository.deleteById(id);
     }
 }

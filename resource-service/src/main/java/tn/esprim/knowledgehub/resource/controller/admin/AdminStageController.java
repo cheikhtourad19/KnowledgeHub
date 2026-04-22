@@ -164,4 +164,109 @@ public class AdminStageController {
         );
 
     }
+
+        @PatchMapping("/{stageId}/close")
+        public ResponseEntity<ApiResponse<StageResponse>> closeStage(
+                        @PathVariable Long stageId,
+                        @RequestHeader(value = "X-User-Role") String role
+        ) {
+                log.info("Admin closing stage {}", stageId);
+
+                if (!role.equals("ADMIN")) {
+                        return ResponseEntity.status(403).body(
+                                        ApiResponse.error("Forbidden", "Only admins can close stages")
+                        );
+                }
+
+                try {
+                        StageResponse updatedStage = stageService.closeStage(stageId);
+                        return ResponseEntity.ok(
+                                        ApiResponse.success(updatedStage, "Stage clôturé avec succès")
+                        );
+                } catch (Exception e) {
+                        log.error("Error closing stage {}: {}", stageId, e.getMessage(), e);
+                        return ResponseEntity.status(500).body(
+                                        ApiResponse.error("Erreur interne du serveur", e.getMessage())
+                        );
+                }
+        }
+
+        @PatchMapping("/{stageId}/open")
+        public ResponseEntity<ApiResponse<StageResponse>> openStage(
+                        @PathVariable Long stageId,
+                        @RequestHeader(value = "X-User-Role") String role
+        ) {
+                log.info("Admin opening stage {}", stageId);
+
+                if (!role.equals("ADMIN")) {
+                        return ResponseEntity.status(403).body(
+                                        ApiResponse.error("Forbidden", "Only admins can open stages")
+                        );
+                }
+
+                try {
+                        StageResponse updatedStage = stageService.openStage(stageId);
+                        return ResponseEntity.ok(
+                                        ApiResponse.success(updatedStage, "Stage rouvert avec succès")
+                        );
+                } catch (Exception e) {
+                        log.error("Error opening stage {}: {}", stageId, e.getMessage(), e);
+                        return ResponseEntity.status(500).body(
+                                        ApiResponse.error("Erreur interne du serveur", e.getMessage())
+                        );
+                }
+        }
+
+        @PatchMapping("/{stageId}/can-edit")
+        public ResponseEntity<ApiResponse<StageResponse>> updateCanEdit(
+                        @PathVariable Long stageId,
+                        @RequestParam boolean canEdit,
+                        @RequestHeader(value = "X-User-Role") String role
+        ) {
+                log.info("Admin updating canEdit={} for stage {}", canEdit, stageId);
+
+                if (!role.equals("ADMIN")) {
+                        return ResponseEntity.status(403).body(
+                                        ApiResponse.error("Forbidden", "Only admins can update canEdit")
+                        );
+                }
+
+                try {
+                        StageResponse updatedStage = stageService.updateCanEdit(stageId, canEdit);
+                        return ResponseEntity.ok(
+                                        ApiResponse.success(updatedStage, "canEdit mis à jour avec succès")
+                        );
+                } catch (Exception e) {
+                        log.error("Error updating canEdit for stage {}: {}", stageId, e.getMessage(), e);
+                        return ResponseEntity.status(500).body(
+                                        ApiResponse.error("Erreur interne du serveur", e.getMessage())
+                        );
+                }
+        }
+
+        @DeleteMapping("/{stageId}")
+        public ResponseEntity<ApiResponse<Void>> deleteStage(
+                        @PathVariable Long stageId,
+                        @RequestHeader(value = "X-User-Role") String role
+        ) {
+                log.info("Admin deleting stage {}", stageId);
+
+                if (!role.equals("ADMIN")) {
+                        return ResponseEntity.status(403).body(
+                                        ApiResponse.error("Forbidden", "Only admins can delete stages")
+                        );
+                }
+
+                try {
+                        stageService.deleteStage(stageId);
+                        return ResponseEntity.ok(
+                                        ApiResponse.success(null, "Stage supprimé avec succès")
+                        );
+                } catch (Exception e) {
+                        log.error("Error deleting stage {}: {}", stageId, e.getMessage(), e);
+                        return ResponseEntity.status(500).body(
+                                        ApiResponse.error("Erreur interne du serveur", e.getMessage())
+                        );
+                }
+        }
 }

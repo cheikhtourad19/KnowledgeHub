@@ -3,7 +3,6 @@ package tn.esprim.knowledgehub.resource.entity;
 import tn.esprim.knowledgehub.resource.enums.SubmissionStatus;
 import lombok.*;
 import org.hibernate.annotations.CreationTimestamp;
-import org.hibernate.annotations.UpdateTimestamp;
 
 import jakarta.persistence.*;
 import java.util.Date;
@@ -61,9 +60,14 @@ public class PFE {
     @Lob
     private String supervisorFeedback;
 
+    @Lob
+    private String reporteurFeedback;
 
     private Float plagiarismScore;
 
+    @Builder.Default
+    @Column(nullable = false)
+    private Boolean cloture = false;
 
     @CreationTimestamp
     @Temporal(TemporalType.TIMESTAMP)

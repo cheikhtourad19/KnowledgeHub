@@ -96,10 +96,11 @@ pipeline {
                     mkdir -p logs
 
                     echo "Stopping any previously running services..."
+                    docker compose -f docker-compose.yml build
+
                     docker compose -f docker-compose.yml down -v || true
 
                     echo "Building and starting updated services..."
-                    docker compose -f docker-compose.yml build
                     docker compose -f docker-compose.yml up -d
 
                     echo "SUCCESS: Services are up and running"

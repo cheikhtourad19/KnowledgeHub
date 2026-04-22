@@ -9,6 +9,7 @@ export interface PFE {
   title: string;
   year?: number;
   status: SubmissionStatus;
+  cloture?: boolean;
   studentId: number;
   studentName?: string;
   studentEmail?: string;
@@ -25,6 +26,7 @@ export interface PFE {
   attestationFile?: File;
   submissionDate?: Date;
   supervisorFeedback?: string;
+  reporteurFeedback?: string;
   plagiarismScore?: number;
   createdDate: Date;
 }

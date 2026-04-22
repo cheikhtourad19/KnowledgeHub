@@ -7,10 +7,8 @@ public enum FileType {
     STAGE_REPORT,
     JOURNAL,
     ATTESTATION,
+    CONVENTION_STAGE,
     DEMANDE,
-
     EDUCATIONAL_MATERIAL,
-
-
     SUPPLEMENTARY
 }

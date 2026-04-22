@@ -18,12 +18,22 @@ export class StudentStageDetailsComponent implements OnInit {
   reportFileUrl: string = '';
   journalFileUrl: string = '';
   attestationFileUrl: string = '';
+  conventionFileUrl: string = '';
 
   // Upload modals
   showUploadReportModal = false;
   showUploadJournalModal = false;
   showUploadAttestationModal = false;
+  showUploadConventionModal = false;
   selectedFile: File | null = null;
+
+  // Metadata edit modal
+  showEditMetadataModal = false;
+  metadataForm = {
+    title: '',
+    companyName: '',
+    durationMonths: null as number | null,
+  };
 
   // PDF Viewer Modal
   showPdfModal = false;
@@ -56,6 +66,8 @@ export class StudentStageDetailsComponent implements OnInit {
           this.loadPresignedUrl(this.stage.journalFileId, 'journal');
         if (this.stage?.attestationFileId)
           this.loadPresignedUrl(this.stage.attestationFileId, 'attestation');
+        if (this.stage?.conventionFileId)
+          this.loadPresignedUrl(this.stage.conventionFileId, 'convention');
       },
       error: () => {
         this.messageService.add({
@@ -70,7 +82,7 @@ export class StudentStageDetailsComponent implements OnInit {
 
   loadPresignedUrl(
     fileId: number,
-    type: 'report' | 'journal' | 'attestation',
+    type: 'report' | 'journal' | 'attestation' | 'convention',
   ): void {
     this.resourceApiService.viewpdf(fileId).subscribe({
       next: (response) => {
@@ -78,6 +90,7 @@ export class StudentStageDetailsComponent implements OnInit {
         if (type === 'report') this.reportFileUrl = url;
         else if (type === 'journal') this.journalFileUrl = url;
         else if (type === 'attestation') this.attestationFileUrl = url;
+        else if (type === 'convention') this.conventionFileUrl = url;
       },
       error: () => {
         this.messageService.add({
@@ -95,7 +108,11 @@ export class StudentStageDetailsComponent implements OnInit {
   }
 
   canEditStage(): boolean {
-    return this.stage?.year === this.currentYear;
+    return this.stage?.year === this.currentYear && !this.stage?.cloture;
+  }
+
+  canEditMetadata(): boolean {
+    return this.stage?.canEdit === true && this.stage?.cloture !== true;
   }
 
   getTypeStageLabel(typeStage?: string): string {
@@ -111,10 +128,11 @@ export class StudentStageDetailsComponent implements OnInit {
 
   getFileCount(): string {
     let count = 0;
-    if (this.stage?.reportFile) count++;
-    if (this.stage?.journalFile) count++;
-    if (this.stage?.attestationFile) count++;
-    return `${count}/3`;
+    if (this.stage?.reportFile || this.stage?.reportFileId) count++;
+    if (this.stage?.journalFile || this.stage?.journalFileId) count++;
+    if (this.stage?.attestationFile || this.stage?.attestationFileId) count++;
+    if (this.stage?.conventionFile || this.stage?.conventionFileId) count++;
+    return `${count}/4`;
   }
 
   // ── Upload Modals ──
@@ -127,12 +145,78 @@ export class StudentStageDetailsComponent implements OnInit {
   openUploadAttestationModal(): void {
     this.showUploadAttestationModal = true;
   }
+  openUploadConventionModal(): void {
+    this.showUploadConventionModal = true;
+  }
 
   closeUploadModal(): void {
     this.showUploadReportModal = false;
     this.showUploadJournalModal = false;
     this.showUploadAttestationModal = false;
+    this.showUploadConventionModal = false;
     this.selectedFile = null;
+  }
+
+  openEditMetadataModal(): void {
+    if (!this.stage) return;
+    this.metadataForm = {
+      title: this.stage.title ?? '',
+      companyName: this.stage.companyName ?? '',
+      durationMonths: this.stage.durationMonths ?? null,
+    };
+    this.showEditMetadataModal = true;
+  }
+
+  closeEditMetadataModal(): void {
+    this.showEditMetadataModal = false;
+    this.metadataForm = {
+      title: '',
+      companyName: '',
+      durationMonths: null,
+    };
+  }
+
+  saveMetadata(): void {
+    if (!this.stageId) return;
+
+    const { title, companyName, durationMonths } = this.metadataForm;
+
+    if (!title || !companyName || !durationMonths) {
+      this.messageService.add({
+        severity: 'warn',
+        summary: 'Attention',
+        detail: 'Veuillez remplir tous les champs de métadonnées',
+        life: 3000,
+      });
+      return;
+    }
+
+    this.resourceApiService
+      .updateStageMetadata(this.stageId, {
+        title,
+        companyName,
+        durationMonths,
+      })
+      .subscribe({
+        next: () => {
+          this.messageService.add({
+            severity: 'success',
+            summary: 'Succès',
+            detail: 'Métadonnées mises à jour avec succès',
+            life: 3000,
+          });
+          this.closeEditMetadataModal();
+          this.loadStageDetails(this.stageId);
+        },
+        error: () => {
+          this.messageService.add({
+            severity: 'error',
+            summary: 'Erreur',
+            detail: 'Impossible de mettre à jour les métadonnées',
+            life: 5000,
+          });
+        },
+      });
   }
 
   onFileSelected(event: any): void {
@@ -232,12 +316,45 @@ export class StudentStageDetailsComponent implements OnInit {
       });
   }
 
+  uploadConvention(): void {
+    if (!this.selectedFile || !this.stageId) return;
+    this.resourceApiService
+      .uploadStageConvention(
+        this.stageId,
+        this.selectedFile,
+        'Convention de stage',
+      )
+      .subscribe({
+        next: () => {
+          this.messageService.add({
+            severity: 'success',
+            summary: 'Succès',
+            detail: 'Convention uploadée avec succès',
+            life: 3000,
+          });
+          this.closeUploadModal();
+          this.loadStageDetails(this.stageId);
+        },
+        error: () => {
+          this.messageService.add({
+            severity: 'error',
+            summary: 'Erreur',
+            detail: "Erreur lors de l'upload de la convention",
+            life: 5000,
+          });
+        },
+      });
+  }
+
   // ── PDF Modal ──
-  openPdfModal(type: 'report' | 'journal' | 'attestation'): void {
+  openPdfModal(
+    type: 'report' | 'journal' | 'attestation' | 'convention',
+  ): void {
     const map: Record<typeof type, { url: string; title: string }> = {
       report: { url: this.reportFileUrl, title: 'Rapport de Stage' },
       journal: { url: this.journalFileUrl, title: 'Journal de Stage' },
       attestation: { url: this.attestationFileUrl, title: 'Attestation' },
+      convention: { url: this.conventionFileUrl, title: 'Convention de Stage' },
     };
 
     const { url, title } = map[type];

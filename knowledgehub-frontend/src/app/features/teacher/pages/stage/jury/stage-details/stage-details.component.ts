@@ -26,9 +26,13 @@ export class StageDetailsComponent implements OnInit {
   showSupervisorModal = false;
   selectedSupervisorId: number | null = null;
 
+  // Status confirmation modal
+  showStatusConfirmModal = false;
+
   reportFileUrl: string = '';
   journalFileUrl: string = '';
   attestationFileUrl: string = '';
+  conventionFileUrl: string = '';
 
   // PDF Viewer Modal
   showPdfModal = false;
@@ -70,6 +74,12 @@ export class StageDetailsComponent implements OnInit {
             'attestation',
           );
         }
+        if (this.stage_details?.conventionFileId) {
+          this.loadPresignedUrl(
+            this.stage_details.conventionFileId,
+            'convention',
+          );
+        }
       },
       error: () => {
         this.messageService.add({
@@ -84,7 +94,7 @@ export class StageDetailsComponent implements OnInit {
 
   loadPresignedUrl(
     fileId: number,
-    type: 'report' | 'journal' | 'attestation',
+    type: 'report' | 'journal' | 'attestation' | 'convention',
   ): void {
     this.resourceApiService.viewpdf(fileId).subscribe({
       next: (response) => {
@@ -95,6 +105,8 @@ export class StageDetailsComponent implements OnInit {
           this.journalFileUrl = url;
         } else if (type === 'attestation') {
           this.attestationFileUrl = url;
+        } else if (type === 'convention') {
+          this.conventionFileUrl = url;
         }
       },
       error: () => {
@@ -110,6 +122,45 @@ export class StageDetailsComponent implements OnInit {
 
   goBack(): void {
     this.router.navigate(['/teacher/stage/jury']);
+  }
+
+  openStatusConfirmModal(): void {
+    this.showStatusConfirmModal = true;
+  }
+
+  closeStatusConfirmModal(): void {
+    this.showStatusConfirmModal = false;
+  }
+
+  confirmStageStatus(): void {
+    if (!this.stage_id) return;
+
+    const request = this.stage_details?.cloture
+      ? this.resourceApiService.openStageByTeacher(this.stage_id)
+      : this.resourceApiService.closeStageByTeacher(this.stage_id);
+
+    request.subscribe({
+      next: () => {
+        this.messageService.add({
+          severity: 'success',
+          summary: 'Succès',
+          detail: this.stage_details?.cloture
+            ? 'Le stage a été rouvert'
+            : 'Le stage a été clôturé',
+          life: 3000,
+        });
+        this.closeStatusConfirmModal();
+        this.loadStageDetails(this.stage_id);
+      },
+      error: () => {
+        this.messageService.add({
+          severity: 'error',
+          summary: 'Erreur',
+          detail: 'Impossible de clôturer le stage',
+          life: 5000,
+        });
+      },
+    });
   }
 
   // ── Jury Modal ──
@@ -129,14 +180,27 @@ export class StageDetailsComponent implements OnInit {
 
   getFileCount(): string {
     let count = 0;
-    if (this.stage_details?.reportFile) count++;
-    if (this.stage_details?.journalFile) count++;
-    if (this.stage_details?.attestationFile) count++;
-    return `${count}/3`;
+    if (this.stage_details?.reportFile || this.stage_details?.reportFileId)
+      count++;
+    if (this.stage_details?.journalFile || this.stage_details?.journalFileId)
+      count++;
+    if (
+      this.stage_details?.attestationFile ||
+      this.stage_details?.attestationFileId
+    )
+      count++;
+    if (
+      this.stage_details?.conventionFile ||
+      this.stage_details?.conventionFileId
+    )
+      count++;
+    return `${count}/4`;
   }
 
   // ── PDF Modal ──
-  openPdfModal(type: 'report' | 'journal' | 'attestation'): void {
+  openPdfModal(
+    type: 'report' | 'journal' | 'attestation' | 'convention',
+  ): void {
     let url = '';
     let title = '';
 
@@ -152,6 +216,10 @@ export class StageDetailsComponent implements OnInit {
       case 'attestation':
         url = this.attestationFileUrl;
         title = 'Attestation';
+        break;
+      case 'convention':
+        url = this.conventionFileUrl;
+        title = 'Convention de Stage';
         break;
     }
 

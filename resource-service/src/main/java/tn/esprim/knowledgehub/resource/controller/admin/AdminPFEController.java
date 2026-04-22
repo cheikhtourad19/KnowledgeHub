@@ -158,7 +158,7 @@ public class AdminPFEController {
 
 
     @PostMapping("/assign-jury/{id}")
-    public ResponseEntity<ApiResponse> assignJury(
+    public ResponseEntity<ApiResponse<?>> assignJury(
 
             @RequestBody AssignJury request, @RequestHeader(value = "X-User-Role") String role
             ,@PathVariable Long id
@@ -192,4 +192,108 @@ public class AdminPFEController {
 
 
     }
+
+    @PutMapping("/pfe/{id}/cloture")
+    public ResponseEntity<ApiResponse<?>> closePFE(
+            @PathVariable Long id,
+            @RequestHeader(value = "X-User-Role") String role
+    ) {
+        if (!role.equals("ADMIN")) {
+            return ResponseEntity.status(HttpStatus.FORBIDDEN).body(
+                    ApiResponse.error("Forbidden", "Only admins can close PFE")
+            );
+        }
+
+        try {
+            PFE pfe = pfeService.getPFEById(id);
+            if (pfe == null) {
+                return ResponseEntity.status(HttpStatus.NOT_FOUND).body(
+                        ApiResponse.error("Not Found", "PFE not found with id: " + id)
+                );
+            }
+
+            PFE closedPFE = pfeService.closePFE(pfe);
+            return ResponseEntity.ok(
+                    ApiResponse.success(closedPFE, "PFE closed successfully")
+            );
+        } catch (IllegalStateException | IllegalArgumentException e) {
+            return ResponseEntity.badRequest().body(
+                    ApiResponse.error("Bad Request", e.getMessage())
+            );
+        } catch (Exception e) {
+            return ResponseEntity.internalServerError().body(
+                    ApiResponse.error("Internal server error", "Failed to close PFE")
+            );
+        }
+    }
+
+    @PutMapping("/pfe/{id}/cancel-cloture")
+    public ResponseEntity<ApiResponse<?>> cancelCloturePFE(
+            @PathVariable Long id,
+            @RequestHeader(value = "X-User-Role") String role
+    ) {
+        if (!role.equals("ADMIN")) {
+            return ResponseEntity.status(HttpStatus.FORBIDDEN).body(
+                    ApiResponse.error("Forbidden", "Only admins can cancel PFE closure")
+            );
+        }
+
+        try {
+            PFE pfe = pfeService.getPFEById(id);
+            if (pfe == null) {
+                return ResponseEntity.status(HttpStatus.NOT_FOUND).body(
+                        ApiResponse.error("Not Found", "PFE not found with id: " + id)
+                );
+            }
+
+            PFE reopenedPFE = pfeService.cancelPFECloture(pfe);
+            return ResponseEntity.ok(
+                    ApiResponse.success(reopenedPFE, "PFE closure canceled successfully")
+            );
+        } catch (IllegalStateException | IllegalArgumentException e) {
+            return ResponseEntity.badRequest().body(
+                    ApiResponse.error("Bad Request", e.getMessage())
+            );
+        } catch (Exception e) {
+            return ResponseEntity.internalServerError().body(
+                    ApiResponse.error("Internal server error", "Failed to cancel PFE closure")
+            );
+        }
+    }
+
+    @DeleteMapping("/pfe/{id}")
+    public ResponseEntity<ApiResponse<Void>> deletePFE(
+            @PathVariable Long id,
+            @RequestHeader(value = "X-User-Role") String role
+    ) {
+        if (!role.equals("ADMIN")) {
+            return ResponseEntity.status(HttpStatus.FORBIDDEN).body(
+                    ApiResponse.error("Forbidden", "Only admins can delete PFE")
+            );
+        }
+
+        try {
+            PFE pfe = pfeService.getPFEById(id);
+            if (pfe == null) {
+                return ResponseEntity.status(HttpStatus.NOT_FOUND).body(
+                        ApiResponse.error("Not Found", "PFE not found with id: " + id)
+                );
+            }
+
+            pfeService.deletePFE(id);
+            DemandePFE demande = pfeService.getDemandePFEByStudentId(pfe.getStudentId());
+            if (demande != null) {
+                pfeService.removeDemandePFE(demande.getId());
+            }
+            return ResponseEntity.ok(
+                    ApiResponse.success(null, "PFE deleted successfully")
+            );
+        } catch (Exception e) {
+            return ResponseEntity.internalServerError().body(
+                    ApiResponse.error("Internal server error", "Failed to delete PFE: " + e.getMessage())
+            );
+        }
+    }
+
 }
+

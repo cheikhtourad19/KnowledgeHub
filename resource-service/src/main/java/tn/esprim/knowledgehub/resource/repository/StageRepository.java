@@ -14,7 +14,7 @@ public interface StageRepository extends JpaRepository<Stage, Long> {
 
     List<Stage> findByStudentId(Long studentId);
 
-    @Query("SELECT s FROM Stage s WHERE s.reportFile.id = :fileId OR s.journalFile.id = :fileId OR s.attestationFile.id = :fileId")
+       @Query("SELECT s FROM Stage s WHERE s.reportFile.id = :fileId OR s.journalFile.id = :fileId OR s.attestationFile.id = :fileId OR s.conventionFile.id = :fileId")
     Optional<Stage> findByAnyFileId(@Param("fileId") Long fileId);
 
     List<Stage> findBySupervisorId(Long supervisorId);
@@ -28,6 +28,7 @@ public interface StageRepository extends JpaRepository<Stage, Long> {
            "LEFT JOIN FETCH s.reportFile " +
            "LEFT JOIN FETCH s.journalFile " +
            "LEFT JOIN FETCH s.attestationFile " +
+           "LEFT JOIN FETCH s.conventionFile " +
            "WHERE s.id = :id")
     Optional<Stage> findByIdWithFiles(@Param("id") Long id);
 
@@ -37,7 +38,8 @@ public interface StageRepository extends JpaRepository<Stage, Long> {
     @Query("SELECT DISTINCT s FROM Stage s " +
            "LEFT JOIN FETCH s.reportFile " +
            "LEFT JOIN FETCH s.journalFile " +
-           "LEFT JOIN FETCH s.attestationFile")
+           "LEFT JOIN FETCH s.attestationFile " +
+           "LEFT JOIN FETCH s.conventionFile")
     List<Stage> findAllWithFiles();
 
     /**
@@ -47,6 +49,7 @@ public interface StageRepository extends JpaRepository<Stage, Long> {
            "LEFT JOIN FETCH s.reportFile " +
            "LEFT JOIN FETCH s.journalFile " +
            "LEFT JOIN FETCH s.attestationFile " +
+           "LEFT JOIN FETCH s.conventionFile " +
            "WHERE s.supervisorId = :supervisorId")
     List<Stage> findBySupervisorIdWithFiles(@Param("supervisorId") Long supervisorId);
 
@@ -57,6 +60,7 @@ public interface StageRepository extends JpaRepository<Stage, Long> {
            "LEFT JOIN FETCH s.reportFile " +
            "LEFT JOIN FETCH s.journalFile " +
            "LEFT JOIN FETCH s.attestationFile " +
+           "LEFT JOIN FETCH s.conventionFile " +
            "WHERE s.studentId = :studentId")
     List<Stage> findByStudentIdWithFiles(@Param("studentId") Long studentId);
 

@@ -49,4 +49,58 @@ public class TeacherStageController {
             );
         }
     }
+
+    @PatchMapping("/{stageId}/close")
+    public ResponseEntity<ApiResponse<StageResponse>> closeStageByJury(
+            @PathVariable Long stageId,
+            @RequestHeader(value = "X-User-Id") Long teacherId,
+            @RequestHeader(value = "X-User-Role") String role
+    ) {
+        log.info("Jury/Teacher {} attempting to close stage {}", teacherId, stageId);
+
+        if (!role.equals("JURY") && !role.equals("TEACHER")) {
+            return ResponseEntity.status(403).body(
+                    ApiResponse.error("Forbidden", "Only jury members can close stages")
+            );
+        }
+
+        try {
+            StageResponse updatedStage = stageService.closeStageBySupervisor(stageId, teacherId);
+            return ResponseEntity.ok(
+                    ApiResponse.success(updatedStage, "Stage clôturé avec succès")
+            );
+        } catch (Exception e) {
+            log.error("Error closing stage {} by jury {}: {}", stageId, teacherId, e.getMessage(), e);
+            return ResponseEntity.status(500).body(
+                    ApiResponse.error("Erreur interne du serveur", e.getMessage())
+            );
+        }
+    }
+
+    @PatchMapping("/{stageId}/open")
+    public ResponseEntity<ApiResponse<StageResponse>> openStageByJury(
+            @PathVariable Long stageId,
+            @RequestHeader(value = "X-User-Id") Long teacherId,
+            @RequestHeader(value = "X-User-Role") String role
+    ) {
+        log.info("Jury/Teacher {} attempting to open stage {}", teacherId, stageId);
+
+        if (!role.equals("JURY") && !role.equals("TEACHER")) {
+            return ResponseEntity.status(403).body(
+                    ApiResponse.error("Forbidden", "Only jury members can open stages")
+            );
+        }
+
+        try {
+            StageResponse updatedStage = stageService.openStageBySupervisor(stageId, teacherId);
+            return ResponseEntity.ok(
+                    ApiResponse.success(updatedStage, "Stage rouvert avec succès")
+            );
+        } catch (Exception e) {
+            log.error("Error opening stage {} by jury {}: {}", stageId, teacherId, e.getMessage(), e);
+            return ResponseEntity.status(500).body(
+                    ApiResponse.error("Erreur interne du serveur", e.getMessage())
+            );
+        }
+    }
 }

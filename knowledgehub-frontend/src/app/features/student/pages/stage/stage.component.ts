@@ -29,6 +29,7 @@ export class StageComponent implements OnInit {
     title: '',
     companyName: '',
     durationMonths: null as number | null,
+    conventionFile: null as globalThis.File | null,
   };
 
   constructor(
@@ -132,6 +133,7 @@ export class StageComponent implements OnInit {
       title: '',
       companyName: '',
       durationMonths: null,
+      conventionFile: null,
     };
   }
 
@@ -141,19 +143,38 @@ export class StageComponent implements OnInit {
       title: '',
       companyName: '',
       durationMonths: null,
+      conventionFile: null,
     };
+  }
+
+  onConventionFileSelected(event: Event): void {
+    const target = event.target as HTMLInputElement;
+    const file = target.files?.[0] ?? null;
+
+    if (!file || file.type !== 'application/pdf') {
+      this.stageForm.conventionFile = null;
+      this.messageService.add({
+        severity: 'warn',
+        summary: 'Attention',
+        detail: 'Veuillez sélectionner une convention au format PDF',
+      });
+      return;
+    }
+
+    this.stageForm.conventionFile = file;
   }
 
   createStage(): void {
     if (
       !this.stageForm.title ||
       !this.stageForm.companyName ||
-      !this.stageForm.durationMonths
+      !this.stageForm.durationMonths ||
+      !this.stageForm.conventionFile
     ) {
       this.messageService.add({
         severity: 'warn',
         summary: 'Attention',
-        detail: 'Veuillez remplir tous les champs',
+        detail: 'Veuillez remplir tous les champs et joindre la convention',
       });
       return;
     }
@@ -162,6 +183,7 @@ export class StageComponent implements OnInit {
       title: this.stageForm.title,
       companyName: this.stageForm.companyName,
       durationMonths: this.stageForm.durationMonths,
+      conventionFile: this.stageForm.conventionFile,
     };
 
     this.resourceApi.createStage(request).subscribe({
@@ -194,7 +216,8 @@ export class StageComponent implements OnInit {
     if (stage.reportFileId) count++;
     if (stage.journalFileId) count++;
     if (stage.attestationFileId) count++;
-    return `${count}/3`;
+    if (stage.conventionFileId) count++;
+    return `${count}/4`;
   }
 
   hasCurrentYearStage(): boolean {

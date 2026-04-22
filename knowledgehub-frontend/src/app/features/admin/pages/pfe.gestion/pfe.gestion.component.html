@@ -103,6 +103,23 @@
     ></p-select>
   </div>
 
+  <!-- Cloture -->
+  <div class="flex flex-col gap-1">
+    <label
+      class="text-[10px] font-bold uppercase tracking-widest text-gray-400 dark:text-gray-500 px-0.5"
+      >État</label
+    >
+    <p-select
+      [options]="clotureOptions"
+      [ngModel]="selectedCloture"
+      (ngModelChange)="onClotureChange($event)"
+      optionLabel="label"
+      optionValue="value"
+      appendTo="body"
+      [style]="{ width: '170px' }"
+    ></p-select>
+  </div>
+
   <!-- Reset -->
   <div class="flex flex-col gap-1" *ngIf="activeFilterCount > 0">
     <label

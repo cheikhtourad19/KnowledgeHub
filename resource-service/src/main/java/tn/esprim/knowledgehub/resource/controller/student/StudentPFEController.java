@@ -228,10 +228,26 @@ public class StudentPFEController {
             );
         }
 
-        if (pfe.getStatus().equals(SubmissionStatus.UNDER_REVIEW) || pfe.getStatus().equals(SubmissionStatus.APPROVED)) {
+        // Check if upload is allowed based on new workflow
+        if (Boolean.TRUE.equals(pfe.getCloture())) {
             return ResponseEntity.status(HttpStatus.FORBIDDEN).body(
-                    ApiResponse.error("Forbidden", "This PFE is already approved or under review, you cannot upload a new report")
+                    ApiResponse.error("Forbidden", "This PFE is closed, you cannot upload files")
             );
+        }
+
+        if (pfe.getStatus().equals(SubmissionStatus.UNDER_REVIEW)) {
+            return ResponseEntity.status(HttpStatus.FORBIDDEN).body(
+                    ApiResponse.error("Forbidden", "This PFE is under review, you cannot upload files")
+            );
+        }
+
+        if (pfe.getStatus().equals(SubmissionStatus.APPROVED)) {
+            // Allow upload only if rapporteur feedback exists
+            if (pfe.getReporteurFeedback() == null || pfe.getReporteurFeedback().trim().isEmpty()) {
+                return ResponseEntity.status(HttpStatus.FORBIDDEN).body(
+                        ApiResponse.error("Forbidden", "Rapporteur feedback is required before uploading revised report")
+                );
+            }
         }
 
 
@@ -255,9 +271,13 @@ public class StudentPFEController {
         );
 
         File uploadedFile = fileService.getFileById(response.getFileId());
-        pfe.setReportFile(uploadedFile);
-        pfe.setStatus(SubmissionStatus.SUBMITTED);
-        pfeService.savePFE(pfe);
+                Long oldReportFileId = pfe.getReportFile() != null ? pfe.getReportFile().getId() : null;
+                pfe.setReportFile(uploadedFile);
+                pfe.setStatus(SubmissionStatus.SUBMITTED);
+                pfeService.savePFE(pfe);
+                if (oldReportFileId != null) {
+                        fileService.deleteFile(oldReportFileId);
+        }
 
 
         if (pfe.getSupervisorId() != null) {
@@ -302,10 +322,26 @@ public class StudentPFEController {
             );
         }
 
-        if (pfe.getAttestationFile() != null) {
+        // Check if upload is allowed based on new workflow
+        if (Boolean.TRUE.equals(pfe.getCloture())) {
             return ResponseEntity.status(HttpStatus.FORBIDDEN).body(
-                    ApiResponse.error("Forbidden", "Upload is possible only once")
+                    ApiResponse.error("Forbidden", "This PFE is closed, you cannot upload files")
             );
+        }
+
+        if (pfe.getStatus().equals(SubmissionStatus.UNDER_REVIEW)) {
+            return ResponseEntity.status(HttpStatus.FORBIDDEN).body(
+                    ApiResponse.error("Forbidden", "This PFE is under review, you cannot upload files")
+            );
+        }
+
+        if (pfe.getStatus().equals(SubmissionStatus.APPROVED)) {
+            // Allow upload only if rapporteur feedback exists
+            if (pfe.getReporteurFeedback() == null || pfe.getReporteurFeedback().trim().isEmpty()) {
+                return ResponseEntity.status(HttpStatus.FORBIDDEN).body(
+                        ApiResponse.error("Forbidden", "Rapporteur feedback is required before uploading files")
+                );
+            }
         }
 
         StudentDTO student = userServiceClient.getStudentById(pfe.getStudentId()).getData();
@@ -327,8 +363,12 @@ public class StudentPFEController {
         );
 
         File uploadedFile = fileService.getFileById(response.getFileId());
-        pfe.setAttestationFile(uploadedFile);
-        pfeService.savePFE(pfe);
+                Long oldAttestationFileId = pfe.getAttestationFile() != null ? pfe.getAttestationFile().getId() : null;
+                pfe.setAttestationFile(uploadedFile);
+                pfeService.savePFE(pfe);
+                if (oldAttestationFileId != null) {
+                        fileService.deleteFile(oldAttestationFileId);
+        }
 
         return ResponseEntity.ok(
                 ApiResponse.success(response, "File uploaded successfully")

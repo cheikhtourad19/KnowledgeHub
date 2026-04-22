@@ -7,16 +7,17 @@ import org.springframework.transaction.annotation.Transactional;
 import tn.esprim.knowledgehub.resource.client.UserServiceClient;
 import tn.esprim.knowledgehub.resource.client.dto.StudentDTO;
 import tn.esprim.knowledgehub.resource.dto.request.StudentCreateStageRequest;
+import tn.esprim.knowledgehub.resource.dto.request.StudentUpdateStageMetadataRequest;
 import tn.esprim.knowledgehub.resource.dto.response.StageResponse;
+import tn.esprim.knowledgehub.resource.entity.File;
 import tn.esprim.knowledgehub.resource.entity.Stage;
 import tn.esprim.knowledgehub.resource.entity.StageCreationAutorisation;
+import tn.esprim.knowledgehub.resource.enums.FileType;
 import tn.esprim.knowledgehub.resource.enums.TypeStage;
 import tn.esprim.knowledgehub.resource.repository.StageCreationAutorisationRepository;
 import tn.esprim.knowledgehub.resource.repository.StageRepository;
 
-import java.io.File;
 import java.time.LocalDate;
-import java.util.ArrayList;
 import java.util.List;
 import java.util.Optional;
 import java.util.stream.Collectors;
@@ -118,6 +119,10 @@ public class StageService {
     public StageResponse createStageForStudent(Long userId, StudentCreateStageRequest request) {
         log.info("Creating stage for user ID: {} with request: {}", userId, request);
 
+        if (request.getConventionFile() == null || request.getConventionFile().isEmpty()) {
+            throw new RuntimeException("La convention de stage est obligatoire");
+        }
+
         // Récupérer l'année en cours
         int currentYear = LocalDate.now().getYear();
 
@@ -177,9 +182,26 @@ public class StageService {
                 // supervisorId sera assigné par l'admin plus tard
                 .supervisorId(null)
                 .supervisorName(null)
+            .cloture(false)
+            .canEdit(false)
                 .build();
 
+        var uploadedConvention = fileService.uploadFile(
+            request.getConventionFile(),
+            FileType.CONVENTION_STAGE,
+            userId,
+            student.getEmail(),
+            "stage",
+            "Convention de stage - " + request.getTitle(),
+            "Convention de stage",
+            false
+        );
+
+        File conventionFile = fileService.getFileById(uploadedConvention.getFileId());
+        stage.setConventionFile(conventionFile);
+
         Stage savedStage = stageRepository.save(stage);
+        stageCreationAutorisationRepository.delete(autorisation);
         log.info("Stage created successfully with ID: {}", savedStage.getId());
 
         return mapToStageResponse(savedStage);
@@ -246,6 +268,102 @@ public class StageService {
         }
     }
 
+    @Transactional
+    public StageResponse closeStage(Long stageId) {
+        Stage stage = stageRepository.findById(stageId)
+                .orElseThrow(() -> new RuntimeException("Stage non trouvé avec l'ID: " + stageId));
+
+        stage.setCloture(true);
+        stage.setCanEdit(false);
+        Stage updatedStage = stageRepository.save(stage);
+        return mapToStageResponse(updatedStage);
+    }
+
+    @Transactional
+    public StageResponse openStage(Long stageId) {
+        Stage stage = stageRepository.findById(stageId)
+                .orElseThrow(() -> new RuntimeException("Stage non trouvé avec l'ID: " + stageId));
+
+        stage.setCloture(false);
+        Stage updatedStage = stageRepository.save(stage);
+        return mapToStageResponse(updatedStage);
+    }
+
+    @Transactional
+    public StageResponse closeStageBySupervisor(Long stageId, Long supervisorId) {
+        Stage stage = stageRepository.findById(stageId)
+                .orElseThrow(() -> new RuntimeException("Stage non trouvé avec l'ID: " + stageId));
+
+        if (stage.getSupervisorId() == null || !stage.getSupervisorId().equals(supervisorId)) {
+            throw new RuntimeException("Vous n'êtes pas autorisé à clôturer ce stage");
+        }
+
+        stage.setCloture(true);
+        stage.setCanEdit(false);
+        Stage updatedStage = stageRepository.save(stage);
+        return mapToStageResponse(updatedStage);
+    }
+
+    @Transactional
+    public StageResponse openStageBySupervisor(Long stageId, Long supervisorId) {
+        Stage stage = stageRepository.findById(stageId)
+                .orElseThrow(() -> new RuntimeException("Stage non trouvé avec l'ID: " + stageId));
+
+        if (stage.getSupervisorId() == null || !stage.getSupervisorId().equals(supervisorId)) {
+            throw new RuntimeException("Vous n'êtes pas autorisé à rouvrir ce stage");
+        }
+
+        stage.setCloture(false);
+        Stage updatedStage = stageRepository.save(stage);
+        return mapToStageResponse(updatedStage);
+    }
+
+    @Transactional
+    public StageResponse updateCanEdit(Long stageId, boolean canEdit) {
+        Stage stage = stageRepository.findById(stageId)
+                .orElseThrow(() -> new RuntimeException("Stage non trouvé avec l'ID: " + stageId));
+
+        if (Boolean.TRUE.equals(stage.getCloture()) && canEdit) {
+            throw new RuntimeException("Un stage clôturé ne peut pas être rendu modifiable");
+        }
+
+        stage.setCanEdit(canEdit);
+        Stage updatedStage = stageRepository.save(stage);
+        return mapToStageResponse(updatedStage);
+    }
+
+    @Transactional
+    public void deleteStage(Long stageId) {
+        Stage stage = stageRepository.findById(stageId)
+                .orElseThrow(() -> new RuntimeException("Stage non trouvé avec l'ID: " + stageId));
+        stageRepository.delete(stage);
+    }
+
+    @Transactional
+    public StageResponse updateStageMetadataByStudent(Long stageId, Long studentId, StudentUpdateStageMetadataRequest request) {
+        Stage stage = stageRepository.findById(stageId)
+                .orElseThrow(() -> new RuntimeException("Stage non trouvé avec l'ID: " + stageId));
+
+        if (!stage.getStudentId().equals(studentId)) {
+            throw new RuntimeException("Vous n'êtes pas autorisé à modifier ce stage");
+        }
+
+        if (Boolean.TRUE.equals(stage.getCloture())) {
+            throw new RuntimeException("Ce stage est clôturé et ne peut plus être modifié");
+        }
+
+        if (!Boolean.TRUE.equals(stage.getCanEdit())) {
+            throw new RuntimeException("La modification des métadonnées est désactivée pour ce stage");
+        }
+
+        stage.setTitle(request.getTitle());
+        stage.setCompanyName(request.getCompanyName());
+        stage.setDurationMonths(request.getDurationMonths());
+
+        Stage updatedStage = stageRepository.save(stage);
+        return mapToStageResponse(updatedStage);
+    }
+
     /**
      * Mapper Stage entity vers StageResponse DTO (public pour le contrôleur)
      */
@@ -270,6 +388,8 @@ public class StageService {
                 .supervisorId(stage.getSupervisorId())
                 .supervisorName(stage.getSupervisorName())
                 .supervisorFeedback(stage.getSupervisorFeedback())
+                .cloture(stage.getCloture())
+                .canEdit(stage.getCanEdit())
                 .createdDate(stage.getCreatedDate());
 
         // Utiliser les IDs directement pour éviter le lazy loading
@@ -293,6 +413,13 @@ public class StageService {
             if (stage.getAttestationFile() != null) {
                 builder.attestationFile(stage.getAttestationFile());
                 builder.attestationFileName(stage.getAttestationFile().getFileName());
+            }
+        }
+        if (stage.getConventionFileId() != null) {
+            builder.conventionFileId(stage.getConventionFileId());
+            if (stage.getConventionFile() != null) {
+                builder.conventionFile(stage.getConventionFile());
+                builder.conventionFileName(stage.getConventionFile().getFileName());
             }
         }
 

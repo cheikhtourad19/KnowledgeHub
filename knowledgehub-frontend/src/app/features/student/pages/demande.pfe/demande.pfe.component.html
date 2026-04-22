@@ -2,10 +2,10 @@
   <!-- Page Header -->
   <div class="flex items-center justify-between">
     <div>
-      <h1 class="text-2xl font-bold text-gray-900 dark:text-white">
+      <h1 class="text-2xl font-bold text-[#333333] dark:text-white">
         Ma Demande PFE
       </h1>
-      <p class="text-sm text-gray-500 dark:text-gray-400 mt-1">
+      <p class="text-sm text-[#666666] dark:text-gray-400 mt-1">
         Soumettez et suivez votre demande de projet de fin d'études
       </p>
     </div>
@@ -14,18 +14,18 @@
   <!-- No Demande State -->
   <div
     *ngIf="!demande"
-    class="flex flex-col items-center justify-center py-20 border-2 border-dashed border-gray-200 dark:border-gray-700 rounded-xl bg-gray-50 dark:bg-gray-800/50"
+    class="flex flex-col items-center justify-center py-20 border-2 border-dashed border-[#F0F0F0] dark:border-gray-700 rounded-xl bg-[#F0F0F0]/40 dark:bg-gray-800/50"
   >
     <div
-      class="w-16 h-16 bg-red-50 dark:bg-red-900/20 rounded-full flex items-center justify-center mb-4"
+      class="w-16 h-16 bg-[#C60C30]/10 rounded-full flex items-center justify-center mb-4"
     >
       <i class="pi pi-file text-[#C60C30] text-3xl"></i>
     </div>
-    <h3 class="text-lg font-semibold text-gray-900 dark:text-white mb-1">
+    <h3 class="text-lg font-semibold text-[#333333] dark:text-white mb-1">
       Aucune demande soumise
     </h3>
     <p
-      class="text-sm text-gray-500 dark:text-gray-400 mb-5 text-center max-w-sm"
+      class="text-sm text-[#666666] dark:text-gray-400 mb-5 text-center max-w-sm"
     >
       Vous n'avez pas encore soumis de demande PFE. Cliquez sur le bouton
       ci-dessous pour commencer.
@@ -33,7 +33,11 @@
     <p-button
       label="Soumettre une demande"
       icon="pi pi-plus"
-      [style]="{ 'background-color': '#C60C30', 'border-color': '#C60C30' }"
+      [style]="{
+        'background-color': '#C60C30',
+        'border-color': '#C60C30',
+        color: '#FFFFFF',
+      }"
       (onClick)="openModal()"
     />
   </div>
@@ -48,7 +52,7 @@
           demande.status === DemandStatus.UPLOADED,
         'bg-green-50 border-green-200 dark:bg-green-900/20 dark:border-green-700':
           demande.status === DemandStatus.ACCEPTED,
-        'bg-red-50 border-red-200 dark:bg-red-900/20 dark:border-red-700':
+        'bg-[#C60C30]/5 border-[#C60C30]/30 dark:bg-red-900/20 dark:border-red-700':
           demande.status === DemandStatus.REJECTED,
       }"
     >
@@ -60,7 +64,7 @@
               demande.status === DemandStatus.UPLOADED,
             'pi pi-check-circle text-green-500':
               demande.status === DemandStatus.ACCEPTED,
-            'pi pi-times-circle text-red-500':
+            'pi pi-times-circle text-[#C60C30]':
               demande.status === DemandStatus.REJECTED,
           }"
         ></i>
@@ -72,7 +76,7 @@
                 demande.status === DemandStatus.UPLOADED,
               'text-green-800 dark:text-green-300':
                 demande.status === DemandStatus.ACCEPTED,
-              'text-red-800 dark:text-red-300':
+              'text-[#C60C30] dark:text-red-300':
                 demande.status === DemandStatus.REJECTED,
             }"
           >
@@ -86,7 +90,7 @@
                 demande.status === DemandStatus.UPLOADED,
               'text-green-700 dark:text-green-400':
                 demande.status === DemandStatus.ACCEPTED,
-              'text-red-700 dark:text-red-400':
+              'text-[#C60C30]/80 dark:text-red-400':
                 demande.status === DemandStatus.REJECTED,
             }"
           >
@@ -94,7 +98,7 @@
           </p>
         </div>
       </div>
-      <span class="text-xs text-gray-500 dark:text-gray-400">
+      <span class="text-xs text-[#666666] dark:text-gray-400">
         Soumise le {{ demande.createdAt | date: "dd/MM/yyyy" }}
       </span>
     </div>
@@ -103,7 +107,7 @@
     <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
       <!-- PFE Info -->
       <div
-        class="rounded-lg border border-gray-200 dark:border-gray-700 overflow-hidden"
+        class="rounded-lg border border-[#F0F0F0] dark:border-gray-700 overflow-hidden shadow-sm"
       >
         <div
           class="flex items-center gap-2.5 px-5 py-3 bg-[#333333] border-l-[4px] border-[#C60C30]"
@@ -116,54 +120,54 @@
         <div class="p-5 space-y-3 bg-white dark:bg-gray-900">
           <div>
             <p
-              class="text-[10px] font-bold text-gray-400 dark:text-gray-500 uppercase tracking-widest mb-1"
+              class="text-[10px] font-bold text-[#666666] dark:text-gray-500 uppercase tracking-widest mb-1"
             >
               Titre
             </p>
-            <p class="text-sm font-medium text-gray-900 dark:text-white">
+            <p class="text-sm font-medium text-[#333333] dark:text-white">
               {{ demande.pfeTitle }}
             </p>
           </div>
           <div>
             <p
-              class="text-[10px] font-bold text-gray-400 dark:text-gray-500 uppercase tracking-widest mb-1"
+              class="text-[10px] font-bold text-[#666666] dark:text-gray-500 uppercase tracking-widest mb-1"
             >
               Description
             </p>
-            <p class="text-sm text-gray-700 dark:text-gray-300">
+            <p class="text-sm text-[#666666] dark:text-gray-300">
               {{ demande.pfeDescription }}
             </p>
           </div>
           <div>
             <p
-              class="text-[10px] font-bold text-gray-400 dark:text-gray-500 uppercase tracking-widest mb-1"
+              class="text-[10px] font-bold text-[#666666] dark:text-gray-500 uppercase tracking-widest mb-1"
             >
               Mots clés
             </p>
-            <p class="text-sm text-gray-700 dark:text-gray-300">
+            <p class="text-sm text-[#666666] dark:text-gray-300">
               {{ demande.motCles }}
             </p>
           </div>
           <div
-            class="grid grid-cols-2 gap-4 pt-2 border-t border-gray-100 dark:border-gray-800"
+            class="grid grid-cols-2 gap-4 pt-2 border-t border-[#F0F0F0] dark:border-gray-800"
           >
             <div>
               <p
-                class="text-[10px] font-bold text-gray-400 dark:text-gray-500 uppercase tracking-widest mb-1"
+                class="text-[10px] font-bold text-[#666666] dark:text-gray-500 uppercase tracking-widest mb-1"
               >
                 Date début
               </p>
-              <p class="text-sm text-gray-700 dark:text-gray-300">
+              <p class="text-sm text-[#666666] dark:text-gray-300">
                 {{ demande.dateDebut | date: "dd/MM/yyyy" }}
               </p>
             </div>
             <div>
               <p
-                class="text-[10px] font-bold text-gray-400 dark:text-gray-500 uppercase tracking-widest mb-1"
+                class="text-[10px] font-bold text-[#666666] dark:text-gray-500 uppercase tracking-widest mb-1"
               >
                 Date fin
               </p>
-              <p class="text-sm text-gray-700 dark:text-gray-300">
+              <p class="text-sm text-[#666666] dark:text-gray-300">
                 {{ demande.dateFin | date: "dd/MM/yyyy" }}
               </p>
             </div>
@@ -173,7 +177,7 @@
 
       <!-- Entreprise Info -->
       <div
-        class="rounded-lg border border-gray-200 dark:border-gray-700 overflow-hidden"
+        class="rounded-lg border border-[#F0F0F0] dark:border-gray-700 overflow-hidden shadow-sm"
       >
         <div
           class="flex items-center gap-2.5 px-5 py-3 bg-[#333333] border-l-[4px] border-[#C60C30]"
@@ -186,51 +190,51 @@
         <div class="p-5 space-y-3 bg-white dark:bg-gray-900">
           <div>
             <p
-              class="text-[10px] font-bold text-gray-400 dark:text-gray-500 uppercase tracking-widest mb-1"
+              class="text-[10px] font-bold text-[#666666] dark:text-gray-500 uppercase tracking-widest mb-1"
             >
               Nom
             </p>
-            <p class="text-sm font-medium text-gray-900 dark:text-white">
+            <p class="text-sm font-medium text-[#333333] dark:text-white">
               {{ demande.entrepriseName }}
             </p>
           </div>
           <div>
             <p
-              class="text-[10px] font-bold text-gray-400 dark:text-gray-500 uppercase tracking-widest mb-1"
+              class="text-[10px] font-bold text-[#666666] dark:text-gray-500 uppercase tracking-widest mb-1"
             >
               Domaine
             </p>
-            <p class="text-sm text-gray-700 dark:text-gray-300">
+            <p class="text-sm text-[#666666] dark:text-gray-300">
               {{ demande.entrepriseDomaine }}
             </p>
           </div>
           <div>
             <p
-              class="text-[10px] font-bold text-gray-400 dark:text-gray-500 uppercase tracking-widest mb-1"
+              class="text-[10px] font-bold text-[#666666] dark:text-gray-500 uppercase tracking-widest mb-1"
             >
               Encadrant
             </p>
-            <p class="text-sm text-gray-700 dark:text-gray-300">
+            <p class="text-sm text-[#666666] dark:text-gray-300">
               {{ demande.entrepriseEncadrantName }}
             </p>
           </div>
           <div>
             <p
-              class="text-[10px] font-bold text-gray-400 dark:text-gray-500 uppercase tracking-widest mb-1"
+              class="text-[10px] font-bold text-[#666666] dark:text-gray-500 uppercase tracking-widest mb-1"
             >
               Email encadrant
             </p>
-            <p class="text-sm text-gray-700 dark:text-gray-300">
+            <p class="text-sm text-[#666666] dark:text-gray-300">
               {{ demande.entrepriseEncadrantEmail }}
             </p>
           </div>
           <div>
             <p
-              class="text-[10px] font-bold text-gray-400 dark:text-gray-500 uppercase tracking-widest mb-1"
+              class="text-[10px] font-bold text-[#666666] dark:text-gray-500 uppercase tracking-widest mb-1"
             >
               Téléphone encadrant
             </p>
-            <p class="text-sm text-gray-700 dark:text-gray-300">
+            <p class="text-sm text-[#666666] dark:text-gray-300">
               {{ demande.entrepriseEncadrantPhone }}
             </p>
           </div>
@@ -254,7 +258,7 @@
     <!-- Student Info -->
     <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
       <div class="flex flex-col gap-1">
-        <label class="text-sm font-medium text-gray-700 dark:text-gray-300"
+        <label class="text-sm font-semibold text-[#333333] dark:text-gray-300"
           >CIN *</label
         >
         <input
@@ -272,13 +276,13 @@
             demandeForm.get('studentCin')?.invalid &&
             demandeForm.get('studentCin')?.touched
           "
-          class="text-red-500"
+          class="text-[#C60C30]"
         >
           CIN requis
         </small>
       </div>
       <div class="flex flex-col gap-1">
-        <label class="text-sm font-medium text-gray-700 dark:text-gray-300"
+        <label class="text-sm font-semibold text-[#333333] dark:text-gray-300"
           >Téléphone *</label
         >
         <input
@@ -296,7 +300,7 @@
             demandeForm.get('studentPhone')?.invalid &&
             demandeForm.get('studentPhone')?.touched
           "
-          class="text-red-500"
+          class="text-[#C60C30]"
         >
           Téléphone requis
         </small>
@@ -305,7 +309,7 @@
 
     <!-- PFE Info -->
     <div class="flex flex-col gap-1">
-      <label class="text-sm font-medium text-gray-700 dark:text-gray-300"
+      <label class="text-sm font-semibold text-[#333333] dark:text-gray-300"
         >Titre du PFE *</label
       >
       <input
@@ -323,14 +327,14 @@
           demandeForm.get('pfeTitle')?.invalid &&
           demandeForm.get('pfeTitle')?.touched
         "
-        class="text-red-500"
+        class="text-[#C60C30]"
       >
         Titre requis
       </small>
     </div>
 
     <div class="flex flex-col gap-1">
-      <label class="text-sm font-medium text-gray-700 dark:text-gray-300"
+      <label class="text-sm font-semibold text-[#333333] dark:text-gray-300"
         >Description *</label
       >
       <textarea
@@ -349,14 +353,15 @@
           demandeForm.get('pfeDescription')?.invalid &&
           demandeForm.get('pfeDescription')?.touched
         "
-        class="text-red-500"
+        class="text-[#C60C30]"
       >
         Description requise
       </small>
     </div>
 
+    <!-- Keywords -->
     <div class="flex flex-col gap-1">
-      <label class="text-sm font-medium text-gray-700 dark:text-gray-300"
+      <label class="text-sm font-semibold text-[#333333] dark:text-gray-300"
         >Mots clés</label
       >
       <div class="flex flex-col md:flex-row gap-2">
@@ -372,20 +377,19 @@
           (keydown.enter)="addTypedKeyword(); $event.preventDefault()"
         />
       </div>
-      <small class="text-xs text-gray-500 dark:text-gray-400">
+      <small class="text-xs text-[#666666] dark:text-gray-400">
         Sélectionnez une suggestion ou saisissez un nouveau mot clé puis cliquez
         sur Ajouter.
       </small>
-
       <div *ngIf="selectedKeywords.length" class="flex flex-wrap gap-2 pt-1">
         <div
           *ngFor="let keyword of selectedKeywords"
-          class="inline-flex items-center gap-1.5 bg-[#C60C30]/10 text-[#C60C30] px-2.5 py-1 rounded-full text-xs font-medium"
+          class="inline-flex items-center gap-1.5 bg-[#C60C30]/10 text-[#C60C30] px-2.5 py-1 rounded-full text-xs font-semibold"
         >
           <span>{{ keyword }}</span>
           <button
             type="button"
-            class="pi pi-times text-[10px] hover:opacity-70"
+            class="pi pi-times text-[10px] hover:opacity-70 cursor-pointer"
             (click)="removeKeyword(keyword)"
             aria-label="Supprimer le mot clé"
           ></button>
@@ -396,7 +400,7 @@
     <!-- Dates -->
     <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
       <div class="flex flex-col gap-1">
-        <label class="text-sm font-medium text-gray-700 dark:text-gray-300"
+        <label class="text-sm font-semibold text-[#333333] dark:text-gray-300"
           >Date début *</label
         >
         <p-datePicker
@@ -414,13 +418,13 @@
             demandeForm.get('dateDebut')?.touched &&
             demandeForm.errors?.['startNotCurrentYear']
           "
-          class="text-red-500"
+          class="text-[#C60C30]"
         >
           La date de début doit être dans l'année en cours ({{ currentYear }})
         </small>
       </div>
       <div class="flex flex-col gap-1">
-        <label class="text-sm font-medium text-gray-700 dark:text-gray-300"
+        <label class="text-sm font-semibold text-[#333333] dark:text-gray-300"
           >Date fin *</label
         >
         <p-datePicker
@@ -438,7 +442,7 @@
             demandeForm.get('dateFin')?.touched &&
             demandeForm.errors?.['endNotCurrentYear']
           "
-          class="text-red-500"
+          class="text-[#C60C30]"
         >
           La date de fin doit être dans l'année en cours ({{ currentYear }})
         </small>
@@ -454,26 +458,28 @@
     >
       <small
         *ngIf="demandeForm.errors?.['endBeforeStart']"
-        class="text-red-500 block"
+        class="text-[#C60C30] block"
       >
         La date de fin doit être après la date de début
       </small>
       <small
         *ngIf="demandeForm.errors?.['exceedsMaxDuration']"
-        class="text-red-500 block"
+        class="text-[#C60C30] block"
       >
         La durée du PFE ne peut pas dépasser 7 mois
       </small>
     </div>
 
     <!-- Entreprise Info -->
-    <div class="border-t border-gray-200 dark:border-gray-700 pt-4">
-      <p class="text-sm font-semibold text-gray-900 dark:text-white mb-3">
+    <div class="border-t border-[#F0F0F0] dark:border-gray-700 pt-4">
+      <p
+        class="text-sm font-bold text-[#333333] dark:text-white mb-3 uppercase tracking-wide"
+      >
         Informations Entreprise
       </p>
       <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
         <div class="flex flex-col gap-1">
-          <label class="text-sm font-medium text-gray-700 dark:text-gray-300"
+          <label class="text-sm font-semibold text-[#333333] dark:text-gray-300"
             >Nom entreprise *</label
           >
           <input
@@ -484,7 +490,7 @@
           />
         </div>
         <div class="flex flex-col gap-1">
-          <label class="text-sm font-medium text-gray-700 dark:text-gray-300"
+          <label class="text-sm font-semibold text-[#333333] dark:text-gray-300"
             >Domaine *</label
           >
           <input
@@ -495,7 +501,7 @@
           />
         </div>
         <div class="flex flex-col gap-1">
-          <label class="text-sm font-medium text-gray-700 dark:text-gray-300"
+          <label class="text-sm font-semibold text-[#333333] dark:text-gray-300"
             >Nom encadrant *</label
           >
           <input
@@ -506,7 +512,7 @@
           />
         </div>
         <div class="flex flex-col gap-1">
-          <label class="text-sm font-medium text-gray-700 dark:text-gray-300"
+          <label class="text-sm font-semibold text-[#333333] dark:text-gray-300"
             >Email encadrant *</label
           >
           <input
@@ -525,13 +531,13 @@
               demandeForm.get('entrepriseEncadrantEmail')?.invalid &&
               demandeForm.get('entrepriseEncadrantEmail')?.touched
             "
-            class="text-red-500"
+            class="text-[#C60C30]"
           >
             Email invalide
           </small>
         </div>
         <div class="flex flex-col gap-1">
-          <label class="text-sm font-medium text-gray-700 dark:text-gray-300"
+          <label class="text-sm font-semibold text-[#333333] dark:text-gray-300"
             >Téléphone encadrant *</label
           >
           <input
@@ -545,11 +551,12 @@
     </div>
 
     <!-- File Upload -->
-    <div class="border-t border-gray-200 dark:border-gray-700 pt-4">
+    <div class="border-t border-[#F0F0F0] dark:border-gray-700 pt-4">
       <label
-        class="text-sm font-medium text-gray-700 dark:text-gray-300 mb-2 block"
-        >Convention / Document *</label
+        class="text-sm font-semibold text-[#333333] dark:text-gray-300 mb-2 block"
       >
+        Convention / Document *
+      </label>
       <p-fileUpload
         mode="basic"
         chooseLabel="Choisir un fichier"
@@ -559,7 +566,7 @@
         [auto]="false"
         styleClass="w-full"
       />
-      <small *ngIf="!selectedFile" class="text-gray-400 text-xs mt-1 block"
+      <small *ngIf="!selectedFile" class="text-[#666666] text-xs mt-1 block"
         >PDF, DOC ou DOCX · Max 5MB</small
       >
       <small
@@ -581,7 +588,11 @@
     <p-button
       label="Soumettre"
       icon="pi pi-send"
-      [style]="{ 'background-color': '#C60C30', 'border-color': '#C60C30' }"
+      [style]="{
+        'background-color': '#C60C30',
+        'border-color': '#C60C30',
+        color: '#FFFFFF',
+      }"
       [disabled]="demandeForm.invalid || !selectedFile"
       (onClick)="submitDemande()"
     />

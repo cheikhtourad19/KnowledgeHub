@@ -351,9 +351,29 @@ export class ResourceApiService {
   }
 
   createStage(request: CreateStageRequest): Observable<ApiResponse<Stage>> {
+    const formData = new FormData();
+    formData.append('title', request.title);
+    formData.append('companyName', request.companyName);
+    formData.append('durationMonths', request.durationMonths.toString());
+    formData.append('conventionFile', request.conventionFile);
+
     return this.http.post<ApiResponse<Stage>>(
       `${this.baseUrl}/api/student/stage`,
-      request,
+      formData,
+    );
+  }
+
+  updateStageMetadata(
+    stageId: number,
+    metadata: {
+      title: string;
+      companyName: string;
+      durationMonths: number;
+    },
+  ): Observable<ApiResponse<Stage>> {
+    return this.http.put<ApiResponse<Stage>>(
+      `${this.baseUrl}/api/student/stage/${stageId}/metadata`,
+      metadata,
     );
   }
 
@@ -427,6 +447,27 @@ export class ResourceApiService {
 
     return this.http.post<ApiResponse<FileUploadResponse>>(
       `${this.baseUrl}/api/student/stage/upload-attestation/${stageId}`,
+      formData,
+    );
+  }
+
+  uploadStageConvention(
+    stageId: number,
+    file: globalThis.File,
+    title?: string,
+    description?: string,
+  ): Observable<ApiResponse<FileUploadResponse>> {
+    const formData = new FormData();
+    formData.append('file', file);
+    if (title) {
+      formData.append('title', title);
+    }
+    if (description) {
+      formData.append('description', description);
+    }
+
+    return this.http.post<ApiResponse<FileUploadResponse>>(
+      `${this.baseUrl}/api/student/stage/upload-convention/${stageId}`,
       formData,
     );
   }
@@ -541,6 +582,51 @@ export class ResourceApiService {
     );
   }
 
+  closeStageByAdmin(stageId: number): Observable<ApiResponse<Stage>> {
+    return this.http.patch<ApiResponse<Stage>>(
+      `${this.baseUrl}/api/admin/stage/${stageId}/close`,
+      null,
+    );
+  }
+
+  openStageByAdmin(stageId: number): Observable<ApiResponse<Stage>> {
+    return this.http.patch<ApiResponse<Stage>>(
+      `${this.baseUrl}/api/admin/stage/${stageId}/open`,
+      null,
+    );
+  }
+
+  setStageCanEditByAdmin(
+    stageId: number,
+    canEdit: boolean,
+  ): Observable<ApiResponse<Stage>> {
+    return this.http.patch<ApiResponse<Stage>>(
+      `${this.baseUrl}/api/admin/stage/${stageId}/can-edit`,
+      null,
+      { params: { canEdit: canEdit.toString() } },
+    );
+  }
+
+  deleteStageByAdmin(stageId: number): Observable<ApiResponse<void>> {
+    return this.http.delete<ApiResponse<void>>(
+      `${this.baseUrl}/api/admin/stage/${stageId}`,
+    );
+  }
+
+  closeStageByTeacher(stageId: number): Observable<ApiResponse<Stage>> {
+    return this.http.patch<ApiResponse<Stage>>(
+      `${this.baseUrl}/api/teacher/stage/${stageId}/close`,
+      null,
+    );
+  }
+
+  openStageByTeacher(stageId: number): Observable<ApiResponse<Stage>> {
+    return this.http.patch<ApiResponse<Stage>>(
+      `${this.baseUrl}/api/teacher/stage/${stageId}/open`,
+      null,
+    );
+  }
+
   verifyPassword(password: string): Observable<any> {
     const params = new HttpParams().set('password', password);
     return this.http.post(
@@ -586,6 +672,36 @@ export class ResourceApiService {
     return this.http.put<ApiResponse<PFE>>(
       `${this.baseUrl}/api/teacher/pfe/pfe/${pfeId}/status`,
       request,
+    );
+  }
+
+  submitPFERapporteurFeedback(
+    pfeId: number,
+    feedback: string,
+  ): Observable<ApiResponse<PFE>> {
+    return this.http.put<ApiResponse<PFE>>(
+      `${this.baseUrl}/api/teacher/pfe/pfe/${pfeId}/rapporteur-feedback`,
+      { feedback },
+    );
+  }
+
+  closePFEByAdmin(pfeId: number): Observable<ApiResponse<PFE>> {
+    return this.http.put<ApiResponse<PFE>>(
+      `${this.baseUrl}/api/admin/pfe/pfe/${pfeId}/cloture`,
+      null,
+    );
+  }
+
+  cancelPFEClotureByAdmin(pfeId: number): Observable<ApiResponse<PFE>> {
+    return this.http.put<ApiResponse<PFE>>(
+      `${this.baseUrl}/api/admin/pfe/pfe/${pfeId}/cancel-cloture`,
+      null,
+    );
+  }
+
+  deletePFEByAdmin(pfeId: number): Observable<ApiResponse<void>> {
+    return this.http.delete<ApiResponse<void>>(
+      `${this.baseUrl}/api/admin/pfe/pfe/${pfeId}`,
     );
   }
 

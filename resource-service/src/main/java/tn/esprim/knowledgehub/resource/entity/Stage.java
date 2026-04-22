@@ -1,10 +1,8 @@
 package tn.esprim.knowledgehub.resource.entity;
 
 import com.fasterxml.jackson.annotation.JsonIgnoreProperties;
-import tn.esprim.knowledgehub.resource.enums.SubmissionStatus;
 import lombok.*;
 import org.hibernate.annotations.CreationTimestamp;
-import org.hibernate.annotations.UpdateTimestamp;
 
 import jakarta.persistence.*;
 import tn.esprim.knowledgehub.resource.enums.TypeStage;
@@ -59,6 +57,9 @@ public class Stage {
     @Column(name = "attestation_file_id", insertable = false, updatable = false)
     private Long attestationFileId;
 
+    @Column(name = "convention_file_id", insertable = false, updatable = false)
+    private Long conventionFileId;
+
     @ManyToOne(fetch = FetchType.LAZY)
     @JoinColumn(name = "report_file_id")
     private File reportFile;
@@ -70,6 +71,18 @@ public class Stage {
     @ManyToOne(fetch = FetchType.LAZY)
     @JoinColumn(name = "attestation_file_id")
     private File attestationFile;
+
+    @ManyToOne(fetch = FetchType.LAZY)
+    @JoinColumn(name = "convention_file_id")
+    private File conventionFile;
+
+    @Builder.Default
+    @Column(nullable = false)
+    private Boolean cloture = false;
+
+    @Builder.Default
+    @Column(nullable = false)
+    private Boolean canEdit = false;
 
     @Lob
     private String supervisorFeedback;

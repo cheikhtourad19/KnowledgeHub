@@ -6,6 +6,7 @@ import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 import tn.esprim.knowledgehub.resource.dto.request.UpdatePFEStatusRequest;
+import tn.esprim.knowledgehub.resource.dto.request.RapporteurFeedbackRequest;
 import tn.esprim.knowledgehub.resource.dto.response.ApiResponse;
 import tn.esprim.knowledgehub.resource.entity.PFE;
 import tn.esprim.knowledgehub.resource.enums.SubmissionStatus;
@@ -116,7 +117,41 @@ public class TeacherReviewController {
         }
     }
 
+    @PutMapping("/pfe/{pfeId}/rapporteur-feedback")
+    public ResponseEntity<ApiResponse<PFE>> addRapporteurFeedback(
+            @PathVariable Long pfeId,
+            @Valid @RequestBody RapporteurFeedbackRequest request,
+            @RequestHeader("X-User-Id") Long rapporteurId
+    ) {
+        PFE pfe = pfeService.getPFEById(pfeId);
+        if (pfe == null) {
+            return ResponseEntity.status(404).body(
+                    ApiResponse.error("Not Found", "PFE not found with id: " + pfeId)
+            );
+        }
 
+        // Check if the user is the rapporteur
+        if (!pfe.getRapporteurId().equals(rapporteurId)) {
+            return ResponseEntity.status(403).body(
+                    ApiResponse.error("Forbidden", "You are not the rapporteur for this PFE")
+            );
+        }
+
+        try {
+            PFE updatedPFE = pfeService.addRapporteurFeedback(pfe, request.getFeedback());
+            return ResponseEntity.ok(
+                    ApiResponse.success(updatedPFE, "Rapporteur feedback added successfully")
+            );
+        } catch (IllegalStateException | IllegalArgumentException e) {
+            return ResponseEntity.badRequest().body(
+                    ApiResponse.error(e.getMessage(), "Failed to add rapporteur feedback")
+            );
+        } catch (Exception e) {
+            return ResponseEntity.internalServerError().body(
+                    ApiResponse.error("Internal server error", "Failed to add rapporteur feedback")
+            );
+        }
+    }
 
 
 }

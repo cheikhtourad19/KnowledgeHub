@@ -26,9 +26,14 @@ export class StageDetailsComponent implements OnInit {
   showSupervisorModal = false;
   selectedSupervisorId: number | null = null;
 
+  // Confirmation modals
+  showStatusConfirmModal = false;
+  showDeleteConfirmModal = false;
+
   reportFileUrl: string = '';
   journalFileUrl: string = '';
   attestationFileUrl: string = '';
+  conventionFileUrl: string = '';
 
   // PDF Viewer Modal
   showPdfModal = false;
@@ -87,7 +92,16 @@ export class StageDetailsComponent implements OnInit {
           this.loadPresignedUrl(this.stage_details.journalFileId, 'journal');
         }
         if (this.stage_details?.attestationFileId) {
-          this.loadPresignedUrl(this.stage_details.attestationFileId, 'attestation');
+          this.loadPresignedUrl(
+            this.stage_details.attestationFileId,
+            'attestation',
+          );
+        }
+        if (this.stage_details?.conventionFileId) {
+          this.loadPresignedUrl(
+            this.stage_details.conventionFileId,
+            'convention',
+          );
         }
       },
       error: () => {
@@ -101,7 +115,10 @@ export class StageDetailsComponent implements OnInit {
     });
   }
 
-  loadPresignedUrl(fileId: number, type: 'report' | 'journal' | 'attestation'): void {
+  loadPresignedUrl(
+    fileId: number,
+    type: 'report' | 'journal' | 'attestation' | 'convention',
+  ): void {
     this.resourceApiService.viewpdf(fileId).subscribe({
       next: (response) => {
         const url = response.data ?? '';
@@ -111,6 +128,8 @@ export class StageDetailsComponent implements OnInit {
           this.journalFileUrl = url;
         } else if (type === 'attestation') {
           this.attestationFileUrl = url;
+        } else if (type === 'convention') {
+          this.conventionFileUrl = url;
         }
       },
       error: () => {
@@ -184,6 +203,109 @@ export class StageDetailsComponent implements OnInit {
       });
   }
 
+  openStatusConfirmModal(): void {
+    this.showStatusConfirmModal = true;
+  }
+
+  closeStatusConfirmModal(): void {
+    this.showStatusConfirmModal = false;
+  }
+
+  confirmStageStatus(): void {
+    if (!this.stage_id) return;
+
+    const request = this.stage_details?.cloture
+      ? this.resourceApiService.openStageByAdmin(this.stage_id)
+      : this.resourceApiService.closeStageByAdmin(this.stage_id);
+
+    request.subscribe({
+      next: () => {
+        this.messageService.add({
+          severity: 'success',
+          summary: 'Succès',
+          detail: this.stage_details?.cloture
+            ? 'Le stage a été rouvert'
+            : 'Le stage a été clôturé',
+          life: 3000,
+        });
+        this.closeStatusConfirmModal();
+        this.loadStageDetails(this.stage_id);
+      },
+      error: () => {
+        this.messageService.add({
+          severity: 'error',
+          summary: 'Erreur',
+          detail: 'Impossible de clôturer le stage',
+          life: 5000,
+        });
+      },
+    });
+  }
+
+  toggleCanEdit(): void {
+    if (!this.stage_id || !this.stage_details || this.stage_details.cloture) {
+      return;
+    }
+
+    const nextValue = !this.stage_details.canEdit;
+    this.resourceApiService
+      .setStageCanEditByAdmin(this.stage_id, nextValue)
+      .subscribe({
+        next: () => {
+          this.messageService.add({
+            severity: 'success',
+            summary: 'Succès',
+            detail: nextValue
+              ? 'Edition activée pour ce stage'
+              : 'Edition désactivée pour ce stage',
+            life: 3000,
+          });
+          this.loadStageDetails(this.stage_id);
+        },
+        error: () => {
+          this.messageService.add({
+            severity: 'error',
+            summary: 'Erreur',
+            detail: "Impossible de mettre à jour l'état d'édition",
+            life: 5000,
+          });
+        },
+      });
+  }
+
+  openDeleteConfirmModal(): void {
+    this.showDeleteConfirmModal = true;
+  }
+
+  closeDeleteConfirmModal(): void {
+    this.showDeleteConfirmModal = false;
+  }
+
+  confirmDeleteStage(): void {
+    if (!this.stage_id) return;
+
+    this.resourceApiService.deleteStageByAdmin(this.stage_id).subscribe({
+      next: () => {
+        this.messageService.add({
+          severity: 'success',
+          summary: 'Succès',
+          detail: 'Stage supprimé avec succès',
+          life: 3000,
+        });
+        this.closeDeleteConfirmModal();
+        this.router.navigate(['/admin/stage']);
+      },
+      error: () => {
+        this.messageService.add({
+          severity: 'error',
+          summary: 'Erreur',
+          detail: 'Impossible de supprimer le stage',
+          life: 5000,
+        });
+      },
+    });
+  }
+
   getTypeStageLabel(typeStage?: string): string {
     if (!typeStage) return '—';
     return typeStage === 'TECHNICIEN' ? 'Technicien' : 'Ouvrier';
@@ -199,14 +321,27 @@ export class StageDetailsComponent implements OnInit {
 
   getFileCount(): string {
     let count = 0;
-    if (this.stage_details?.reportFile) count++;
-    if (this.stage_details?.journalFile) count++;
-    if (this.stage_details?.attestationFile) count++;
-    return `${count}/3`;
+    if (this.stage_details?.reportFile || this.stage_details?.reportFileId)
+      count++;
+    if (this.stage_details?.journalFile || this.stage_details?.journalFileId)
+      count++;
+    if (
+      this.stage_details?.attestationFile ||
+      this.stage_details?.attestationFileId
+    )
+      count++;
+    if (
+      this.stage_details?.conventionFile ||
+      this.stage_details?.conventionFileId
+    )
+      count++;
+    return `${count}/4`;
   }
 
   // ── PDF Modal ──
-  openPdfModal(type: 'report' | 'journal' | 'attestation'): void {
+  openPdfModal(
+    type: 'report' | 'journal' | 'attestation' | 'convention',
+  ): void {
     let url = '';
     let title = '';
 
@@ -223,13 +358,17 @@ export class StageDetailsComponent implements OnInit {
         url = this.attestationFileUrl;
         title = 'Attestation';
         break;
+      case 'convention':
+        url = this.conventionFileUrl;
+        title = 'Convention de Stage';
+        break;
     }
 
     if (!url || url.trim().length === 0) {
       this.messageService.add({
         severity: 'warn',
         summary: 'Attention',
-        detail: 'Le fichier n\'est pas encore chargé',
+        detail: "Le fichier n'est pas encore chargé",
         life: 3000,
       });
       return;

@@ -34,6 +34,14 @@ export class StageComponent implements OnInit {
     { label: 'Ouvrier', value: TypeStage.OUVRIER },
   ];
 
+  // State filter
+  selectedCloture: boolean | null = null;
+  clotureFilterOptions: { label: string; value: boolean | null }[] = [
+    { label: 'Ouvert + Fermé', value: null },
+    { label: 'Ouvert', value: false },
+    { label: 'Fermé', value: true },
+  ];
+
   // Modal state
   showAuthorizationModal = false;
   authorizationType: 'student' | 'class' = 'student';
@@ -133,6 +141,8 @@ export class StageComponent implements OnInit {
         this.selectedYear === null || s.year === this.selectedYear;
       const matchType =
         this.selectedType === null || s.typeStage === this.selectedType;
+      const matchCloture =
+        this.selectedCloture === null || s.cloture === this.selectedCloture;
       const matchSearch =
         !query ||
         s.title?.toLowerCase().includes(query) ||
@@ -142,7 +152,7 @@ export class StageComponent implements OnInit {
         s.supervisorName?.toLowerCase().includes(query) ||
         s.id?.toString().includes(query);
 
-      return matchYear && matchType && matchSearch;
+      return matchYear && matchType && matchCloture && matchSearch;
     });
   }
 
@@ -159,10 +169,15 @@ export class StageComponent implements OnInit {
     this.applyFilters();
   }
 
+  onClotureChange(): void {
+    this.applyFilters();
+  }
+
   clearFilters(): void {
     this.searchQuery = '';
     this.selectedYear = null;
     this.selectedType = null;
+    this.selectedCloture = null;
     this.applyFilters();
   }
 
@@ -171,6 +186,7 @@ export class StageComponent implements OnInit {
     if (this.searchQuery.trim()) count++;
     if (this.selectedYear !== null) count++;
     if (this.selectedType !== null) count++;
+    if (this.selectedCloture !== null) count++;
     return count;
   }
 
@@ -354,6 +370,7 @@ export class StageComponent implements OnInit {
     if (stage.reportFile || stage.reportFileId) count++;
     if (stage.journalFile || stage.journalFileId) count++;
     if (stage.attestationFile || stage.attestationFileId) count++;
-    return `${count}/3`;
+    if (stage.conventionFile || stage.conventionFileId) count++;
+    return `${count}/4`;
   }
 }

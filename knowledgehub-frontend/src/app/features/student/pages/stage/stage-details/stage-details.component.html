@@ -24,8 +24,31 @@
       </div>
     </div>
 
-    <div *ngIf="stage.year === currentYear">
-      <p-tag value="En cours" severity="success" icon="pi pi-check-circle" />
+    <div class="flex items-center gap-2" *ngIf="stage">
+      <p-tag
+        [value]="stage.cloture ? 'Fermé' : 'Ouvert'"
+        [severity]="stage.cloture ? 'danger' : 'success'"
+        [icon]="stage.cloture ? 'pi pi-lock' : 'pi pi-lock-open'"
+      />
+      <p-tag
+        [value]="stage.canEdit ? 'Editable' : 'Locked'"
+        [severity]="stage.canEdit ? 'info' : 'secondary'"
+        [icon]="stage.canEdit ? 'pi pi-pencil' : 'pi pi-ban'"
+      />
+      <p-tag
+        *ngIf="stage.year === currentYear"
+        value="En cours"
+        severity="success"
+        icon="pi pi-check-circle"
+      />
+      <p-button
+        *ngIf="canEditMetadata()"
+        label="Modifier"
+        icon="pi pi-pencil"
+        severity="secondary"
+        [outlined]="true"
+        (onClick)="openEditMetadataModal()"
+      />
     </div>
   </div>
 
@@ -174,6 +197,15 @@
                 </p>
               </div>
               <i class="pi pi-eye text-[#C60C30] flex-shrink-0"></i>
+              <p-button
+                *ngIf="canEditStage()"
+                label="Remplacer"
+                icon="pi pi-refresh"
+                severity="secondary"
+                [outlined]="true"
+                styleClass="ml-2 shrink-0"
+                (onClick)="openUploadReportModal(); $event.stopPropagation()"
+              />
             </div>
           </ng-container>
           <ng-template #noReport>
@@ -222,6 +254,15 @@
               <i
                 class="pi pi-eye text-gray-400 dark:text-gray-500 flex-shrink-0"
               ></i>
+              <p-button
+                *ngIf="canEditStage()"
+                label="Remplacer"
+                icon="pi pi-refresh"
+                severity="secondary"
+                [outlined]="true"
+                styleClass="ml-2 shrink-0"
+                (onClick)="openUploadJournalModal(); $event.stopPropagation()"
+              />
             </div>
           </ng-container>
           <ng-template #noJournal>
@@ -270,6 +311,17 @@
               <i
                 class="pi pi-eye text-purple-600 dark:text-purple-400 flex-shrink-0"
               ></i>
+              <p-button
+                *ngIf="canEditStage()"
+                label="Remplacer"
+                icon="pi pi-refresh"
+                severity="secondary"
+                [outlined]="true"
+                styleClass="ml-2 shrink-0"
+                (onClick)="
+                  openUploadAttestationModal(); $event.stopPropagation()
+                "
+              />
             </div>
           </ng-container>
           <ng-template #noAttestation>
@@ -289,6 +341,79 @@
               >
                 <i class="pi pi-info-circle"></i>
                 Aucune attestation soumise.
+              </div>
+            </ng-template>
+          </ng-template>
+
+          <!-- Convention File -->
+          <ng-container
+            *ngIf="
+              stage.conventionFile ||
+                stage.conventionFileName ||
+                stage.conventionFileId;
+              else noConvention
+            "
+          >
+            <div
+              (click)="openPdfModal('convention')"
+              class="flex items-center gap-3 p-3.5 bg-blue-50 dark:bg-blue-900/10 border border-blue-200 dark:border-blue-800/50 rounded-lg cursor-pointer hover:bg-blue-100 dark:hover:bg-blue-900/20 transition-colors duration-200"
+            >
+              <i
+                class="pi pi-file-pdf text-blue-600 dark:text-blue-400 text-3xl flex-shrink-0"
+              ></i>
+              <div class="flex-1">
+                <p
+                  class="text-[10px] font-bold text-gray-400 uppercase tracking-widest mb-0.5"
+                >
+                  Convention de Stage
+                </p>
+                <p class="font-semibold text-gray-900 dark:text-white text-sm">
+                  {{
+                    stage.conventionFile
+                      ? stage.conventionFile.originalFileName
+                      : stage.conventionFileName || "Convention de stage"
+                  }}
+                </p>
+                <p
+                  *ngIf="stage.conventionFile"
+                  class="text-xs text-gray-500 dark:text-gray-400 mt-0.5"
+                >
+                  {{ stage.conventionFile.fileSize | number }} octets
+                </p>
+              </div>
+              <i
+                class="pi pi-eye text-blue-600 dark:text-blue-400 flex-shrink-0"
+              ></i>
+              <p-button
+                *ngIf="canEditStage()"
+                label="Remplacer"
+                icon="pi pi-refresh"
+                severity="secondary"
+                [outlined]="true"
+                styleClass="ml-2 shrink-0"
+                (onClick)="
+                  openUploadConventionModal(); $event.stopPropagation()
+                "
+              />
+            </div>
+          </ng-container>
+          <ng-template #noConvention>
+            <ng-container *ngIf="canEditStage(); else cannotEditConvention">
+              <p-button
+                label="Uploader la convention"
+                icon="pi pi-upload"
+                [outlined]="true"
+                severity="secondary"
+                styleClass="w-full border-dashed border-2 hover:border-[#C60C30] hover:text-[#C60C30]"
+                (onClick)="openUploadConventionModal()"
+              />
+            </ng-container>
+            <ng-template #cannotEditConvention>
+              <div
+                class="flex items-center gap-2 text-gray-400 dark:text-gray-500 italic text-sm py-1"
+              >
+                <i class="pi pi-info-circle"></i>
+                Aucune convention soumise.
               </div>
             </ng-template>
           </ng-template>
@@ -500,6 +625,120 @@
       [style]="{ 'background-color': '#C60C30', 'border-color': '#C60C30' }"
       [disabled]="!selectedFile"
       (onClick)="uploadAttestation()"
+    />
+  </ng-template>
+</p-dialog>
+
+<!-- ── Upload Convention Modal ── -->
+<p-dialog
+  [(visible)]="showUploadConventionModal"
+  [modal]="true"
+  [closable]="true"
+  [style]="{ width: '500px' }"
+  header="Uploader la convention de stage"
+  (onHide)="closeUploadModal()"
+>
+  <div class="space-y-4 py-2">
+    <p class="text-gray-600 dark:text-gray-400 text-sm">
+      Sélectionnez votre convention au format PDF.
+    </p>
+    <div
+      class="border-2 border-dashed border-gray-300 dark:border-gray-600 rounded-lg p-6 text-center hover:border-[#C60C30] transition-colors"
+    >
+      <input
+        type="file"
+        #conventionFileInput
+        accept="application/pdf"
+        (change)="onFileSelected($event)"
+        class="hidden"
+      />
+      <p-button
+        label="Choisir un fichier"
+        icon="pi pi-upload"
+        severity="secondary"
+        [outlined]="true"
+        (onClick)="conventionFileInput.click()"
+      />
+      <p
+        *ngIf="selectedFile"
+        class="mt-3 text-sm text-gray-900 dark:text-white font-medium"
+      >
+        <i class="pi pi-file-pdf text-[#C60C30] mr-1"></i>
+        {{ selectedFile.name }}
+      </p>
+    </div>
+  </div>
+  <ng-template pTemplate="footer">
+    <p-button
+      label="Annuler"
+      severity="secondary"
+      [outlined]="true"
+      (onClick)="closeUploadModal()"
+    />
+    <p-button
+      label="Uploader"
+      icon="pi pi-upload"
+      [style]="{ 'background-color': '#C60C30', 'border-color': '#C60C30' }"
+      [disabled]="!selectedFile"
+      (onClick)="uploadConvention()"
+    />
+  </ng-template>
+</p-dialog>
+
+<!-- ── Edit Metadata Modal ── -->
+<p-dialog
+  [(visible)]="showEditMetadataModal"
+  [modal]="true"
+  [closable]="true"
+  [style]="{ width: '520px' }"
+  header="Modifier les métadonnées du stage"
+  (onHide)="closeEditMetadataModal()"
+>
+  <div class="space-y-4 py-2">
+    <div>
+      <label class="text-sm font-medium text-gray-700 dark:text-gray-300"
+        >Titre</label
+      >
+      <input
+        type="text"
+        [(ngModel)]="metadataForm.title"
+        class="w-full mt-1 px-3 py-2 border border-gray-300 dark:border-gray-600 rounded-lg bg-white dark:bg-gray-800 text-gray-900 dark:text-white"
+      />
+    </div>
+    <div>
+      <label class="text-sm font-medium text-gray-700 dark:text-gray-300"
+        >Entreprise</label
+      >
+      <input
+        type="text"
+        [(ngModel)]="metadataForm.companyName"
+        class="w-full mt-1 px-3 py-2 border border-gray-300 dark:border-gray-600 rounded-lg bg-white dark:bg-gray-800 text-gray-900 dark:text-white"
+      />
+    </div>
+    <div>
+      <label class="text-sm font-medium text-gray-700 dark:text-gray-300"
+        >Durée (mois)</label
+      >
+      <input
+        type="number"
+        min="1"
+        [(ngModel)]="metadataForm.durationMonths"
+        class="w-full mt-1 px-3 py-2 border border-gray-300 dark:border-gray-600 rounded-lg bg-white dark:bg-gray-800 text-gray-900 dark:text-white"
+      />
+    </div>
+  </div>
+  <ng-template pTemplate="footer">
+    <p-button
+      label="Annuler"
+      severity="secondary"
+      [outlined]="true"
+      (onClick)="closeEditMetadataModal()"
+    />
+    <p-button
+      label="Enregistrer"
+      icon="pi pi-check"
+      [style]="{ 'background-color': '#C60C30', 'border-color': '#C60C30' }"
+      (onClick)="saveMetadata()"
     />
   </ng-template>
 </p-dialog>

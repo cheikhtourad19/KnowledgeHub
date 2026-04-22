@@ -21,7 +21,6 @@ public class Notification {
     private String userId;
     private String content;
     private NotificationType type;
-
     private String subject;
     private String recipientEmail;
     private String deviceToken;
@@ -30,8 +29,6 @@ public class Notification {
     private LocalDateTime createdAt;
     private LocalDateTime deliveredAt;
     private LocalDateTime readAt;
-
-
     private boolean emailSent;
     private int retryCount;
     private LocalDateTime lastRetryAt;

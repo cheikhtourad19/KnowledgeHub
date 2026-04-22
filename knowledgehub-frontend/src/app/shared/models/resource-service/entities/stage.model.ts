@@ -8,6 +8,8 @@ export interface Stage {
   id: number;
   title: string;
   companyName?: string;
+  cloture?: boolean;
+  canEdit?: boolean;
   typeStage?: TypeStage;
   year?: number;
   durationMonths?: number;
@@ -25,6 +27,9 @@ export interface Stage {
   attestationFile?: File;
   attestationFileId?: number;
   attestationFileName?: string;
+  conventionFile?: File;
+  conventionFileId?: number;
+  conventionFileName?: string;
   supervisorFeedback?: string;
   createdDate: Date;
 }

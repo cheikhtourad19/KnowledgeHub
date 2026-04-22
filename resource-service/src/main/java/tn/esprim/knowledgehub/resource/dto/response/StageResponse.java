@@ -24,6 +24,8 @@ public class StageResponse {
     private Long supervisorId;
     private String supervisorName;
     private String supervisorFeedback;
+    private Boolean cloture;
+    private Boolean canEdit;
     private Date createdDate;
 
     // File references (IDs and names for backward compatibility)
@@ -33,9 +35,12 @@ public class StageResponse {
     private String journalFileName;
     private Long attestationFileId;
     private String attestationFileName;
+    private Long conventionFileId;
+    private String conventionFileName;
 
     // Full File objects for frontend
     private File reportFile;
     private File journalFile;
     private File attestationFile;
+    private File conventionFile;
 }

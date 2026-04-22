@@ -35,7 +35,17 @@
       </div>
     </div>
 
-    <div class="flex items-center gap-3">
+    <div class="flex items-center gap-2 flex-wrap justify-end">
+      <span
+        class="px-3 py-1 rounded-full text-xs font-bold tracking-widest uppercase"
+        [ngClass]="
+          pfe_details.cloture
+            ? 'bg-red-100 text-red-700 dark:bg-red-900/30 dark:text-red-300'
+            : 'bg-green-100 text-green-700 dark:bg-green-900/30 dark:text-green-300'
+        "
+      >
+        {{ pfe_details.cloture ? "Fermé" : "Ouvert" }}
+      </span>
       <span
         class="px-3 py-1 rounded-full text-xs font-bold tracking-widest uppercase"
         [ngClass]="getStatusClass(pfe_details.status)"
@@ -43,46 +53,21 @@
       >
 
       <!-- Action Buttons -->
+
       <button
         type="button"
-        (click)="openJuryModal()"
-        class="inline-flex items-center gap-1.5 px-4 py-2 text-sm font-semibold rounded-lg border-2 border-[#333333] dark:border-gray-500 text-[#333333] dark:text-gray-300 bg-white dark:bg-transparent hover:bg-[#333333] hover:text-white dark:hover:bg-gray-700 transition-all duration-200"
+        (click)="openClotureConfirmModal()"
+        class="inline-flex items-center gap-1.5 px-4 py-2 text-sm font-semibold rounded-lg bg-[#333333] text-white hover:bg-[#1a1a1a] transition-all duration-200 shadow-sm"
       >
-        <svg
-          class="w-3.5 h-3.5"
-          fill="none"
-          viewBox="0 0 24 24"
-          stroke="currentColor"
-          stroke-width="2"
-        >
-          <path
-            stroke-linecap="round"
-            stroke-linejoin="round"
-            d="M17 20h5v-2a3 3 0 00-5.356-1.857M17 20H7m10 0v-2c0-.656-.126-1.283-.356-1.857M7 20H2v-2a3 3 0 015.356-1.857M7 20v-2c0-.656.126-1.283.356-1.857m0 0a5.002 5.002 0 019.288 0M15 7a3 3 0 11-6 0 3 3 0 016 0z"
-          />
-        </svg>
-        Assigner Jury
+        {{ pfe_details.cloture ? "Rouvrir PFE" : "Clôturer PFE" }}
       </button>
 
       <button
         type="button"
-        (click)="openRapporteurModal()"
-        class="inline-flex items-center gap-1.5 px-4 py-2 text-sm font-semibold rounded-lg bg-[#C60C30] text-white hover:bg-[#a00828] transition-all duration-200 shadow-sm"
+        (click)="openDeleteConfirmModal()"
+        class="inline-flex items-center gap-1.5 px-4 py-2 text-sm font-semibold rounded-lg bg-red-600 text-white hover:bg-red-700 transition-all duration-200 shadow-sm"
       >
-        <svg
-          class="w-3.5 h-3.5"
-          fill="none"
-          viewBox="0 0 24 24"
-          stroke="currentColor"
-          stroke-width="2"
-        >
-          <path
-            stroke-linecap="round"
-            stroke-linejoin="round"
-            d="M11 5H6a2 2 0 00-2 2v11a2 2 0 002 2h11a2 2 0 002-2v-5m-1.414-9.414a2 2 0 112.828 2.828L11.828 15H9v-2.828l8.586-8.586z"
-          />
-        </svg>
-        Assigner Rapporteur
+        Supprimer
       </button>
     </div>
   </div>
@@ -230,6 +215,22 @@
               class="text-gray-700 dark:text-gray-300 text-sm leading-relaxed whitespace-pre-wrap italic"
             >
               {{ pfe_details.supervisorFeedback }}
+            </p>
+          </div>
+
+          <div
+            *ngIf="pfe_details.reporteurFeedback"
+            class="pt-3 border-t border-gray-100 dark:border-gray-800"
+          >
+            <p
+              class="text-[10px] font-bold text-gray-400 dark:text-gray-500 uppercase tracking-widest mb-1"
+            >
+              Feedback Rapporteur
+            </p>
+            <p
+              class="text-amber-700 dark:text-amber-300 text-sm leading-relaxed whitespace-pre-wrap"
+            >
+              {{ pfe_details.reporteurFeedback }}
             </p>
           </div>
         </div>
@@ -533,7 +534,7 @@
       </div>
 
       <div
-        *ngIf="pfe_details.reportFile && reportFileUrl.trim().length>0"
+        *ngIf="pfe_details.reportFile && reportFileUrl.trim().length > 0"
         class="rounded-lg border border-gray-200 dark:border-gray-700 overflow-hidden"
       >
         <div
@@ -554,7 +555,9 @@
             />
           </svg>
           <div class="flex-1">
-            <p class="text-[10px] font-bold text-gray-400 uppercase tracking-widest mb-0.5">
+            <p
+              class="text-[10px] font-bold text-gray-400 uppercase tracking-widest mb-0.5"
+            >
               Rapport PFE
             </p>
             <p class="font-semibold text-gray-900 dark:text-white text-sm">
@@ -749,11 +752,84 @@
   </ng-template>
 </p-dialog>
 
+<!-- ===== CLOTURE CONFIRM MODAL ===== -->
+<p-dialog
+  [header]="pfe_details?.cloture ? 'Rouvrir ce PFE' : 'Clôturer ce PFE'"
+  [(visible)]="showClotureConfirmModal"
+  [modal]="true"
+  [style]="{ width: '420px' }"
+  [draggable]="false"
+  [resizable]="false"
+>
+  <p class="text-sm text-gray-700 dark:text-gray-300 leading-relaxed">
+    {{
+      pfe_details?.cloture
+        ? "Cette action va annuler la clôture du PFE et rouvrir les opérations autorisées."
+        : "Cette action va marquer le PFE comme clôturé et bloquer définitivement les uploads étudiant."
+    }}
+  </p>
+
+  <ng-template pTemplate="footer">
+    <div class="flex justify-end gap-2">
+      <button
+        pButton
+        type="button"
+        label="Annuler"
+        icon="pi pi-times"
+        class="p-button-text"
+        (click)="closeClotureConfirmModal()"
+      ></button>
+      <button
+        pButton
+        type="button"
+        [label]="pfe_details?.cloture ? 'Rouvrir' : 'Confirmer'"
+        [icon]="pfe_details?.cloture ? 'pi pi-lock-open' : 'pi pi-lock'"
+        (click)="confirmCloturePFE()"
+        class="!bg-[#333333] !border-[#333333] !text-white hover:!bg-black"
+      ></button>
+    </div>
+  </ng-template>
+</p-dialog>
+
+<!-- ===== DELETE CONFIRM MODAL ===== -->
+<p-dialog
+  header="Supprimer ce PFE"
+  [(visible)]="showDeleteConfirmModal"
+  [modal]="true"
+  [style]="{ width: '420px' }"
+  [draggable]="false"
+  [resizable]="false"
+>
+  <p class="text-sm text-gray-700 dark:text-gray-300 leading-relaxed">
+    Cette action est irréversible. Le PFE sera supprimé définitivement.
+  </p>
+
+  <ng-template pTemplate="footer">
+    <div class="flex justify-end gap-2">
+      <button
+        pButton
+        type="button"
+        label="Annuler"
+        icon="pi pi-times"
+        class="p-button-text"
+        (click)="closeDeleteConfirmModal()"
+      ></button>
+      <button
+        pButton
+        type="button"
+        label="Supprimer"
+        icon="pi pi-trash"
+        (click)="confirmDeletePFE()"
+        class="!bg-red-600 !border-red-600 !text-white hover:!bg-red-700"
+      ></button>
+    </div>
+  </ng-template>
+</p-dialog>
+
 <!-- ===== PDF VIEWER MODAL ===== -->
 <app-pdf-viewer-modal
   [(visible)]="showPdfModal"
   [pdfUrl]="reportFileUrl"
-  [title]="'Rapport PFE'">
+  [title]="'Rapport PFE'"
+>
 </app-pdf-viewer-modal>
-
-

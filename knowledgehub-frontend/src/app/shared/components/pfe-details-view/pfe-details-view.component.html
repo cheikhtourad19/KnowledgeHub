@@ -1,8 +1,13 @@
 <div *ngIf="pfe">
   <!-- ── Status Badge Header ── -->
   <div
-    class="flex items-center justify-end mb-6 pb-5 border-b border-gray-200 dark:border-gray-700"
+    class="flex items-center justify-end gap-2 mb-6 pb-5 border-b border-gray-200 dark:border-gray-700"
   >
+    <span
+      class="px-3 py-1 rounded-full text-xs font-bold tracking-widest uppercase"
+      [ngClass]="getClotureClass()"
+      >{{ getClotureLabel() }}</span
+    >
     <span
       class="px-3 py-1 rounded-full text-xs font-bold tracking-widest uppercase"
       [ngClass]="getStatusClass(pfe.status)"
@@ -152,6 +157,22 @@
               class="text-gray-700 dark:text-gray-300 text-sm leading-relaxed whitespace-pre-wrap italic"
             >
               {{ pfe.supervisorFeedback }}
+            </p>
+          </div>
+
+          <div
+            *ngIf="pfe.reporteurFeedback"
+            class="pt-3 border-t border-gray-100 dark:border-gray-800"
+          >
+            <p
+              class="text-[10px] font-bold text-gray-400 dark:text-gray-500 uppercase tracking-widest mb-1"
+            >
+              Feedback Rapporteur
+            </p>
+            <p
+              class="text-amber-700 dark:text-amber-300 text-sm leading-relaxed whitespace-pre-wrap"
+            >
+              {{ pfe.reporteurFeedback }}
             </p>
           </div>
         </div>

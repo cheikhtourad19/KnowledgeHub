@@ -3,6 +3,7 @@ package tn.esprim.knowledgehub.resource.controller.student;
 import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
+import org.springframework.http.MediaType;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
@@ -10,6 +11,7 @@ import org.springframework.web.multipart.MultipartFile;
 import tn.esprim.knowledgehub.resource.client.UserServiceClient;
 import tn.esprim.knowledgehub.resource.client.dto.StudentDTO;
 import tn.esprim.knowledgehub.resource.dto.request.StudentCreateStageRequest;
+import tn.esprim.knowledgehub.resource.dto.request.StudentUpdateStageMetadataRequest;
 import tn.esprim.knowledgehub.resource.dto.response.ApiResponse;
 import tn.esprim.knowledgehub.resource.dto.response.FileUploadResponse;
 import tn.esprim.knowledgehub.resource.dto.response.StageResponse;
@@ -32,9 +34,9 @@ public class StudentStageController {
     private final StageRepository stageRepository;
 
 
-    @PostMapping
+    @PostMapping(consumes = MediaType.MULTIPART_FORM_DATA_VALUE)
     public ResponseEntity<ApiResponse<StageResponse>> createStage(
-            @Valid @RequestBody StudentCreateStageRequest request,
+            @Valid @ModelAttribute StudentCreateStageRequest request,
             @RequestHeader(value = "X-User-Id") Long userId
     ) {
         log.info("Student {} attempting to create a stage", userId);
@@ -55,6 +57,36 @@ public class StudentStageController {
                     ));
         } catch (Exception e) {
             log.error("Unexpected error creating stage for student {}: {}", userId, e.getMessage(), e);
+            return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR)
+                    .body(ApiResponse.error(
+                            "Erreur interne du serveur",
+                            "Une erreur inattendue s'est produite"
+                    ));
+        }
+    }
+
+    @PutMapping("/{stageId}/metadata")
+    public ResponseEntity<ApiResponse<StageResponse>> updateStageMetadata(
+            @PathVariable Long stageId,
+            @Valid @RequestBody StudentUpdateStageMetadataRequest request,
+            @RequestHeader(value = "X-User-Id") Long userId
+    ) {
+        log.info("Student {} attempting to update stage metadata for stage {}", userId, stageId);
+
+        try {
+            StageResponse stageResponse = stageService.updateStageMetadataByStudent(stageId, userId, request);
+            return ResponseEntity.ok(
+                    ApiResponse.success(stageResponse, "Métadonnées du stage mises à jour avec succès")
+            );
+        } catch (RuntimeException e) {
+            log.error("Error updating stage metadata for stage {}: {}", stageId, e.getMessage());
+            return ResponseEntity.status(HttpStatus.BAD_REQUEST)
+                    .body(ApiResponse.error(
+                            "Erreur lors de la modification du stage",
+                            e.getMessage()
+                    ));
+        } catch (Exception e) {
+            log.error("Unexpected error updating stage metadata for stage {}: {}", stageId, e.getMessage(), e);
             return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR)
                     .body(ApiResponse.error(
                             "Erreur interne du serveur",
@@ -169,6 +201,12 @@ public class StudentStageController {
                 );
             }
 
+                        if (Boolean.TRUE.equals(stage.getCloture())) {
+                                return ResponseEntity.status(HttpStatus.FORBIDDEN).body(
+                                                ApiResponse.error("Forbidden", "Ce stage est clôturé. Aucun upload n'est possible")
+                                );
+                        }
+
             // Check if the stage is from a past year (not editable)
             int currentYear = java.time.LocalDate.now().getYear();
             if (stage.getYear() != null && stage.getYear() < currentYear) {
@@ -196,8 +234,12 @@ public class StudentStageController {
             );
 
             File uploadedFile = fileService.getFileById(response.getFileId());
+                        Long oldReportFileId = stage.getReportFileId();
             stage.setReportFile(uploadedFile);
-            stageRepository.save(stage);
+                        stageRepository.saveAndFlush(stage);
+                        if (oldReportFileId != null) {
+                                fileService.deleteFile(oldReportFileId);
+                        }
 
             log.info("Report uploaded successfully for stage {}", stageId);
             return ResponseEntity.ok(
@@ -235,6 +277,12 @@ public class StudentStageController {
                 );
             }
 
+                        if (Boolean.TRUE.equals(stage.getCloture())) {
+                                return ResponseEntity.status(HttpStatus.FORBIDDEN).body(
+                                                ApiResponse.error("Forbidden", "Ce stage est clôturé. Aucun upload n'est possible")
+                                );
+                        }
+
             // Check if the stage is from a past year (not editable)
             int currentYear = java.time.LocalDate.now().getYear();
             if (stage.getYear() != null && stage.getYear() < currentYear) {
@@ -262,8 +310,12 @@ public class StudentStageController {
             );
 
             File uploadedFile = fileService.getFileById(response.getFileId());
+                        Long oldJournalFileId = stage.getJournalFileId();
             stage.setJournalFile(uploadedFile);
-            stageRepository.save(stage);
+                        stageRepository.saveAndFlush(stage);
+                        if (oldJournalFileId != null) {
+                                fileService.deleteFile(oldJournalFileId);
+                        }
 
             log.info("Journal uploaded successfully for stage {}", stageId);
             return ResponseEntity.ok(
@@ -301,6 +353,12 @@ public class StudentStageController {
                 );
             }
 
+                        if (Boolean.TRUE.equals(stage.getCloture())) {
+                                return ResponseEntity.status(HttpStatus.FORBIDDEN).body(
+                                                ApiResponse.error("Forbidden", "Ce stage est clôturé. Aucun upload n'est possible")
+                                );
+                        }
+
             // Check if the stage is from a past year (not editable)
             int currentYear = java.time.LocalDate.now().getYear();
             if (stage.getYear() != null && stage.getYear() < currentYear) {
@@ -328,8 +386,12 @@ public class StudentStageController {
             );
 
             File uploadedFile = fileService.getFileById(response.getFileId());
+                        Long oldAttestationFileId = stage.getAttestationFileId();
             stage.setAttestationFile(uploadedFile);
-            stageRepository.save(stage);
+                        stageRepository.saveAndFlush(stage);
+                        if (oldAttestationFileId != null) {
+                                fileService.deleteFile(oldAttestationFileId);
+                        }
 
             log.info("Attestation uploaded successfully for stage {}", stageId);
             return ResponseEntity.ok(
@@ -339,6 +401,81 @@ public class StudentStageController {
             log.error("Error uploading attestation for stage {}: {}", stageId, e.getMessage(), e);
             return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).body(
                     ApiResponse.error("Erreur interne", "Erreur lors de l'upload de l'attestation: " + e.getMessage())
+            );
+        }
+    }
+
+    @PostMapping("/upload-convention/{stageId}")
+    public ResponseEntity<ApiResponse<FileUploadResponse>> uploadConventionFile(
+            @PathVariable Long stageId,
+            @RequestParam(value = "title", required = false) String title,
+            @RequestParam(value = "description", required = false) String description,
+            @RequestParam("file") MultipartFile file,
+            @RequestHeader(value = "X-User-Id") Long userId
+    ) {
+        log.info("Student {} attempting to upload convention for stage {}", userId, stageId);
+
+        try {
+            Stage stage = stageService.getStageById(stageId);
+            if (stage == null) {
+                return ResponseEntity.status(HttpStatus.NOT_FOUND).body(
+                        ApiResponse.error("Not Found", "Stage non trouvé avec l'ID: " + stageId)
+                );
+            }
+
+            if (!stage.getStudentId().equals(userId)) {
+                return ResponseEntity.status(HttpStatus.FORBIDDEN).body(
+                        ApiResponse.error("Forbidden", "Vous n'êtes pas autorisé à uploader des fichiers pour ce stage")
+                );
+            }
+
+            if (Boolean.TRUE.equals(stage.getCloture())) {
+                return ResponseEntity.status(HttpStatus.FORBIDDEN).body(
+                        ApiResponse.error("Forbidden", "Ce stage est clôturé. Aucun upload n'est possible")
+                );
+            }
+
+            int currentYear = java.time.LocalDate.now().getYear();
+            if (stage.getYear() != null && stage.getYear() < currentYear) {
+                return ResponseEntity.status(HttpStatus.FORBIDDEN).body(
+                        ApiResponse.error("Forbidden", "Ce stage est de l'année " + stage.getYear() + " et n'est plus modifiable")
+                );
+            }
+
+            StudentDTO student = userServiceClient.getStudentById(stage.getStudentId()).getData();
+            if (student == null) {
+                return ResponseEntity.status(HttpStatus.NOT_FOUND).body(
+                        ApiResponse.error("Not Found", "Étudiant non trouvé")
+                );
+            }
+
+            FileUploadResponse response = fileService.uploadFile(
+                    file,
+                    FileType.CONVENTION_STAGE,
+                    userId,
+                    student.getEmail(),
+                    "stage",
+                    title != null ? title : "Convention de stage - " + stage.getTitle(),
+                    description,
+                    false
+            );
+
+            File uploadedFile = fileService.getFileById(response.getFileId());
+                        Long oldConventionFileId = stage.getConventionFileId();
+            stage.setConventionFile(uploadedFile);
+                        stageRepository.saveAndFlush(stage);
+                        if (oldConventionFileId != null) {
+                                fileService.deleteFile(oldConventionFileId);
+                        }
+
+            log.info("Convention uploaded successfully for stage {}", stageId);
+            return ResponseEntity.ok(
+                    ApiResponse.success(response, "Convention uploadée avec succès")
+            );
+        } catch (Exception e) {
+            log.error("Error uploading convention for stage {}: {}", stageId, e.getMessage(), e);
+            return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).body(
+                    ApiResponse.error("Erreur interne", "Erreur lors de l'upload de la convention: " + e.getMessage())
             );
         }
     }

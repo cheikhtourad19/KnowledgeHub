@@ -18,14 +18,23 @@ export class PfeGestionComponent implements OnInit {
   searchQuery: string = '';
   selectedYear: number | null = new Date().getFullYear();
   selectedStatus: SubmissionStatus | null = null;
+  selectedCloture: boolean | null = null;
 
   yearOptions: { label: string; value: number | null }[] = [];
   statusOptions: { label: string; value: SubmissionStatus | null }[] = [
     { label: 'Tous les statuts', value: null },
-    { label: 'En Attente', value: SubmissionStatus.DRAFT },
+    { label: 'Créé', value: SubmissionStatus.DRAFT },
     { label: 'Soumis', value: SubmissionStatus.SUBMITTED },
+    { label: 'En révision', value: SubmissionStatus.UNDER_REVIEW },
     { label: 'Validé', value: SubmissionStatus.APPROVED },
-    { label: 'A revoir', value: SubmissionStatus.REVISION_REQUIRED },
+    { label: 'Rejeté', value: SubmissionStatus.REJECTED },
+    { label: 'Révision requise', value: SubmissionStatus.REVISION_REQUIRED },
+  ];
+
+  clotureOptions: { label: string; value: boolean | null }[] = [
+    { label: 'Ouvert + Fermé', value: null },
+    { label: 'Ouvert', value: false },
+    { label: 'Fermé', value: true },
   ];
 
   constructor(
@@ -82,6 +91,9 @@ export class PfeGestionComponent implements OnInit {
         this.selectedYear === null || pYear === this.selectedYear;
       const matchStatus =
         this.selectedStatus === null || p.status === this.selectedStatus;
+      const matchCloture =
+        this.selectedCloture === null ||
+        (p.cloture ?? false) === this.selectedCloture;
       const matchSearch =
         !query ||
         p.title?.toLowerCase().includes(query) ||
@@ -91,7 +103,7 @@ export class PfeGestionComponent implements OnInit {
         p.entreprise_name?.toLowerCase().includes(query) ||
         p.id?.toString().includes(query);
 
-      return matchYear && matchStatus && matchSearch;
+      return matchYear && matchStatus && matchCloture && matchSearch;
     });
   }
 
@@ -110,10 +122,16 @@ export class PfeGestionComponent implements OnInit {
     this.applyFilters();
   }
 
+  onClotureChange(cloture: boolean | null): void {
+    this.selectedCloture = cloture;
+    this.applyFilters();
+  }
+
   clearFilters(): void {
     this.searchQuery = '';
     this.selectedYear = new Date().getFullYear();
     this.selectedStatus = null;
+    this.selectedCloture = null;
     this.applyFilters();
   }
 
@@ -122,6 +140,7 @@ export class PfeGestionComponent implements OnInit {
     if (this.searchQuery.trim()) count++;
     if (this.selectedYear !== new Date().getFullYear()) count++;
     if (this.selectedStatus !== null) count++;
+    if (this.selectedCloture !== null) count++;
     return count;
   }
 
@@ -135,10 +154,14 @@ export class PfeGestionComponent implements OnInit {
         return 'bg-yellow-100 text-yellow-800 dark:bg-yellow-900/30 dark:text-yellow-400';
       case SubmissionStatus.SUBMITTED:
         return 'bg-blue-100 text-blue-800 dark:bg-blue-900/30 dark:text-blue-400';
+      case SubmissionStatus.UNDER_REVIEW:
+        return 'bg-indigo-100 text-indigo-800 dark:bg-indigo-900/30 dark:text-indigo-300';
       case SubmissionStatus.APPROVED:
         return 'bg-green-100 text-green-800 dark:bg-green-900/30 dark:text-green-400';
       case SubmissionStatus.REJECTED:
         return 'bg-red-100 text-red-800 dark:bg-red-900/30 dark:text-red-400';
+      case SubmissionStatus.REVISION_REQUIRED:
+        return 'bg-orange-100 text-orange-800 dark:bg-orange-900/30 dark:text-orange-300';
       default:
         return 'bg-gray-100 text-gray-800 dark:bg-gray-800 dark:text-gray-400';
     }
@@ -147,13 +170,17 @@ export class PfeGestionComponent implements OnInit {
   getStatusLabel(status: SubmissionStatus): string {
     switch (status) {
       case SubmissionStatus.DRAFT:
-        return 'En Attente';
+        return 'Créé';
       case SubmissionStatus.SUBMITTED:
         return 'Soumis';
+      case SubmissionStatus.UNDER_REVIEW:
+        return 'En révision';
       case SubmissionStatus.APPROVED:
         return 'Validé';
       case SubmissionStatus.REJECTED:
-        return 'A revoir';
+        return 'Rejeté';
+      case SubmissionStatus.REVISION_REQUIRED:
+        return 'Révision requise';
       default:
         return status;
     }

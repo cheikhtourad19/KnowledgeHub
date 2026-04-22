@@ -34,6 +34,36 @@
         </p>
       </div>
     </div>
+
+    <div class="flex items-center gap-2">
+      <span
+        class="px-2.5 py-1 rounded-full text-xs font-bold tracking-wider uppercase"
+        [ngClass]="
+          stage_details.cloture
+            ? 'bg-red-100 text-red-700 dark:bg-red-900/30 dark:text-red-400'
+            : 'bg-green-100 text-green-700 dark:bg-green-900/30 dark:text-green-400'
+        "
+      >
+        {{ stage_details.cloture ? "Fermé" : "Ouvert" }}
+      </span>
+      <span
+        class="px-2.5 py-1 rounded-full text-xs font-bold tracking-wider uppercase"
+        [ngClass]="
+          stage_details.canEdit
+            ? 'bg-blue-100 text-blue-700 dark:bg-blue-900/30 dark:text-blue-400'
+            : 'bg-gray-100 text-gray-600 dark:bg-gray-800 dark:text-gray-400'
+        "
+      >
+        {{ stage_details.canEdit ? "Editable" : "Locked" }}
+      </span>
+      <button
+        type="button"
+        (click)="openStatusConfirmModal()"
+        class="inline-flex items-center gap-1.5 px-4 py-2 text-sm font-semibold rounded-lg bg-[#333333] text-white hover:bg-[#1a1a1a] transition-all duration-200 shadow-sm disabled:opacity-50 disabled:cursor-not-allowed"
+      >
+        {{ stage_details.cloture ? "Ouvrir" : "Clôturer" }}
+      </button>
+    </div>
   </div>
 
   <!-- ── Grid ── -->
@@ -351,6 +381,70 @@
               </svg>
             </div>
           </div>
+
+          <!-- Convention file -->
+          <div
+            *ngIf="
+              stage_details.conventionFile ||
+              stage_details.conventionFileName ||
+              stage_details.conventionFileId
+            "
+          >
+            <div
+              (click)="openPdfModal('convention')"
+              class="flex items-center gap-3 p-3.5 bg-blue-50 dark:bg-blue-900/10 border border-blue-200 dark:border-blue-800/50 rounded-lg cursor-pointer hover:bg-blue-100 dark:hover:bg-blue-900/20 transition-colors duration-200"
+            >
+              <svg
+                class="w-8 h-8 text-blue-600 dark:text-blue-400 flex-shrink-0"
+                fill="none"
+                viewBox="0 0 24 24"
+                stroke="currentColor"
+                stroke-width="1.5"
+              >
+                <path
+                  stroke-linecap="round"
+                  stroke-linejoin="round"
+                  d="M7 21h10a2 2 0 002-2V9.414a1 1 0 00-.293-.707l-5.414-5.414A1 1 0 0012.586 3H7a2 2 0 00-2 2v14a2 2 0 002 2z"
+                />
+              </svg>
+              <div class="flex-1">
+                <p
+                  class="text-[10px] font-bold text-gray-400 uppercase tracking-widest mb-0.5"
+                >
+                  Convention de Stage
+                </p>
+                <p class="font-semibold text-gray-900 dark:text-white text-sm">
+                  {{
+                    stage_details.conventionFile?.originalFileName ||
+                      stage_details.conventionFileName ||
+                      "Convention de stage"
+                  }}
+                </p>
+                <p class="text-xs text-gray-500 dark:text-gray-400 mt-0.5">
+                  {{ stage_details.conventionFile?.fileSize | number }}
+                  {{ stage_details.conventionFile?.fileSize ? "octets" : "" }}
+                </p>
+              </div>
+              <svg
+                class="w-5 h-5 text-blue-600 dark:text-blue-400 flex-shrink-0"
+                fill="none"
+                viewBox="0 0 24 24"
+                stroke="currentColor"
+                stroke-width="2"
+              >
+                <path
+                  stroke-linecap="round"
+                  stroke-linejoin="round"
+                  d="M15 12a3 3 0 11-6 0 3 3 0 016 0z"
+                />
+                <path
+                  stroke-linecap="round"
+                  stroke-linejoin="round"
+                  d="M2.458 12C3.732 7.943 7.523 5 12 5c4.478 0 8.268 2.943 9.542 7-1.274 4.057-5.064 7-9.542 7-4.477 0-8.268-2.943-9.542-7z"
+                />
+              </svg>
+            </div>
+          </div>
         </div>
       </div>
     </div>
@@ -515,6 +609,76 @@
 </div>
 
 <!-- ===== JURY MODAL ===== -->
+
+<!-- ===== STATUS CONFIRMATION MODAL ===== -->
+<p-dialog
+  [(visible)]="showStatusConfirmModal"
+  [modal]="true"
+  [closable]="true"
+  [style]="{ width: '500px' }"
+  [draggable]="false"
+  [resizable]="false"
+  [header]="stage_details?.cloture ? 'Rouvrir le stage' : 'Clôturer le stage'"
+  (onHide)="closeStatusConfirmModal()"
+>
+  <div class="space-y-4 pt-1">
+    <div
+      class="flex items-start gap-3 p-4 bg-amber-50 dark:bg-amber-900/20 border border-amber-200 dark:border-amber-800 rounded-lg"
+    >
+      <svg
+        class="w-6 h-6 text-amber-600 dark:text-amber-400 flex-shrink-0 mt-0.5"
+        fill="none"
+        viewBox="0 0 24 24"
+        stroke="currentColor"
+        stroke-width="2"
+      >
+        <path
+          stroke-linecap="round"
+          stroke-linejoin="round"
+          d="M12 9v2m0 4h.01m-6.938 4h13.856c1.54 0 2.502-1.667 1.732-3L13.732 4c-.77-1.333-2.694-1.333-3.464 0L3.34 16c-.77 1.333.192 3 1.732 3z"
+        />
+      </svg>
+      <div>
+        <p
+          class="text-sm font-semibold text-amber-900 dark:text-amber-100 mb-1"
+        >
+          {{
+            stage_details?.cloture
+              ? "Rouvrir ce stage ?"
+              : "Clôturer ce stage ?"
+          }}
+        </p>
+        <p class="text-sm text-amber-800 dark:text-amber-200 leading-relaxed">
+          {{
+            stage_details?.cloture
+              ? "Le stage redeviendra ouvert et les étudiants pourront à nouveau effectuer leurs actions autorisées."
+              : "La clôture empêchera les uploads et désactivera l’édition des métadonnées."
+          }}
+        </p>
+      </div>
+    </div>
+  </div>
+  <ng-template pTemplate="footer">
+    <div class="flex justify-end gap-2">
+      <button
+        pButton
+        type="button"
+        label="Annuler"
+        icon="pi pi-times"
+        class="p-button-text"
+        (click)="closeStatusConfirmModal()"
+      ></button>
+      <button
+        pButton
+        type="button"
+        [label]="stage_details?.cloture ? 'Rouvrir' : 'Clôturer'"
+        icon="pi pi-check"
+        (click)="confirmStageStatus()"
+        class="!bg-[#C60C30] !border-[#C60C30] !text-white hover:!bg-[#a00828]"
+      ></button>
+    </div>
+  </ng-template>
+</p-dialog>
 
 <!-- ===== PDF VIEWER MODAL ===== -->
 <app-pdf-viewer-modal

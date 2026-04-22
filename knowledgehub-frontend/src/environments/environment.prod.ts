@@ -8,3 +8,6 @@ export const environment = {
   app_name_prefix: 'ESPRIM',
   app_name_suffix: 'Vault',
 };
+
+
+// esprim.com -> api.esprim.com -> minio.esprim.com
