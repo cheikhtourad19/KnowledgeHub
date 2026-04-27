@@ -15,7 +15,7 @@ import { MessageService } from 'primeng/api';
 })
 export class PfeComponent implements OnInit {
   pfe: PFE | null = null;
-  demandes: DemandePFE[] = [];
+  demandes: DemandePFE | null = null;
   pendingDemande: DemandePFE | null = null;
   rejectedDemande: DemandePFE | null = null;
 
@@ -78,14 +78,14 @@ export class PfeComponent implements OnInit {
     // Load student's demandes
     this.resourceApi.getMyDemandes().subscribe({
       next: (response) => {
-        this.demandes = response.data ?? [];
+        this.demandes = response.data ?? null;
 
         // Find pending or rejected demand
         this.pendingDemande =
-          this.demandes.find((d) => d.status === DemandStatus.UPLOADED) ?? null;
+          this.demandes && this.demandes.status === DemandStatus.UPLOADED ? this.demandes : null;
 
         this.rejectedDemande =
-          this.demandes.find((d) => d.status === DemandStatus.REJECTED) ?? null;
+          this.demandes && this.demandes.status === DemandStatus.REJECTED ? this.demandes : null;
       },
       error: () => {},
     });

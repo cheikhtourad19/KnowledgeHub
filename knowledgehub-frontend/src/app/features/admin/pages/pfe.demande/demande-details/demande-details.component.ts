@@ -42,6 +42,40 @@ export class DemandeDetailsComponent implements OnInit {
     });
     this.fetchteachers();
   }
+  displayDeleteDialog: boolean = false;
+
+  showDeleteDialog(): void {
+    this.displayDeleteDialog = true;
+  }
+
+  hideDeleteDialog(): void {
+    this.displayDeleteDialog = false;
+  }
+
+  deleteDemande(): void {
+    if (!this.demandeId) return;
+
+    this.resourceApiService.deleteDemande(this.demandeId).subscribe({
+      next: () => {
+        this.messageService.add({
+          severity: 'success',
+          summary: 'Succès',
+          detail: 'Demande supprimée avec succès',
+        });
+        this.hideDeleteDialog();
+        setTimeout(() => {
+          this.router.navigate(['/admin/pfe/demandes']);
+        }, 1000);
+      },
+      error: () => {
+        this.messageService.add({
+          severity: 'error',
+          summary: 'Erreur',
+          detail: 'Erreur lors de la suppression de la demande',
+        });
+      },
+    });
+  }
 
   fetchteachers() {
     this.userService.getAllTeachers().subscribe({

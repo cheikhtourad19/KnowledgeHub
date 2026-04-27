@@ -176,8 +176,8 @@ export class ResourceApiService {
    * Get all demands for the logged-in student
    * GET /api/student/pfe/demandes
    */
-  getMyDemandes(): Observable<ApiResponse<DemandePFE[]>> {
-    return this.http.get<ApiResponse<DemandePFE[]>>(
+  getMyDemandes(): Observable<ApiResponse<DemandePFE>> {
+    return this.http.get<ApiResponse<DemandePFE>>(
       `${this.baseUrl}/api/student/pfe/demandes`,
     );
   }
@@ -704,7 +704,11 @@ export class ResourceApiService {
       `${this.baseUrl}/api/admin/pfe/pfe/${pfeId}`,
     );
   }
-
+  deleteDemande(id: number): Observable<ApiResponse<void>> {
+    return this.http.delete<ApiResponse<void>>(
+      `${this.baseUrl}/api/admin/pfe/demande/${id}`
+    );
+  }
   getTeacherSupervisedStages(): Observable<ApiResponse<Stage[]>> {
     return this.http.get<ApiResponse<Stage[]>>(
       `${this.baseUrl}/api/teacher/stage/supervised`,

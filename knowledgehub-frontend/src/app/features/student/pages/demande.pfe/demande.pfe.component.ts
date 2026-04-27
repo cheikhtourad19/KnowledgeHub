@@ -109,7 +109,7 @@ export class DemandePfeComponent implements OnInit {
   loadMyDemande(): void {
     this.ressourceService.getMyDemandes().subscribe({
       next: (res) => {
-        this.demande = res.data?.[0] ?? null;
+        this.demande = res.data ?? null;
       },
       error: () => {
         this.messageService.add({
@@ -135,6 +135,8 @@ export class DemandePfeComponent implements OnInit {
     this.updateMotClesControl();
     this.showModal = true;
   }
+
+  
 
   searchKeywords(event: { query: string }): void {
     const query = (event.query ?? '').trim().toLowerCase();
