@@ -52,9 +52,9 @@ public class StudentPFEController {
                 );
             }
 
-            List<DemandePFE> demandes = pfeService.getDemandePFEByStudent(userId);
-            if (!demandes.isEmpty()){
-                pfeService.removeDemande(demandes.getFirst().getId());
+            DemandePFE demandes = pfeService.getDemandePFEByStudent(userId);
+            if (demandes!=null){
+                pfeService.removeDemande(demandes.getId());
             }
             if (formRequest.getFile() == null || formRequest.getFile().isEmpty()) {
                 return ResponseEntity.status(HttpStatus.BAD_REQUEST).body(
@@ -81,7 +81,7 @@ public class StudentPFEController {
 
 
     @GetMapping("/demandes")
-    public ResponseEntity<ApiResponse<java.util.List<DemandePFE>>> getMyDemandes(
+    public ResponseEntity<ApiResponse<DemandePFE>> getMyDemandes(
             @RequestHeader(value = "X-User-Id") Long userId,
             @RequestHeader(value = "X-User-Role") String role
     ) {
@@ -91,7 +91,7 @@ public class StudentPFEController {
             );
         }
 
-        java.util.List<DemandePFE> demandes = pfeService.getDemandePFEByStudent(userId);
+        DemandePFE demandes = pfeService.getDemandePFEByStudent(userId);
         return ResponseEntity.ok(
                 ApiResponse.success(demandes, "PFE demands retrieved successfully")
         );

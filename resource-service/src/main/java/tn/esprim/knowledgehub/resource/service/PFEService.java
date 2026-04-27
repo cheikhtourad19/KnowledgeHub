@@ -3,6 +3,8 @@ package tn.esprim.knowledgehub.resource.service;
 import com.knowledgehub.notification.client.NotificationClient;
 import com.knowledgehub.notification.client.dto.NotificationRequest;
 import com.knowledgehub.notification.client.dto.NotificationType;
+import jakarta.persistence.EntityNotFoundException;
+import jakarta.transaction.Transactional;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.context.annotation.Lazy;
 import org.springframework.stereotype.Service;
@@ -61,13 +63,43 @@ public class PFEService {
         return this.pfeRepository.findByChefDeJuryId(juryId);
     }
     public DemandePFE getDemandePFEByStudentId(Long studentId) {
-        return this.demandePFERepository.findByStudentId(studentId).stream().findFirst().orElse(null);
+        return this.demandePFERepository.findByStudentId(studentId);
     }
     public void removeDemandePFE(Long id){
-        this.demandePFERepository.deleteById(id);
+        DemandePFE demandePFE = this.demandePFERepository.findById(id).orElseThrow();
+        this.demandePFERepository.deleteById(demandePFE.getId());
+        fileService.deleteFile(demandePFE.getAttestationFile().getId());
     }
+
+    @Transactional
+    public void deletePFEWithDemande(Long pfeId) {
+        PFE pfe = pfeRepository.findById(pfeId)
+                .orElseThrow(() -> new EntityNotFoundException("PFE not found: " + pfeId));
+
+        DemandePFE demande = demandePFERepository.findByStudentId(pfe.getStudentId());
+        if (demande != null) {
+            if (demande.getAttestationFile() != null)
+                fileService.deleteFile(demande.getAttestationFile().getId());
+            demandePFERepository.delete(demande);
+        }
+
+
+        if (pfe.getReportFile() != null) fileService.deleteFile(pfe.getReportFile().getId());
+        if (pfe.getAttestationFile() != null) fileService.deleteFile(pfe.getAttestationFile().getId());
+
+
+        pfeRepository.delete(pfe);
+    }
+
     public List<PFE> getPFEByRapporteur(Long rapporteurId){
         return this.pfeRepository.findByRapporteurId(rapporteurId);
+    }
+
+    public List<File> getFilesByPFE(Long pfeId) {
+        PFE pfe = pfeRepository.findById(pfeId).orElseThrow();
+        List<File> files = List.of(pfe.getReportFile(), pfe.getAttestationFile());
+        return files;
+
     }
 
     public PFE savePFE(PFE pfe) {
@@ -99,9 +131,15 @@ public class PFEService {
 
         return pfeRepository.save(pfe);
     }
-
+    @Transactional
     public void removeDemande(Long id){
-        demandePFERepository.deleteById(id);
+        DemandePFE demande = this.demandePFERepository.findById(id).orElseThrow();
+        if (demande != null) {
+            if (demande.getAttestationFile() != null)
+                fileService.deleteFile(demande.getAttestationFile().getId());
+            demandePFERepository.delete(demande);
+        }
+
     }
     public void removeAllDemandes(){
         demandePFERepository.deleteAll();
@@ -193,7 +231,7 @@ public class PFEService {
         return saved;
     }
 
-    public List<DemandePFE> getDemandePFEByStudent(Long studentId) {
+    public DemandePFE getDemandePFEByStudent(Long studentId) {
         return demandePFERepository.findByStudentId(studentId);
     }
 
@@ -367,6 +405,14 @@ public class PFEService {
     }
 
     public void deletePFE(Long id) {
-        pfeRepository.deleteById(id);
+        PFE pfe = pfeRepository.findById(id).orElseThrow();
+        pfeRepository.deleteById(pfe.getId());
+        if (pfe.getReportFile() !=null){
+            fileService.deleteFile(pfe.getReportFile().getId());
+        }
+        if (pfe.getAttestationFile() !=null){
+            fileService.deleteFile(pfe.getAttestationFile().getId());
+
+        }
     }
 }

@@ -15,6 +15,7 @@ import tn.esprim.knowledgehub.resource.entity.DemandePFE;
 import tn.esprim.knowledgehub.resource.entity.PFE;
 import tn.esprim.knowledgehub.resource.enums.DemandStatus;
 import tn.esprim.knowledgehub.resource.enums.SubmissionStatus;
+import tn.esprim.knowledgehub.resource.service.FileService;
 import tn.esprim.knowledgehub.resource.service.PFEService;
 
 import java.time.Year;
@@ -29,6 +30,7 @@ public class AdminPFEController {
 
     private final PFEService pfeService;
     private final UserServiceClient userServiceClient;
+    private final FileService fileService;
 
 
     @GetMapping("/demandes")
@@ -60,7 +62,29 @@ public class AdminPFEController {
         pfeService.removeAllDemandes();
         return ResponseEntity.ok(ApiResponse.success(null,"All PFE demands deleted successfully"));
     }
+    @DeleteMapping("/demande/{id}")
+    public ResponseEntity<ApiResponse<Void>> deleteDemande(
+            @PathVariable Long id,
+            @RequestHeader(value = "X-User-Role") String role
+    ){
+        if (!role.equals("ADMIN")){
+            return ResponseEntity.status(HttpStatus.FORBIDDEN).body(
+                    ApiResponse.error("Forbidden", "Only admins can delete demands")
+            );
+        }
+        try {
+            pfeService.removeDemande(id);
+            log.info("PFE demand with id {} deleted successfully", id);
+        }catch (Exception e){
+            log.error("Error deleting demand with id {}: {}", id, e.getMessage());
+            return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).body(
+                    ApiResponse.error("Error check the logs", e.getMessage())
+            );
+        }
 
+        return ResponseEntity.ok(ApiResponse.success(null,"PFE demand deleted successfully"));
+
+    }
 
     @GetMapping("/demande/{id}")
     public ResponseEntity<ApiResponse<DemandePFE>> getDemandePFEById(
@@ -264,36 +288,16 @@ public class AdminPFEController {
     @DeleteMapping("/pfe/{id}")
     public ResponseEntity<ApiResponse<Void>> deletePFE(
             @PathVariable Long id,
-            @RequestHeader(value = "X-User-Role") String role
-    ) {
-        if (!role.equals("ADMIN")) {
-            return ResponseEntity.status(HttpStatus.FORBIDDEN).body(
-                    ApiResponse.error("Forbidden", "Only admins can delete PFE")
-            );
-        }
+            @RequestHeader("X-User-Role") String role) {
 
-        try {
-            PFE pfe = pfeService.getPFEById(id);
-            if (pfe == null) {
-                return ResponseEntity.status(HttpStatus.NOT_FOUND).body(
-                        ApiResponse.error("Not Found", "PFE not found with id: " + id)
-                );
-            }
+        if (!"ADMIN".equalsIgnoreCase(role))
+            return ResponseEntity.status(HttpStatus.FORBIDDEN)
+                    .body(ApiResponse.error("Forbidden", "Only admins can delete PFE"));
 
-            pfeService.deletePFE(id);
-            DemandePFE demande = pfeService.getDemandePFEByStudentId(pfe.getStudentId());
-            if (demande != null) {
-                pfeService.removeDemandePFE(demande.getId());
-            }
-            return ResponseEntity.ok(
-                    ApiResponse.success(null, "PFE deleted successfully")
-            );
-        } catch (Exception e) {
-            return ResponseEntity.internalServerError().body(
-                    ApiResponse.error("Internal server error", "Failed to delete PFE: " + e.getMessage())
-            );
-        }
+        pfeService.deletePFEWithDemande(id);
+        return ResponseEntity.ok(ApiResponse.success(null, "PFE deleted successfully"));
     }
+
 
 }
 
