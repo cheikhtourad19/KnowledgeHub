@@ -40,12 +40,12 @@ public class AdminDocumentController {
         else{
             List<File> files = fileService.getAllFiles()
     .stream()
-    .filter(file -> 
-        file.getFileType() == FileType.PFE_REPORT ||
-        file.getFileType() == FileType.STAGE_REPORT ||
-        file.getFileType() == FileType.EDUCATIONAL_MATERIAL ||
-        file.getFileType() == FileType.SUPPLEMENTARY
-    )
+//    .filter(file ->
+//        file.getFileType() == FileType.PFE_REPORT ||
+//        file.getFileType() == FileType.STAGE_REPORT ||
+//        file.getFileType() == FileType.EDUCATIONAL_MATERIAL ||
+//        file.getFileType() == FileType.SUPPLEMENTARY
+//    )
     .toList();
             return ResponseEntity.ok(
                     ApiResponse.success(files,"All Files")

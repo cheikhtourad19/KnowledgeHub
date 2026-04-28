@@ -336,6 +336,22 @@ public class StageService {
     public void deleteStage(Long stageId) {
         Stage stage = stageRepository.findById(stageId)
                 .orElseThrow(() -> new RuntimeException("Stage non trouvé avec l'ID: " + stageId));
+        if (stage.getReportFileId() != null) {
+            fileService.deleteFile(stage.getReportFileId());
+        }
+        if (stage.getJournalFileId() != null) {
+            fileService.deleteFile(stage.getJournalFileId());
+        }
+        if (stage.getAttestationFileId() != null) {
+            fileService.deleteFile(stage.getAttestationFileId());
+        }
+        if (stage.getConventionFileId() != null) {
+            fileService.deleteFile(stage.getConventionFileId());
+        }
+        StageCreationAutorisation autorisation=stageCreationAutorisationRepository.findByStudentId(stage.getStudentId()).orElse(null);
+        if(autorisation!=null){
+            stageCreationAutorisationRepository.delete(autorisation);
+        }
         stageRepository.delete(stage);
     }
 

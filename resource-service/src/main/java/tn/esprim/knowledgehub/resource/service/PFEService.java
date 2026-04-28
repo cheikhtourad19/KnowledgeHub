@@ -53,23 +53,14 @@ public class PFEService {
 
 
 
-    public PFE getPFEByFile(Long FileId) {
-        File file = fileService.getFileById(FileId);
-        return pfeRepository.findByReportFile(file)
-                .orElseGet(() -> pfeRepository.findByAttestationFile(file).orElse(null));
 
-    }
     public List<PFE> getPFEByJury(Long juryId){
         return this.pfeRepository.findByChefDeJuryId(juryId);
     }
     public DemandePFE getDemandePFEByStudentId(Long studentId) {
         return this.demandePFERepository.findByStudentId(studentId);
     }
-    public void removeDemandePFE(Long id){
-        DemandePFE demandePFE = this.demandePFERepository.findById(id).orElseThrow();
-        this.demandePFERepository.deleteById(demandePFE.getId());
-        fileService.deleteFile(demandePFE.getAttestationFile().getId());
-    }
+
 
     @Transactional
     public void deletePFEWithDemande(Long pfeId) {
@@ -95,12 +86,7 @@ public class PFEService {
         return this.pfeRepository.findByRapporteurId(rapporteurId);
     }
 
-    public List<File> getFilesByPFE(Long pfeId) {
-        PFE pfe = pfeRepository.findById(pfeId).orElseThrow();
-        List<File> files = List.of(pfe.getReportFile(), pfe.getAttestationFile());
-        return files;
 
-    }
 
     public PFE savePFE(PFE pfe) {
 
@@ -292,29 +278,6 @@ public class PFEService {
         return demandePFERepository.findByStatus(status);
     }
 
-    public List<Long> getTeachersInPFEandFile(Long fileId) {
-        File file = fileService.getFileById(fileId);
-        
-        // Check if file is a PFE report file
-        PFE pfe = pfeRepository.findByReportFile(file).orElse(null);
-        
-        // If not found, check if file is a PFE attestation file
-        if (pfe == null) {
-            pfe = pfeRepository.findByAttestationFile(file).orElse(null);
-        }
-        
-        if(pfe==null)return List.of();
-        
-        // Filter out null values to prevent NullPointerException with List.of()
-        List<Long> userIds = new java.util.ArrayList<>();
-        if (pfe.getSupervisorId() != null) userIds.add(pfe.getSupervisorId());
-        if (pfe.getStudentId() != null) userIds.add(pfe.getStudentId());
-        if (pfe.getChefDeJuryId() != null) userIds.add(pfe.getChefDeJuryId());
-        if (pfe.getRapporteurId() != null) userIds.add(pfe.getRapporteurId());
-        
-        return userIds;
-    }
-
 
     public PFE updatePFEStatus(PFE pfe, UpdatePFEStatusRequest request, Long teacherId) {
 
@@ -404,15 +367,5 @@ public class PFEService {
         return pfeRepository.save(pfe);
     }
 
-    public void deletePFE(Long id) {
-        PFE pfe = pfeRepository.findById(id).orElseThrow();
-        pfeRepository.deleteById(pfe.getId());
-        if (pfe.getReportFile() !=null){
-            fileService.deleteFile(pfe.getReportFile().getId());
-        }
-        if (pfe.getAttestationFile() !=null){
-            fileService.deleteFile(pfe.getAttestationFile().getId());
 
-        }
-    }
 }

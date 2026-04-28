@@ -3,6 +3,8 @@ import { ActivatedRoute, Router } from '@angular/router';
 import { ResourceApiService } from '../../../services/resource-api.service';
 import { File } from '../../../models/resource-service/entities/file.model';
 import { MessageService } from 'primeng/api';
+import { Location } from '@angular/common'; // ← make sure this import exists
+
 
 @Component({
   selector: 'app-document',
@@ -31,12 +33,14 @@ export class DocumentComponent implements OnInit {
     SUPPLEMENTARY: 'Supplémentaire',
   };
 
-  constructor(
-    private route: ActivatedRoute,
-    private router: Router,
-    private resourceApiService: ResourceApiService,
-    private messageService: MessageService,
-  ) {}
+
+constructor(
+  private route: ActivatedRoute,
+  private router: Router,
+  private resourceApiService: ResourceApiService,
+  private messageService: MessageService,
+  private location: Location,   // ← full type name, not 'Lo'
+) {}
 
   ngOnInit(): void {
     this.route.params.subscribe((params) => {
@@ -95,11 +99,8 @@ export class DocumentComponent implements OnInit {
       window.open(this.pdfUrl, '_blank');
     }
   }
-
   goBack(): void {
-    this.router.navigate(['../'], { relativeTo: this.route }).catch((error) => {
-      console.error('Navigation error:', error);
-    });
+    this.location.back();
   }
 
   formatFileSize(bytes: number): string {
