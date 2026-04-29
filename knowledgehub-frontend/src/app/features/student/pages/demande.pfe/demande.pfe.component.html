@@ -11,9 +11,59 @@
     </div>
   </div>
 
+  <!-- Loading State -->
+  <div
+    *ngIf="isLoading"
+    class="rounded-2xl border border-[#F0F0F0] dark:border-gray-700 bg-white dark:bg-gray-900 p-6 shadow-sm"
+  >
+    <div class="flex items-center gap-4 mb-6">
+      <div
+        class="h-12 w-12 rounded-full bg-[#C60C30]/10 flex items-center justify-center"
+      >
+        <i class="pi pi-spin pi-spinner text-[#C60C30] text-xl"></i>
+      </div>
+      <div class="space-y-2">
+        <div
+          class="h-4 w-40 rounded bg-[#F0F0F0] dark:bg-gray-700 animate-pulse"
+        ></div>
+        <div
+          class="h-3 w-64 rounded bg-[#F0F0F0] dark:bg-gray-700 animate-pulse"
+        ></div>
+      </div>
+    </div>
+    <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
+      <div
+        class="rounded-lg border border-[#F0F0F0] dark:border-gray-700 p-5 space-y-3"
+      >
+        <div
+          class="h-3 w-24 rounded bg-[#F0F0F0] dark:bg-gray-700 animate-pulse"
+        ></div>
+        <div
+          class="h-4 w-full rounded bg-[#F0F0F0] dark:bg-gray-700 animate-pulse"
+        ></div>
+        <div
+          class="h-4 w-5/6 rounded bg-[#F0F0F0] dark:bg-gray-700 animate-pulse"
+        ></div>
+      </div>
+      <div
+        class="rounded-lg border border-[#F0F0F0] dark:border-gray-700 p-5 space-y-3"
+      >
+        <div
+          class="h-3 w-24 rounded bg-[#F0F0F0] dark:bg-gray-700 animate-pulse"
+        ></div>
+        <div
+          class="h-4 w-full rounded bg-[#F0F0F0] dark:bg-gray-700 animate-pulse"
+        ></div>
+        <div
+          class="h-4 w-3/4 rounded bg-[#F0F0F0] dark:bg-gray-700 animate-pulse"
+        ></div>
+      </div>
+    </div>
+  </div>
+
   <!-- No Demande State -->
   <div
-    *ngIf="!demande"
+    *ngIf="!isLoading && !demande"
     class="flex flex-col items-center justify-center py-20 border-2 border-dashed border-[#F0F0F0] dark:border-gray-700 rounded-xl bg-[#F0F0F0]/40 dark:bg-gray-800/50"
   >
     <div
@@ -43,10 +93,10 @@
   </div>
 
   <!-- Demande Card -->
-  <div *ngIf="demande" class="space-y-4">
+  <div *ngIf="!isLoading && demande" class="space-y-4">
     <!-- Status Banner -->
     <div
-      class="flex items-center justify-between p-4 rounded-xl border"
+      class="flex items-center justify-between p-4 rounded-xl border bg-white dark:bg-gray-900 shadow-sm"
       [ngClass]="{
         'bg-yellow-50 border-yellow-200 dark:bg-yellow-900/20 dark:border-yellow-700':
           demande.status === DemandStatus.UPLOADED,
@@ -107,7 +157,7 @@
     <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
       <!-- PFE Info -->
       <div
-        class="rounded-lg border border-[#F0F0F0] dark:border-gray-700 overflow-hidden shadow-sm"
+        class="rounded-lg border border-[#F0F0F0] dark:border-gray-700 overflow-hidden shadow-sm bg-white dark:bg-gray-900"
       >
         <div
           class="flex items-center gap-2.5 px-5 py-3 bg-[#333333] border-l-[4px] border-[#C60C30]"
@@ -177,7 +227,7 @@
 
       <!-- Entreprise Info -->
       <div
-        class="rounded-lg border border-[#F0F0F0] dark:border-gray-700 overflow-hidden shadow-sm"
+        class="rounded-lg border border-[#F0F0F0] dark:border-gray-700 overflow-hidden shadow-sm bg-white dark:bg-gray-900"
       >
         <div
           class="flex items-center gap-2.5 px-5 py-3 bg-[#333333] border-l-[4px] border-[#C60C30]"
@@ -255,6 +305,50 @@
   styleClass="w-full max-w-3xl"
 >
   <form [formGroup]="demandeForm" class="space-y-5 pt-2">
+    <!-- Convention Upload First -->
+    <div class="border-b border-[#F0F0F0] dark:border-gray-700 pb-4 space-y-3">
+      <label
+        class="text-sm font-semibold text-[#333333] dark:text-gray-300 mb-2 block"
+      >
+        Convention / Document *
+      </label>
+      <p-fileUpload
+        mode="basic"
+        chooseLabel="Choisir un PDF"
+        accept=".pdf"
+        [maxFileSize]="5000000"
+        (onSelect)="onFileSelect($event)"
+        [auto]="false"
+        styleClass="w-full"
+      />
+      <div class="flex flex-col sm:flex-row sm:items-center gap-3">
+        <p-button
+          label="Extraire les données"
+          icon="pi pi-magic-wand"
+          [loading]="extractionLoading"
+          [disabled]="!selectedFile || extractionLoading"
+          [style]="{
+            'background-color': '#C60C30',
+            'border-color': '#C60C30',
+            color: '#FFFFFF',
+          }"
+          (onClick)="extractConventionData()"
+        />
+        <div class="text-xs text-[#666666] dark:text-gray-400">
+          <p
+            *ngIf="selectedFile"
+            class="font-medium text-green-600 dark:text-green-400"
+          >
+            <i class="pi pi-check mr-1"></i>{{ selectedFile.name }}
+          </p>
+          <p>Le formulaire reste éditable après préremplissage.</p>
+        </div>
+      </div>
+      <small class="text-[#666666] dark:text-gray-400 text-xs block">
+        PDF uniquement · Max 5MB
+      </small>
+    </div>
+
     <!-- Student Info -->
     <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
       <div class="flex flex-col gap-1">
@@ -548,33 +642,6 @@
           />
         </div>
       </div>
-    </div>
-
-    <!-- File Upload -->
-    <div class="border-t border-[#F0F0F0] dark:border-gray-700 pt-4">
-      <label
-        class="text-sm font-semibold text-[#333333] dark:text-gray-300 mb-2 block"
-      >
-        Convention / Document *
-      </label>
-      <p-fileUpload
-        mode="basic"
-        chooseLabel="Choisir un fichier"
-        accept=".pdf,.doc,.docx"
-        [maxFileSize]="5000000"
-        (onSelect)="onFileSelect($event)"
-        [auto]="false"
-        styleClass="w-full"
-      />
-      <small *ngIf="!selectedFile" class="text-[#666666] text-xs mt-1 block"
-        >PDF, DOC ou DOCX · Max 5MB</small
-      >
-      <small
-        *ngIf="selectedFile"
-        class="text-green-600 dark:text-green-400 text-xs mt-1 block"
-      >
-        <i class="pi pi-check mr-1"></i>{{ selectedFile.name }}
-      </small>
     </div>
   </form>
 

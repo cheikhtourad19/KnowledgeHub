@@ -56,6 +56,43 @@ class GeminiService:
             logger.error(f"Gemini API error: {e}")
             raise RuntimeError(f"Gemini API call failed: {e}")
 
+    def extract_structured_data(self, system_prompt: str, document_text: str) -> str:
+        """
+        Extract structured data from document text using a strict prompt.
+
+        Args:
+            system_prompt: Instruction prompt describing the expected JSON schema
+            document_text: Extracted text content from document
+
+        Returns:
+            str: Raw model response expected to be JSON
+
+        Raises:
+            ValueError: If the model returns an empty response
+            RuntimeError: If the Gemini API call fails
+        """
+        prompt = (
+            f"{system_prompt}\n\n"
+            "Here is the extracted PDF text:\n\n"
+            f"{document_text}"
+        )
+
+        try:
+            response = self.model.generate_content(prompt)
+
+            if not response.text:
+                raise ValueError("Gemini returned an empty response")
+
+            logger.info(
+                f"Gemini extracted structured data ({len(response.text)} chars) "
+                f"from {len(document_text)} chars of document text"
+            )
+            return response.text
+
+        except Exception as e:
+            logger.error(f"Gemini API error: {e}")
+            raise RuntimeError(f"Gemini API call failed: {e}")
+
 
 # Singleton instance – created lazily so missing API key doesn't crash startup
 _gemini_service: GeminiService | None = None

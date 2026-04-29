@@ -5,6 +5,8 @@ import { ResourceApiService } from '../../../../shared/services/resource-api.ser
 import { Stage } from '../../../../shared/models/resource-service/entities/stage.model';
 import { TypeStage } from '../../../../shared/models/resource-service/enums/type-stage.enum';
 import { CreateStageRequest } from '../../../../shared/models/resource-service/requests/create-stage-request.model';
+import { finalize } from 'rxjs';
+import { InternshipConventionExtractionResponse } from '../../../../shared/models/resource-service/responses/internship-convention-extraction-response.model';
 
 @Component({
   selector: 'app-stage',
@@ -17,6 +19,8 @@ export class StageComponent implements OnInit {
   filteredStages: Stage[] = [];
   hasAuthorization = false;
   authorizationType: TypeStage | null = null;
+  isLoading = true;
+  private pendingInitialLoads = 2;
 
   // Year filter
   selectedYear: number | null = null;
@@ -25,6 +29,7 @@ export class StageComponent implements OnInit {
 
   // Create stage modal
   showCreateModal = false;
+  extractionLoading = false;
   stageForm = {
     title: '',
     companyName: '',
@@ -39,38 +44,53 @@ export class StageComponent implements OnInit {
   ) {}
 
   ngOnInit(): void {
+    this.isLoading = true;
+    this.pendingInitialLoads = 2;
     this.loadStudentStages();
     this.checkAuthorization();
   }
 
   loadStudentStages(): void {
-    this.resourceApi.getMyStage().subscribe({
-      next: (response) => {
-        console.log('Stages Response:', response);
-        this.stages = response.data ?? [];
-        this.extractYears();
-        this.applyFilter();
-      },
-      error: (err) => {
-        console.error('Error loading stages:', err);
-      },
-    });
+    this.resourceApi
+      .getMyStage()
+      .pipe(finalize(() => this.finishInitialLoad()))
+      .subscribe({
+        next: (response) => {
+          console.log('Stages Response:', response);
+          this.stages = response.data ?? [];
+          this.extractYears();
+          this.applyFilter();
+        },
+        error: (err) => {
+          console.error('Error loading stages:', err);
+        },
+      });
   }
 
   checkAuthorization(): void {
-    this.resourceApi.checkStageAuthorization().subscribe({
-      next: (response) => {
-        if (response.success && response.data) {
-          this.hasAuthorization = true;
-          this.authorizationType = response.data.typeStage;
-        } else {
+    this.resourceApi
+      .checkStageAuthorization()
+      .pipe(finalize(() => this.finishInitialLoad()))
+      .subscribe({
+        next: (response) => {
+          if (response.success && response.data) {
+            this.hasAuthorization = true;
+            this.authorizationType = response.data.typeStage;
+          } else {
+            this.hasAuthorization = false;
+          }
+        },
+        error: () => {
           this.hasAuthorization = false;
-        }
-      },
-      error: () => {
-        this.hasAuthorization = false;
-      },
-    });
+        },
+      });
+  }
+
+  private finishInitialLoad(): void {
+    this.pendingInitialLoads = Math.max(0, this.pendingInitialLoads - 1);
+    if (this.pendingInitialLoads === 0) {
+      this.isLoading = false;
+    }
   }
 
   // Year filter methods
@@ -129,6 +149,7 @@ export class StageComponent implements OnInit {
   // Create stage modal methods
   openCreateModal(): void {
     this.showCreateModal = true;
+    this.extractionLoading = false;
     this.stageForm = {
       title: '',
       companyName: '',
@@ -139,6 +160,7 @@ export class StageComponent implements OnInit {
 
   closeCreateModal(): void {
     this.showCreateModal = false;
+    this.extractionLoading = false;
     this.stageForm = {
       title: '',
       companyName: '',
@@ -162,6 +184,120 @@ export class StageComponent implements OnInit {
     }
 
     this.stageForm.conventionFile = file;
+  }
+
+  extractConventionData(): void {
+    if (!this.stageForm.conventionFile) {
+      this.messageService.add({
+        severity: 'warn',
+        summary: 'Attention',
+        detail: "Veuillez d'abord sélectionner une convention PDF",
+      });
+      return;
+    }
+
+    this.extractionLoading = true;
+    this.resourceApi
+      .extractConventionData(this.stageForm.conventionFile)
+      .pipe(finalize(() => (this.extractionLoading = false)))
+      .subscribe({
+        next: (response) => {
+          this.applyConventionExtraction(response);
+          this.messageService.add({
+            severity: 'success',
+            summary: 'Succès',
+            detail: 'Les champs disponibles ont été préremplis',
+          });
+        },
+        error: (err) => {
+          this.messageService.add({
+            severity: 'error',
+            summary: 'Erreur',
+            detail:
+              err.error?.message ||
+              "Impossible d'extraire les données de la convention",
+          });
+        },
+      });
+  }
+
+  private applyConventionExtraction(
+    response: InternshipConventionExtractionResponse,
+  ): void {
+    const patch: Partial<{
+      title: string;
+      companyName: string;
+      durationMonths: number | null;
+    }> = {};
+
+    if (response.pfeTitle) patch.title = response.pfeTitle;
+    if (response.entrepriseName) patch.companyName = response.entrepriseName;
+
+    const computedDurationMonths = this.getDurationMonths(
+      response.dateDebut,
+      response.dateFin,
+    );
+    if (computedDurationMonths !== null) {
+      patch.durationMonths = computedDurationMonths;
+    }
+
+    this.stageForm = {
+      ...this.stageForm,
+      ...patch,
+    };
+
+    if (response.stageType) {
+      this.messageService.add({
+        severity: 'info',
+        summary: 'Type détecté',
+        detail: `Le PDF indique un stage ${this.getStageTypeLabelFromExtraction(response.stageType)}`,
+      });
+    }
+  }
+
+  private getDurationMonths(
+    dateDebut: string | null,
+    dateFin: string | null,
+  ): number | null {
+    if (!dateDebut || !dateFin) {
+      return null;
+    }
+
+    const start = this.parseIsoDate(dateDebut);
+    const end = this.parseIsoDate(dateFin);
+
+    if (Number.isNaN(start.getTime()) || Number.isNaN(end.getTime())) {
+      return null;
+    }
+
+    const diffMonths =
+      (end.getFullYear() - start.getFullYear()) * 12 +
+      (end.getMonth() - start.getMonth());
+
+    if (diffMonths < 0) {
+      return null;
+    }
+
+    return end.getDate() >= start.getDate() ? diffMonths + 1 : diffMonths;
+  }
+
+  private parseIsoDate(value: string): Date {
+    const [year, month, day] = value.split('-').map((item) => Number(item));
+    return new Date(year, month - 1, day);
+  }
+
+  private getStageTypeLabelFromExtraction(
+    stageType: InternshipConventionExtractionResponse['stageType'],
+  ): string {
+    if (stageType === 'technicien') {
+      return 'Technicien';
+    }
+
+    if (stageType === 'ouvrier') {
+      return 'Ouvrier';
+    }
+
+    return '—';
   }
 
   createStage(): void {

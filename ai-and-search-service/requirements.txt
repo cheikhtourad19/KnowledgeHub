@@ -9,6 +9,9 @@ python-multipart==0.0.20
 # PDF processing
 PyMuPDF==1.27.1
 
+# HTTP client
+requests==2.32.3
+
 # MinIO client
 minio==7.2.15
 
@@ -20,6 +23,9 @@ sentence-transformers==3.4.1
 
 # Text splitting
 langchain-text-splitters==0.2.0
+
+# Language detection
+langdetect==1.0.9
 
 # Google Gemini AI
 google-generativeai==0.8.4

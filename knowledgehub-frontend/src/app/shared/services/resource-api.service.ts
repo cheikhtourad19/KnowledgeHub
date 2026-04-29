@@ -15,6 +15,7 @@ import { UpdatePFEStatusRequest } from '../../shared/models/resource-service/req
 import { CreatePFARequest } from '../../shared/models/resource-service/requests/create-pfa-request.model';
 import { CreateStageRequest } from '../../shared/models/resource-service/requests/create-stage-request.model';
 import { FileUploadResponse } from '../../shared/models/resource-service/responses/file-upload-response.model';
+import { InternshipConventionExtractionResponse } from '../../shared/models/resource-service/responses/internship-convention-extraction-response.model';
 import { FileType } from '../../shared/models/resource-service/enums/file-type.enum';
 import { map } from 'rxjs/operators';
 @Injectable({
@@ -22,6 +23,8 @@ import { map } from 'rxjs/operators';
 })
 export class ResourceApiService {
   private readonly baseUrl = `${environment.apiUrl}/ressource-service`;
+  private readonly conventionExtractionBaseUrl =
+    environment.conventionExtractionApiUrl;
 
   constructor(private http: HttpClient) {}
 
@@ -43,6 +46,18 @@ export class ResourceApiService {
 
     return this.http.post<ApiResponse<FileUploadResponse>>(
       `${this.baseUrl}/api/admin/documents/upload`,
+      formData,
+    );
+  }
+
+  extractConventionData(
+    file: globalThis.File,
+  ): Observable<InternshipConventionExtractionResponse> {
+    const formData = new FormData();
+    formData.append('file', file);
+
+    return this.http.post<InternshipConventionExtractionResponse>(
+      `${this.conventionExtractionBaseUrl}/api/internship/extract-convention`,
       formData,
     );
   }
@@ -706,7 +721,7 @@ export class ResourceApiService {
   }
   deleteDemande(id: number): Observable<ApiResponse<void>> {
     return this.http.delete<ApiResponse<void>>(
-      `${this.baseUrl}/api/admin/pfe/demande/${id}`
+      `${this.baseUrl}/api/admin/pfe/demande/${id}`,
     );
   }
   getTeacherSupervisedStages(): Observable<ApiResponse<Stage[]>> {

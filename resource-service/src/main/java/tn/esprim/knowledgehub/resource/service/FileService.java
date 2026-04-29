@@ -222,7 +222,13 @@ public class FileService {
 
 
             fileRepository.delete(file);
-
+            if (file.getIsPublished()) {
+                try {
+                    aiandSearchService.deleteFile(Math.toIntExact(fileId));
+                } catch (Exception e) {
+                    log.warn("Failed to delete file from AI and Search Service: {}", e.getMessage());
+                }
+            }
             log.info("File deleted successfully: {}", file.getStoragePath());
 
         } catch (Exception e) {

@@ -11,6 +11,8 @@ import { MessageService } from 'primeng/api';
 import { DemandStatus } from '../../../../shared/models/resource-service/enums/demand-status.enum';
 import { DemandePFE } from '../../../../shared/models/resource-service/entities/demande-pfe.model';
 import { ResourceApiService } from '../../../../shared/services/resource-api.service';
+import { finalize } from 'rxjs';
+import { InternshipConventionExtractionResponse } from '../../../../shared/models/resource-service/responses/internship-convention-extraction-response.model';
 
 export function pfeDateValidator(): ValidatorFn {
   return (group: AbstractControl): ValidationErrors | null => {
@@ -47,8 +49,10 @@ export function pfeDateValidator(): ValidatorFn {
 })
 export class DemandePfeComponent implements OnInit {
   demande: DemandePFE | null = null;
+  isLoading = true;
   showModal = false;
   selectedFile: globalThis.File | null = null;
+  extractionLoading = false;
   keywordQuery = '';
   keywordSuggestions: string[] = [];
   selectedKeywords: string[] = [];
@@ -107,28 +111,45 @@ export class DemandePfeComponent implements OnInit {
   }
 
   loadMyDemande(): void {
-    this.ressourceService.getMyDemandes().subscribe({
-      next: (res) => {
-        this.demande = res.data ?? null;
-      },
-      error: () => {
-        this.messageService.add({
-          severity: 'error',
-          summary: 'Erreur',
-          detail: 'Impossible de charger votre demande',
-          life: 5000,
-        });
-      },
-    });
+    this.isLoading = true;
+    this.ressourceService
+      .getMyDemandes()
+      .pipe(finalize(() => (this.isLoading = false)))
+      .subscribe({
+        next: (res) => {
+          this.demande = res.data ?? null;
+        },
+        error: () => {
+          this.messageService.add({
+            severity: 'error',
+            summary: 'Erreur',
+            detail: 'Impossible de charger votre demande',
+            life: 5000,
+          });
+        },
+      });
   }
 
   onFileSelect(event: any): void {
-    this.selectedFile = event.files[0];
+    const file = event.files?.[0] ?? null;
+
+    if (file && file.type === 'application/pdf') {
+      this.selectedFile = file;
+      return;
+    }
+
+    this.selectedFile = null;
+    this.messageService.add({
+      severity: 'warn',
+      summary: 'Attention',
+      detail: 'Veuillez sélectionner une convention au format PDF',
+    });
   }
 
   openModal(): void {
     this.demandeForm.reset();
     this.selectedFile = null;
+    this.extractionLoading = false;
     this.keywordQuery = '';
     this.keywordSuggestions = [];
     this.selectedKeywords = [];
@@ -136,7 +157,77 @@ export class DemandePfeComponent implements OnInit {
     this.showModal = true;
   }
 
-  
+  extractConventionData(): void {
+    if (!this.selectedFile) {
+      this.messageService.add({
+        severity: 'warn',
+        summary: 'Attention',
+        detail: "Veuillez d'abord sélectionner une convention PDF",
+      });
+      return;
+    }
+
+    this.extractionLoading = true;
+    this.ressourceService
+      .extractConventionData(this.selectedFile)
+      .pipe(finalize(() => (this.extractionLoading = false)))
+      .subscribe({
+        next: (response) => {
+          this.applyConventionExtraction(response);
+          this.messageService.add({
+            severity: 'success',
+            summary: 'Succès',
+            detail: 'Les champs disponibles ont été préremplis',
+          });
+        },
+        error: (err) => {
+          this.messageService.add({
+            severity: 'error',
+            summary: 'Erreur',
+            detail:
+              err.error?.message ||
+              "Impossible d'extraire les données de la convention",
+          });
+        },
+      });
+  }
+
+  private applyConventionExtraction(
+    response: InternshipConventionExtractionResponse,
+  ): void {
+    const patch: Partial<{
+      studentCin: string;
+      studentPhone: string;
+      entrepriseName: string;
+      entrepriseDomaine: string;
+      entrepriseEncadrantName: string;
+      entrepriseEncadrantEmail: string;
+      pfeTitle: string;
+      dateDebut: Date;
+      dateFin: Date;
+    }> = {};
+
+    if (response.studentCin) patch.studentCin = response.studentCin;
+    if (response.studentPhone) patch.studentPhone = response.studentPhone;
+    if (response.entrepriseName) patch.entrepriseName = response.entrepriseName;
+    if (response.entrepriseDomaine)
+      patch.entrepriseDomaine = response.entrepriseDomaine;
+    if (response.entrepriseEncadrantName)
+      patch.entrepriseEncadrantName = response.entrepriseEncadrantName;
+    if (response.entrepriseEncadrantEmail)
+      patch.entrepriseEncadrantEmail = response.entrepriseEncadrantEmail;
+    if (response.pfeTitle) patch.pfeTitle = response.pfeTitle;
+    if (response.dateDebut)
+      patch.dateDebut = this.parseIsoDate(response.dateDebut);
+    if (response.dateFin) patch.dateFin = this.parseIsoDate(response.dateFin);
+
+    this.demandeForm.patchValue(patch);
+  }
+
+  private parseIsoDate(value: string): Date {
+    const [year, month, day] = value.split('-').map((item) => Number(item));
+    return new Date(year, month - 1, day);
+  }
 
   searchKeywords(event: { query: string }): void {
     const query = (event.query ?? '').trim().toLowerCase();

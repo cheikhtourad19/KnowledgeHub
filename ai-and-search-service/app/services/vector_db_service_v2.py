@@ -17,7 +17,6 @@ AUTHORITY_BOOST_OFFICIAL = 0.05  # Optional metadata boost for official publicat
 
 JINA_API_URL = "https://api.jina.ai/v1/embeddings"
 
-
 class VectorDBServiceV2:
     """Service for managing ChromaDB vector database with Jina AI cloud embeddings"""
 
@@ -48,7 +47,6 @@ class VectorDBServiceV2:
     def generate_embedding(self, text: str) -> List[float]:
         """
         Generate embedding for a single query string using Jina AI.
-        Uses task='retrieval.query' which is optimized for search queries.
 
         Args:
             text: Query string to embed
@@ -60,14 +58,14 @@ class VectorDBServiceV2:
             JINA_API_URL,
             headers={
                 "Authorization": f"Bearer {self._api_key}",
-                "Content-Type": "application/json"
+                "Content-Type": "application/json",
             },
             json={
                 "model": self._model,
                 "input": [text],
-                "task": "retrieval.query"
+                "task": "retrieval.query",
             },
-            timeout=30
+            timeout=30,
         )
         response.raise_for_status()
         return response.json()["data"][0]["embedding"]
@@ -75,7 +73,6 @@ class VectorDBServiceV2:
     def generate_embeddings(self, texts: List[str]) -> List[List[float]]:
         """
         Generate embeddings for multiple document chunks in batch using Jina AI.
-        Uses task='retrieval.passage' which is optimized for indexing document chunks.
 
         Args:
             texts: List of document chunks to embed
@@ -87,23 +84,23 @@ class VectorDBServiceV2:
             JINA_API_URL,
             headers={
                 "Authorization": f"Bearer {self._api_key}",
-                "Content-Type": "application/json"
+                "Content-Type": "application/json",
             },
             json={
                 "model": self._model,
                 "input": texts,
-                "task": "retrieval.passage"
+                "task": "retrieval.passage",
             },
-            timeout=60
+            timeout=60,
         )
         response.raise_for_status()
-        data = sorted(response.json()["data"], key=lambda x: x["index"])
+        data = sorted(response.json()["data"], key=lambda item: item["index"])
         return [item["embedding"] for item in data]
 
     async def index_document(
         self,
         file_id: int,
-        chunks: List[str]
+        chunks: List[str],
     ) -> int:
         """
         Index document chunks with file_id in metadata.
@@ -149,7 +146,7 @@ class VectorDBServiceV2:
     async def search(
         self,
         query: str,
-        top_k: int = 10
+        top_k: int = 10,
     ) -> List[Dict[str, Any]]:
         """
         Perform semantic search with production-safe ranking improvements.

@@ -36,6 +36,7 @@
   <!-- Content -->
   <div class="px-10 py-8">
     <div class="mx-auto max-w-7xl">
+      <!-- Top Grid: PDF Viewer + Sidebar -->
       <div class="grid grid-cols-1 gap-6 lg:grid-cols-3">
         <!-- PDF Viewer -->
         <div class="lg:col-span-2">
@@ -181,9 +182,7 @@
             </div>
           </p-card>
 
-          <!-- Actions -->
-
-          <!-- AI Assistant -->
+          <!-- AI Assistant Controls -->
           <p-card
             styleClass="shadow-sm border border-[#C60C30]/20 rounded-xl overflow-hidden"
           >
@@ -225,24 +224,6 @@
                 styleClass="w-full justify-center bg-[#C60C30] border-[#C60C30] hover:bg-[#a00a28]"
               ></p-button>
 
-              <!-- AI Response -->
-              <div
-                *ngIf="aiResponse"
-                class="rounded-lg border border-[#C60C30]/20 bg-[#C60C30]/5 p-4"
-              >
-                <div class="mb-2 flex items-center gap-2">
-                  <i class="pi pi-sparkles text-xs text-[#C60C30]"></i>
-                  <span
-                    class="text-xs font-semibold uppercase tracking-wider text-[#C60C30]"
-                    >Réponse IA</span
-                  >
-                </div>
-                <markdown
-                  class="text-sm leading-relaxed text-[#333333]"
-                  [data]="aiResponse"
-                ></markdown>
-              </div>
-
               <!-- Divider -->
               <div class="flex items-center gap-3">
                 <div class="h-px flex-1 bg-gray-200"></div>
@@ -273,6 +254,46 @@
             </div>
           </p-card>
         </div>
+      </div>
+
+      <!-- AI Response — full width below the grid -->
+      <div *ngIf="aiResponse" class="mt-6">
+        <p-card
+          styleClass="shadow-sm border border-[#C60C30]/20 rounded-xl overflow-hidden"
+        >
+          <ng-template pTemplate="header">
+            <div
+              class="border-b border-gray-100 bg-gradient-to-r from-[#C60C30]/5 to-white px-6 py-4"
+            >
+              <div class="flex items-center justify-between">
+                <div class="flex items-center gap-2">
+                  <div
+                    class="flex h-7 w-7 items-center justify-center rounded-full bg-[#C60C30]/10"
+                  >
+                    <i class="pi pi-sparkles text-xs text-[#C60C30]"></i>
+                  </div>
+                  <span
+                    class="text-sm font-semibold uppercase tracking-wider text-[#C60C30]"
+                  >
+                    Réponse IA
+                  </span>
+                </div>
+                <span class="flex items-center gap-1.5">
+                  <span
+                    class="inline-block h-1.5 w-1.5 rounded-full bg-green-500 animate-pulse"
+                  ></span>
+                  <span class="text-xs font-medium text-green-600">Actif</span>
+                </span>
+              </div>
+            </div>
+          </ng-template>
+          <div class="p-6">
+            <markdown
+              class="prose prose-sm max-w-none text-sm leading-relaxed text-[#333333]"
+              [data]="aiResponse"
+            ></markdown>
+          </div>
+        </p-card>
       </div>
     </div>
   </div>

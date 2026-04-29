@@ -33,7 +33,7 @@ class Settings(BaseSettings):
     # Embedding model configuration (Local execution as per specification)
     EMBEDDING_MODEL: str = "sentence-transformers/paraphrase-multilingual-MiniLM-L12-v2"
 
-    # V2 cloud embedding
+    # V2 multilingual embedding
     DEEPINFRA_API_KEY: str = ""
     # EMBEDDING_MODEL_V2: str = "Qwen/Qwen3-Embedding-8B"
     EMBEDDING_MODEL_V2: str = "jina-embeddings-v3"

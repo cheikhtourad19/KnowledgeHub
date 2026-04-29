@@ -57,7 +57,7 @@ async def index_document(request: IndexRequest):
         # Step 4 & 5: Generate embeddings and upsert to ChromaDB
         chunks_indexed = await vector_db_service.index_document(
             file_id=request.file_id,
-            chunks=chunks
+            chunks=chunks,
         )
 
         return IndexResponse(
@@ -97,10 +97,9 @@ async def semantic_search(request: SearchRequest):
             f"Performing search for query: '{request.query[:100]}...', top_k={request.top_k}"
         )
 
-        # Perform semantic search
         matches = await vector_db_service.search(
             query=request.query,
-            top_k=request.top_k
+            top_k=request.top_k,
         )
 
         # Convert to response format

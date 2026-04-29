@@ -1,43 +1,76 @@
-<div class="min-h-screen bg-gray-50 dark:bg-gray-900 p-6">
+<div class="min-h-screen bg-[#F0F0F0]/60 dark:bg-gray-900 p-6">
   <div class="max-w-7xl mx-auto">
     <!-- Header -->
     <div class="mb-6 flex items-center justify-between">
       <div>
-        <h1 class="text-3xl font-bold text-gray-900 dark:text-white">
+        <h1 class="text-3xl font-bold text-[#333333] dark:text-white">
           Mes Stages
         </h1>
-        <p class="text-gray-600 dark:text-gray-400 mt-2">
+        <p class="text-[#666666] dark:text-gray-400 mt-2">
           Gérez vos stages et soumettez vos documents
         </p>
       </div>
-      <button
+      <p-button
         *ngIf="hasAuthorization && !hasCurrentYearStage()"
-        (click)="openCreateModal()"
-        class="bg-[#FF7E00] hover:bg-[#e67100] text-white font-medium px-6 py-3 rounded-lg transition-colors"
-      >
-        <i class="pi pi-plus mr-2"></i>
-        Créer un stage
-      </button>
+        label="Créer un stage"
+        icon="pi pi-plus"
+        (onClick)="openCreateModal()"
+        [style]="{
+          'background-color': '#C60C30',
+          'border-color': '#C60C30',
+          color: '#FFFFFF',
+        }"
+      />
+    </div>
+
+    <!-- Loading State -->
+    <div
+      *ngIf="isLoading"
+      class="bg-white dark:bg-gray-900 rounded-2xl border border-[#F0F0F0] dark:border-gray-700 p-6 shadow-sm"
+    >
+      <div class="flex items-center gap-4 mb-6">
+        <div
+          class="h-12 w-12 rounded-full bg-[#C60C30]/10 flex items-center justify-center"
+        >
+          <i class="pi pi-spin pi-spinner text-[#C60C30] text-xl"></i>
+        </div>
+        <div class="space-y-2">
+          <div
+            class="h-4 w-44 rounded bg-[#F0F0F0] dark:bg-gray-700 animate-pulse"
+          ></div>
+          <div
+            class="h-3 w-64 rounded bg-[#F0F0F0] dark:bg-gray-700 animate-pulse"
+          ></div>
+        </div>
+      </div>
+      <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
+        <div
+          class="h-32 rounded-lg border border-[#F0F0F0] dark:border-gray-700 bg-[#F0F0F0]/50 dark:bg-gray-800/50 animate-pulse"
+        ></div>
+        <div
+          class="h-32 rounded-lg border border-[#F0F0F0] dark:border-gray-700 bg-[#F0F0F0]/50 dark:bg-gray-800/50 animate-pulse"
+        ></div>
+      </div>
     </div>
 
     <!-- Authorization Info -->
     <div
-      *ngIf="hasAuthorization && !hasCurrentYearStage()"
-      class="bg-green-50 dark:bg-green-900/20 border border-green-200 dark:border-green-800 rounded-lg p-4 mb-6"
+      *ngIf="!isLoading && hasAuthorization && !hasCurrentYearStage()"
+      class="bg-white dark:bg-gray-900 border border-[#F0F0F0] dark:border-gray-700 rounded-lg p-4 mb-6 shadow-sm"
     >
       <div class="flex items-center gap-3">
         <i
-          class="pi pi-check-circle text-green-600 dark:text-green-400 text-2xl"
+          class="pi pi-check-circle text-[#C60C30] dark:text-red-400 text-2xl"
         ></i>
         <div>
-          <p class="text-green-800 dark:text-green-300 font-medium">
+          <p class="text-[#333333] dark:text-white font-medium">
             Vous êtes autorisé à créer un stage
           </p>
-          <p class="text-green-700 dark:text-green-400 text-sm">
+          <p class="text-[#666666] dark:text-gray-400 text-sm">
             Type autorisé:
-            <span class="font-semibold">{{
-              getTypeStageLabel(authorizationType!)
-            }}</span>
+            <span class="font-semibold">
+              {{ getTypeStageLabel(authorizationType!) }}
+            </span>
           </p>
         </div>
       </div>
@@ -45,27 +78,29 @@
 
     <!-- No Authorization Message -->
     <div
-      *ngIf="!hasAuthorization && stages.length === 0"
-      class="bg-white dark:bg-gray-800 rounded-lg shadow-md p-8 text-center"
+      *ngIf="!isLoading && !hasAuthorization && stages.length === 0"
+      class="bg-white dark:bg-gray-900 rounded-lg shadow-md p-8 text-center border border-[#F0F0F0] dark:border-gray-700"
     >
       <i
-        class="pi pi-info-circle text-6xl text-gray-400 dark:text-gray-600 mb-4"
+        class="pi pi-info-circle text-6xl text-[#C60C30]/60 dark:text-red-400/70 mb-4"
       ></i>
-      <h2 class="text-2xl font-semibold text-gray-900 dark:text-white mb-3">
+      <h2 class="text-2xl font-semibold text-[#333333] dark:text-white mb-3">
         Aucune autorisation
       </h2>
-      <p class="text-gray-600 dark:text-gray-400 mb-4">
+      <p class="text-[#666666] dark:text-gray-400 mb-4">
         Vous n'avez pas encore d'autorisation pour créer un stage. Veuillez
         contacter l'administration.
       </p>
     </div>
 
     <!-- Year Filter and Stages List -->
-    <div *ngIf="stages.length > 0">
+    <div *ngIf="!isLoading && stages.length > 0">
       <!-- Year Filter -->
-      <div class="bg-white dark:bg-gray-800 rounded-lg shadow-md p-4 mb-6">
-        <div class="flex items-center gap-4">
-          <label class="text-sm font-medium text-gray-700 dark:text-gray-300"
+      <div
+        class="bg-white dark:bg-gray-900 rounded-lg shadow-md p-4 mb-6 border border-[#F0F0F0] dark:border-gray-700"
+      >
+        <div class="flex items-center gap-4 flex-wrap">
+          <label class="text-sm font-medium text-[#333333] dark:text-gray-300"
             >Filtrer par année:</label
           >
           <p-select
@@ -74,12 +109,11 @@
             placeholder="Toutes les années"
             (onChange)="onYearChange()"
             [style]="{ minWidth: '200px' }"
-          >
-          </p-select>
+          />
           <button
             *ngIf="selectedYear !== null"
             (click)="clearFilter()"
-            class="text-[#FF7E00] hover:text-[#e67100] font-medium text-sm"
+            class="text-[#C60C30] hover:text-[#a30a26] font-medium text-sm"
           >
             <i class="pi pi-times mr-1"></i>
             Effacer
@@ -89,7 +123,7 @@
 
       <!-- Stages Table -->
       <div
-        class="bg-white dark:bg-gray-800 rounded-lg shadow-md overflow-hidden"
+        class="bg-white dark:bg-gray-900 rounded-lg shadow-md overflow-hidden border border-[#F0F0F0] dark:border-gray-700"
       >
         <p-table
           [value]="filteredStages"
@@ -114,17 +148,17 @@
           <ng-template pTemplate="body" let-stage>
             <tr
               (click)="navigateToStageDetails(stage.id)"
-              class="cursor-pointer hover:bg-gray-50 dark:hover:bg-gray-700 transition-colors"
+              class="cursor-pointer hover:bg-[#F0F0F0] dark:hover:bg-gray-800 transition-colors"
             >
               <td>
-                <span class="font-medium text-gray-900 dark:text-white">{{
-                  stage.title
-                }}</span>
+                <span class="font-medium text-[#333333] dark:text-white">
+                  {{ stage.title }}
+                </span>
               </td>
               <td>
-                <span class="text-gray-700 dark:text-gray-300">{{
-                  stage.companyName
-                }}</span>
+                <span class="text-[#666666] dark:text-gray-300">
+                  {{ stage.companyName }}
+                </span>
               </td>
               <td>
                 <span
@@ -135,29 +169,29 @@
                 </span>
               </td>
               <td>
-                <span class="text-gray-700 dark:text-gray-300">{{
-                  stage.year
-                }}</span>
+                <span class="text-[#666666] dark:text-gray-300">
+                  {{ stage.year }}
+                </span>
                 <span
                   *ngIf="stage.year === currentYear"
-                  class="ml-2 text-green-600 dark:text-green-400 text-xs font-medium"
+                  class="ml-2 text-[#C60C30] dark:text-red-400 text-xs font-medium"
                 >
                   (En cours)
                 </span>
               </td>
               <td>
-                <span class="text-gray-700 dark:text-gray-300"
-                  >{{ stage.durationMonths }} mois</span
-                >
+                <span class="text-[#666666] dark:text-gray-300">
+                  {{ stage.durationMonths }} mois
+                </span>
               </td>
               <td>
-                <span class="text-gray-700 dark:text-gray-300">
+                <span class="text-[#666666] dark:text-gray-300">
                   {{ stage.supervisorName || "Non assigné" }}
                 </span>
               </td>
               <td class="text-center">
                 <span
-                  class="inline-flex items-center px-2.5 py-1 rounded-full text-xs font-medium bg-blue-100 text-blue-700 dark:bg-blue-900/30 dark:text-blue-400"
+                  class="inline-flex items-center px-2.5 py-1 rounded-full text-xs font-medium bg-[#C60C30]/10 text-[#C60C30] dark:bg-red-900/30 dark:text-red-300"
                 >
                   {{ getFileCount(stage) }}
                 </span>
@@ -167,7 +201,7 @@
           <ng-template pTemplate="emptymessage">
             <tr>
               <td colspan="7" class="text-center py-8">
-                <p class="text-gray-500 dark:text-gray-400">
+                <p class="text-[#666666] dark:text-gray-400">
                   Aucun stage pour l'année sélectionnée
                 </p>
               </td>
@@ -189,65 +223,9 @@
   (onHide)="closeCreateModal()"
 >
   <div class="space-y-4">
-    <div>
+    <div class="border-b border-[#F0F0F0] dark:border-gray-700 pb-4 space-y-3">
       <label
-        class="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2"
-      >
-        Titre du stage <span class="text-red-500">*</span>
-      </label>
-      <input
-        type="text"
-        [(ngModel)]="stageForm.title"
-        placeholder="Ex: Stage de développement web"
-        class="w-full px-3 py-2 border border-gray-300 dark:border-gray-600 rounded-lg bg-white dark:bg-gray-700 text-gray-900 dark:text-white focus:ring-2 focus:ring-[#FF7E00] focus:border-transparent"
-      />
-    </div>
-
-    <div>
-      <label
-        class="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2"
-      >
-        Nom de l'entreprise <span class="text-red-500">*</span>
-      </label>
-      <input
-        type="text"
-        [(ngModel)]="stageForm.companyName"
-        placeholder="Ex: TechCorp"
-        class="w-full px-3 py-2 border border-gray-300 dark:border-gray-600 rounded-lg bg-white dark:bg-gray-700 text-gray-900 dark:text-white focus:ring-2 focus:ring-[#FF7E00] focus:border-transparent"
-      />
-    </div>
-
-    <div>
-      <label
-        class="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2"
-      >
-        Durée (en mois) <span class="text-red-500">*</span>
-      </label>
-      <input
-        type="number"
-        [(ngModel)]="stageForm.durationMonths"
-        placeholder="Ex: 3"
-        min="1"
-        max="12"
-        class="w-full px-3 py-2 border border-gray-300 dark:border-gray-600 rounded-lg bg-white dark:bg-gray-700 text-gray-900 dark:text-white focus:ring-2 focus:ring-[#FF7E00] focus:border-transparent"
-      />
-    </div>
-
-    <div
-      class="bg-blue-50 dark:bg-blue-900/20 border border-blue-200 dark:border-blue-800 rounded-lg p-3"
-    >
-      <p class="text-sm text-blue-800 dark:text-blue-300">
-        <i class="pi pi-info-circle mr-2"></i>
-        Le type de stage sera:
-        <span class="font-semibold">{{
-          getTypeStageLabel(authorizationType!)
-        }}</span>
-      </p>
-    </div>
-
-    <div>
-      <label
-        class="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2"
+        class="block text-sm font-medium text-[#333333] dark:text-gray-300 mb-2"
       >
         Convention de stage (PDF) <span class="text-red-500">*</span>
       </label>
@@ -257,11 +235,81 @@
         (change)="onConventionFileSelected($event)"
         class="w-full px-3 py-2 border border-gray-300 dark:border-gray-600 rounded-lg bg-white dark:bg-gray-700 text-gray-900 dark:text-white"
       />
-      <p
-        *ngIf="stageForm.conventionFile"
-        class="text-xs text-green-700 dark:text-green-400 mt-2"
+      <div class="flex flex-col sm:flex-row sm:items-center gap-3">
+        <button
+          type="button"
+          (click)="extractConventionData()"
+          [disabled]="!stageForm.conventionFile || extractionLoading"
+          class="bg-[#C60C30] hover:bg-[#a30a26] disabled:opacity-50 disabled:cursor-not-allowed text-white font-medium px-4 py-2 rounded-lg transition-colors"
+        >
+          <i class="pi pi-magic-wand mr-2"></i>
+          Extraire les données
+        </button>
+        <p
+          *ngIf="stageForm.conventionFile"
+          class="text-xs text-green-700 dark:text-green-400"
+        >
+          Fichier sélectionné: {{ stageForm.conventionFile.name }}
+        </p>
+      </div>
+      <p class="text-xs text-[#666666] dark:text-gray-400">
+        Le formulaire reste modifiable après préremplissage.
+      </p>
+    </div>
+
+    <div>
+      <label
+        class="block text-sm font-medium text-[#333333] dark:text-gray-300 mb-2"
       >
-        Fichier sélectionné: {{ stageForm.conventionFile.name }}
+        Titre du stage <span class="text-red-500">*</span>
+      </label>
+      <input
+        type="text"
+        [(ngModel)]="stageForm.title"
+        placeholder="Ex: Stage de développement web"
+        class="w-full px-3 py-2 border border-gray-300 dark:border-gray-600 rounded-lg bg-white dark:bg-gray-700 text-[#333333] dark:text-white focus:ring-2 focus:ring-[#C60C30] focus:border-transparent"
+      />
+    </div>
+
+    <div>
+      <label
+        class="block text-sm font-medium text-[#333333] dark:text-gray-300 mb-2"
+      >
+        Nom de l'entreprise <span class="text-red-500">*</span>
+      </label>
+      <input
+        type="text"
+        [(ngModel)]="stageForm.companyName"
+        placeholder="Ex: TechCorp"
+        class="w-full px-3 py-2 border border-gray-300 dark:border-gray-600 rounded-lg bg-white dark:bg-gray-700 text-[#333333] dark:text-white focus:ring-2 focus:ring-[#C60C30] focus:border-transparent"
+      />
+    </div>
+
+    <div>
+      <label
+        class="block text-sm font-medium text-[#333333] dark:text-gray-300 mb-2"
+      >
+        Durée (en mois) <span class="text-red-500">*</span>
+      </label>
+      <input
+        type="number"
+        [(ngModel)]="stageForm.durationMonths"
+        placeholder="Ex: 3"
+        min="1"
+        max="12"
+        class="w-full px-3 py-2 border border-gray-300 dark:border-gray-600 rounded-lg bg-white dark:bg-gray-700 text-[#333333] dark:text-white focus:ring-2 focus:ring-[#C60C30] focus:border-transparent"
+      />
+    </div>
+
+    <div
+      class="bg-[#F0F0F0] dark:bg-gray-800 border border-[#F0F0F0] dark:border-gray-700 rounded-lg p-3"
+    >
+      <p class="text-sm text-[#333333] dark:text-gray-200">
+        <i class="pi pi-info-circle mr-2"></i>
+        Le type de stage sera:
+        <span class="font-semibold">
+          {{ getTypeStageLabel(authorizationType!) }}
+        </span>
       </p>
     </div>
   </div>
@@ -269,13 +317,13 @@
   <ng-template pTemplate="footer">
     <button
       (click)="closeCreateModal()"
-      class="px-4 py-2 text-gray-700 dark:text-gray-300 hover:bg-gray-100 dark:hover:bg-gray-700 rounded-lg transition-colors"
+      class="px-4 py-2 text-[#666666] dark:text-gray-300 hover:bg-[#F0F0F0] dark:hover:bg-gray-700 rounded-lg transition-colors"
     >
       Annuler
     </button>
     <button
       (click)="createStage()"
-      class="bg-[#FF7E00] hover:bg-[#e67100] text-white px-4 py-2 rounded-lg transition-colors"
+      class="bg-[#C60C30] hover:bg-[#a30a26] text-white px-4 py-2 rounded-lg transition-colors"
     >
       <i class="pi pi-plus mr-2"></i>
       Créer
