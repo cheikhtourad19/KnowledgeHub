@@ -93,6 +93,9 @@ public class AdminDocumentController {
                     description,
                     published
             );
+            if (published){
+                aiandSearchService.indexFile(response.getFileId());
+            }
 
             return ResponseEntity.ok(tn.esprim.knowledgehub.resource.dto.response.ApiResponse.success(response, "File uploaded successfully"));
         } catch (Exception e) {

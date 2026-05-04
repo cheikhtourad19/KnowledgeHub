@@ -1,4 +1,4 @@
-"""Vector database service V2 using ChromaDB + Jina AI cloud embeddings"""
+"""Vector database service V2 using ChromaDB + OpenRouter Qwen3-Embedding-8B"""
 from typing import List, Dict, Any
 import chromadb
 from chromadb.config import Settings as ChromaSettings
@@ -10,15 +10,15 @@ import math
 logger = logging.getLogger(__name__)
 
 # Production-safe ranking constants
-MIN_SIMILARITY = 0.30  # Minimum relevance threshold to filter generic matches
+MIN_SIMILARITY = 0.50  # Minimum relevance threshold to filter generic matches
 MIN_CHUNK_AGREEMENT = 2  # Minimum chunks required above threshold for multi-chunk agreement
 AUTHORITY_BOOST_TEACHER = 0.04  # Optional metadata boost for teacher documents
 AUTHORITY_BOOST_OFFICIAL = 0.05  # Optional metadata boost for official publications
 
-JINA_API_URL = "https://api.jina.ai/v1/embeddings"
+OPENROUTER_EMBED_URL = "https://openrouter.ai/api/v1/embeddings"
 
 class VectorDBServiceV2:
-    """Service for managing ChromaDB vector database with Jina AI cloud embeddings"""
+    """Service for managing ChromaDB vector database with OpenRouter Qwen3-Embedding-8B"""
 
     def __init__(self):
         # Initialize ChromaDB with PersistentClient
@@ -37,7 +37,7 @@ class VectorDBServiceV2:
         )
 
         self._model = settings.EMBEDDING_MODEL_V2
-        self._api_key = settings.JINA_API_KEY
+        self._api_key = settings.OPENROUTER_API_KEY
 
         logger.info(
             f"VectorDBServiceV2 initialized - collection='{settings.CHROMA_COLLECTION_NAME_V2}' "
@@ -46,24 +46,23 @@ class VectorDBServiceV2:
 
     def generate_embedding(self, text: str) -> List[float]:
         """
-        Generate embedding for a single query string using Jina AI.
+        Generate embedding for a single query string using OpenRouter Qwen3-Embedding-8B.
 
         Args:
             text: Query string to embed
 
         Returns:
-            List[float]: Embedding vector
+            List[float]: Embedding vector (3072 dimensions)
         """
         response = requests.post(
-            JINA_API_URL,
+            OPENROUTER_EMBED_URL,
             headers={
                 "Authorization": f"Bearer {self._api_key}",
                 "Content-Type": "application/json",
             },
             json={
                 "model": self._model,
-                "input": [text],
-                "task": "retrieval.query",
+                "input": text,
             },
             timeout=30,
         )
@@ -72,16 +71,16 @@ class VectorDBServiceV2:
 
     def generate_embeddings(self, texts: List[str]) -> List[List[float]]:
         """
-        Generate embeddings for multiple document chunks in batch using Jina AI.
+        Generate embeddings for multiple document chunks in batch using OpenRouter Qwen3-Embedding-8B.
 
         Args:
             texts: List of document chunks to embed
 
         Returns:
-            List[List[float]]: List of embedding vectors
+            List[List[float]]: List of embedding vectors (3072 dimensions each)
         """
         response = requests.post(
-            JINA_API_URL,
+            OPENROUTER_EMBED_URL,
             headers={
                 "Authorization": f"Bearer {self._api_key}",
                 "Content-Type": "application/json",
@@ -89,7 +88,6 @@ class VectorDBServiceV2:
             json={
                 "model": self._model,
                 "input": texts,
-                "task": "retrieval.passage",
             },
             timeout=60,
         )
@@ -204,21 +202,9 @@ class VectorDBServiceV2:
                 best_chunk_score = max(chunk_scores)
                 chunk_count = len(chunk_scores)
 
-                normalized_score = best_chunk_score * (1.0 / math.log(chunk_count + 1))
-
-                metadata = file_metadata[file_id]
-                authority_boost = 0.0
-
-                if 'is_teacher_document' in metadata and metadata['is_teacher_document']:
-                    authority_boost = AUTHORITY_BOOST_TEACHER
-                elif 'is_official_publication' in metadata and metadata['is_official_publication']:
-                    authority_boost = AUTHORITY_BOOST_OFFICIAL
-
-                final_score = min(1.0, normalized_score + authority_boost)
-
                 normalized_matches.append({
                     "file_id": file_id,
-                    "score": float(final_score),
+                    "score": float(best_chunk_score),
                     "chunk_count": chunk_count,
                     "best_chunk_score": float(best_chunk_score)
                 })
@@ -226,15 +212,14 @@ class VectorDBServiceV2:
             normalized_matches.sort(key=lambda x: x['score'], reverse=True)
             normalized_matches = normalized_matches[:top_k]
 
-            matches = [
-                {"file_id": match["file_id"], "score": match["score"]}
-                for match in normalized_matches
-            ]
+            matches = normalized_matches  # Keep all fields for logging
 
             logger.info(
                 f"Search returned {len(matches)} unique file_ids for query: '{query[:50]}...' "
                 f"(filtered by MIN_SIMILARITY={MIN_SIMILARITY}, MIN_CHUNK_AGREEMENT={MIN_CHUNK_AGREEMENT})"
             )
+            for match in matches:
+                logger.info(f"  file_id={match['file_id']}, score={match['score']:.4f}, best_chunk_score={match.get('best_chunk_score', 'N/A')}, chunk_count={match.get('chunk_count', 'N/A')}")
 
             return matches
 
