@@ -62,7 +62,7 @@ feign:
 # MinIO Configuration
 minio:
   endpoint: http://localhost:9000  # Internal endpoint for file operations
-  external-endpoint: http://localhost:9000 # External endpoint for presigned URLs (browser access)
+  external-endpoint: http://192.168.1.92:9000 # External endpoint for presigned URLs (browser access)
   access-key: minioadmin
   secret-key: IM0i7/Sb3/tGGxWQdtxBtMRWov3fZ3qf
   bucket-name: knowledgehub-documents

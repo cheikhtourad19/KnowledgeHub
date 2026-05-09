@@ -111,20 +111,34 @@ export class LibraryComponent implements OnInit {
     this.performAiSearch(q);
   }
 
-  /**
-   * Calls the backend AI / semantic search endpoint.
-   * ── Swap `aiSearchDocuments` for your actual service method ──
-   */
   private performAiSearch(query: string): void {
     this.isAiLoading = true;
     this.isAiResults = false;
 
     this.ressourceService.searchDocuments(query).subscribe({
-      next: (response) => {
-        const results: File[] = response.data || [];
-        this.documents = results.filter((doc) =>
+      next: (aiResults) => {
+        const aiDocuments: File[] = (aiResults.data || []).filter((doc) =>
           this.displayableTypes.includes(doc.fileType),
         );
+
+        const q = query.toLowerCase();
+        const metadataResults = this.allDocuments.filter(
+          (doc) =>
+            this.displayableTypes.includes(doc.fileType) &&
+            (doc.title.toLowerCase().includes(q) ||
+              doc.description?.toLowerCase().includes(q) ||
+              doc.originalFileName?.toLowerCase().includes(q)),
+        );
+
+        const mergedMap = new Map<number, File>();
+        aiDocuments.forEach((doc) => mergedMap.set(doc.id, doc));
+        metadataResults.forEach((doc) => {
+          if (!mergedMap.has(doc.id)) {
+            mergedMap.set(doc.id, doc);
+          }
+        });
+
+        this.documents = Array.from(mergedMap.values());
         this.isAiResults = true;
         this.isAiLoading = false;
       },
