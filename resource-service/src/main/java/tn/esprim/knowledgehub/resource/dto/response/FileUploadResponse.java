@@ -29,6 +29,8 @@ public class FileUploadResponse {
     private String uploadedByUserName;
     private Integer pageCount;
     private Boolean isPublished;
+    private String coverImagePath;
+    private String coverOriginalFileName;
     private List<String> keywords;
     private String message;
 }

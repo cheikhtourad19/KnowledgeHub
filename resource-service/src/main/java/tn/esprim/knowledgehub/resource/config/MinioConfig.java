@@ -40,6 +40,9 @@ public class MinioConfig {
     @Value("${minio.buckets.attestation}")
     private String attestationBucket;
 
+    @Value("${minio.buckets.cover-pages}")
+    private String coverPagesBucket;
+
     @Bean
     public MinioClient minioClient() {
         try {
@@ -55,6 +58,7 @@ public class MinioConfig {
             createBucketIfNotExists(minioClient, stageBucket);
             createBucketIfNotExists(minioClient, journalBucket);
             createBucketIfNotExists(minioClient, attestationBucket);
+            createBucketIfNotExists(minioClient, coverPagesBucket);
 
             log.info("MinIO client initialized successfully");
             return minioClient;

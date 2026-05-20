@@ -6,9 +6,7 @@ import lombok.*;
 import org.hibernate.annotations.CreationTimestamp;
 
 import jakarta.persistence.*;
-import java.util.ArrayList;
 import java.util.Date;
-import java.util.List;
 
 @Entity
 @Table(name = "files")
@@ -45,6 +43,12 @@ public class File {
 
     @Column(nullable = false, length = 500)
     private String storagePath;
+
+    @Column(length = 500)
+    private String coverImagePath;
+
+    @Column(length = 255)
+    private String coverOriginalFileName;
 
 
     @CreationTimestamp

@@ -5,6 +5,7 @@ import jakarta.validation.constraints.Min;
 import jakarta.validation.constraints.NotNull;
 import lombok.*;
 import org.springframework.web.multipart.MultipartFile;
+import tn.esprim.knowledgehub.resource.enums.TypeStage;
 
 @Data
 @Builder
@@ -21,6 +22,9 @@ public class StudentCreateStageRequest {
     @NotNull(message = "Duration in months is required")
     @Min(value = 1, message = "Duration must be at least 1 month")
     private Integer durationMonths;
+
+    @NotNull(message = "Le type de stage est obligatoire")
+    private TypeStage typeStage;
 
     @NotNull(message = "La convention de stage est obligatoire")
     private MultipartFile conventionFile;

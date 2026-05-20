@@ -6,11 +6,14 @@ import org.springframework.data.repository.query.Param;
 import tn.esprim.knowledgehub.resource.entity.StageCreationAutorisation;
 import tn.esprim.knowledgehub.resource.enums.TypeStage;
 
+import java.util.List;
 import java.util.Optional;
 
 public interface StageCreationAutorisationRepository extends JpaRepository<StageCreationAutorisation, Long> {
 
-    Optional<StageCreationAutorisation> findByStudentId(Long studentId);
+    List<StageCreationAutorisation> findByStudentId(Long studentId);
+
+    Optional<StageCreationAutorisation> findByStudentIdAndTypeStage(Long studentId, TypeStage typeStage);
 
     @Query("SELECT s FROM StageCreationAutorisation s WHERE s.studentId = :studentId " +
            "AND s.typeStage = :typeStage " +

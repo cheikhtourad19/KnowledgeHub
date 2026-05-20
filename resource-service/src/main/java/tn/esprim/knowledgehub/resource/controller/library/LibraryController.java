@@ -175,6 +175,40 @@ public class LibraryController {
         }
     }
 
+    @GetMapping("/document/{id}/cover-presigned-url")
+    public ResponseEntity<ApiResponse> getDocumentCoverPresignedUrl(@PathVariable Long id) {
+        try {
+            File file = fileService.getFileById(id);
+            if (file == null || !file.getIsPublished()) {
+                return ResponseEntity.ok(
+                        ApiResponse.builder()
+                                .success(false)
+                                .message("Document not found or not published")
+                                .data(null)
+                                .build()
+                );
+            }
+
+            String presignedUrl = fileService.generateCoverPresignedUrl(id, 5);
+            return ResponseEntity.ok(
+                    ApiResponse.builder()
+                            .success(true)
+                            .message("Cover presigned URL generated successfully")
+                            .data(presignedUrl)
+                            .build()
+            );
+        } catch (Exception e) {
+            log.error("Error generating presigned URL for cover: {}", e.getMessage(), e);
+            return ResponseEntity.ok(
+                    ApiResponse.builder()
+                            .success(false)
+                            .message("Error generating presigned URL for cover: " + e.getMessage())
+                            .data(null)
+                            .build()
+            );
+        }
+    }
+
     @GetMapping("/getDocumentsByUser")
     public ResponseEntity<ApiResponse> getUserDocument(
             @RequestHeader(value = "X-User-Id") Long userId

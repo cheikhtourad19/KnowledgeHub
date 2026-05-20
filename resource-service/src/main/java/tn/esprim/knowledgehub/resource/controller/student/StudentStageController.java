@@ -155,20 +155,14 @@ public class StudentStageController {
     public ResponseEntity<ApiResponse<Object>> checkAuthorization(
             @RequestHeader(value = "X-User-Id") Long userId
     ) {
-        log.info("Student {} checking stage authorization", userId);
+        log.info("Student {} checking stage authorizations", userId);
         try {
-            var authorization = stageService.getStudentAuthorization(userId);
-            if (authorization != null) {
-                return ResponseEntity.ok(
-                        ApiResponse.success(authorization, "Authorization found")
-                );
-            } else {
-                return ResponseEntity.ok(
-                        ApiResponse.success(null, "No authorization found")
-                );
-            }
+            var authorizations = stageService.getStudentAuthorizations(userId);
+            return ResponseEntity.ok(
+                    ApiResponse.success(authorizations, authorizations.size() + " autorisation(s) trouvée(s)")
+            );
         } catch (Exception e) {
-            log.error("Error checking authorization for student {}: {}", userId, e.getMessage(), e);
+            log.error("Error checking authorizations for student {}: {}", userId, e.getMessage(), e);
             return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR)
                     .body(ApiResponse.error(
                             "Erreur interne du serveur",

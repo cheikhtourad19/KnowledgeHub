@@ -52,20 +52,28 @@ public class AdminDocumentController {
             );
         }
     }
-    @Operation(summary = "Upload a file", description = "Upload a file to MinIO storage")
+    @Operation(summary = "Upload a file", description = "Upload a file to MinIO storage with optional cover page")
     @PostMapping(value = "/upload", consumes = MediaType.MULTIPART_FORM_DATA_VALUE)
     public ResponseEntity<tn.esprim.knowledgehub.resource.dto.response.ApiResponse<FileUploadResponse>> uploadFile(
             @Parameter(description = "File to upload") @RequestParam("file") MultipartFile file,
+            @Parameter(description = "Optional cover image. If absent, first PDF page is auto-extracted when file is published to library")
+            @RequestParam(value = "coverPage", required = false) MultipartFile coverPage,
             @Parameter(description = "File type") @RequestParam("fileType") FileType fileType,
             @Parameter(description = "Bucket type (documents, pfa, pfe, stage)") @RequestParam("bucketType") String bucketType,
             @Parameter(description = "File title") @RequestParam(value = "title", required = false) String title,
             @Parameter(description = "File description") @RequestParam(value = "description", required = false) String description,
+            @Parameter(description = "Admins can set true to publish directly to library") @RequestParam(value = "isPublished", required = false) Boolean isPublished,
             @RequestHeader(value = "X-User-Id", required = false) String userId,
             @RequestHeader(value = "X-User-Role") String role,
             @RequestHeader(value = "X-User-Name", required = false) String userEmail
     ) {
         try {
             log.info("Uploading file: {} by user: {}", fileType, userEmail);
+            if (coverPage != null) {
+                log.info("CoverPage provided in request. name={}, size={} bytes, contentType={}", coverPage.getOriginalFilename(), coverPage.getSize(), coverPage.getContentType());
+            } else {
+                log.info("No coverPage provided in request.");
+            }
 
             // Parse userId, default to 0 if empty or null (for admin uploads)
             Long uploadedByUserId = 0L;
@@ -81,8 +89,17 @@ public class AdminDocumentController {
             String uploaderEmail = (userEmail != null && !userEmail.trim().isEmpty())
                     ? userEmail
                     : "admin@esprim.tn";
-            boolean published = false;
-            published = Objects.equals(role, "TEACHER");
+            boolean isTeacher = Objects.equals(role, "TEACHER");
+            boolean isAdmin = Objects.equals(role, "ADMIN");
+            if (!isTeacher && !isAdmin) {
+                return ResponseEntity.status(403).body(
+                        tn.esprim.knowledgehub.resource.dto.response.ApiResponse.error("Forbidden", "Only admins and teachers can upload files")
+                );
+            }
+
+            boolean published = isTeacher || (isAdmin && Boolean.TRUE.equals(isPublished));
+            log.info("Upload flags -> isTeacher={}, isAdmin={}, isPublishedParam={}, computedPublished={}", isTeacher, isAdmin, isPublished, published);
+            // Always handle cover during upload (provided or auto-extracted), regardless of publish status
             FileUploadResponse response = fileService.uploadFile(
                     file,
                     fileType,
@@ -91,10 +108,17 @@ public class AdminDocumentController {
                     bucketType,
                     title,
                     description,
-                    published
+                    published,
+                    coverPage,
+                    true  // enableCoverForLibrary: ALWAYS true during upload
             );
             if (published){
-                aiandSearchService.indexFile(response.getFileId());
+                try{
+                    aiandSearchService.indexFile(response.getFileId());
+
+                }catch (Exception e){
+                    log.warn("Failed to index file.", e);
+                }
             }
 
             return ResponseEntity.ok(tn.esprim.knowledgehub.resource.dto.response.ApiResponse.success(response, "File uploaded successfully"));
@@ -234,12 +258,36 @@ public class AdminDocumentController {
                 );
             }
 
-            File file = fileService.updatePublicationStatus(fileId, isPublished);
+            File file = fileService.updatePublicationStatus(fileId, isPublished, role);
             return ResponseEntity.ok(tn.esprim.knowledgehub.resource.dto.response.ApiResponse.success(file, "Publication status updated successfully"));
         } catch (Exception e) {
             log.error("Error updating publication status: {}", e.getMessage(), e);
             return ResponseEntity.badRequest().body(
                     tn.esprim.knowledgehub.resource.dto.response.ApiResponse.error(e.getMessage(), "Failed to update publication status")
+            );
+        }
+    }
+
+    @Operation(summary = "Attach or replace cover image for a file", description = "Upload a cover image and attach it to an existing file (Admin only)")
+    @PostMapping(value = "/{fileId}/cover", consumes = MediaType.MULTIPART_FORM_DATA_VALUE)
+    public ResponseEntity<tn.esprim.knowledgehub.resource.dto.response.ApiResponse<File>> attachCover(
+            @PathVariable Long fileId,
+            @RequestParam("coverPage") MultipartFile coverPage,
+            @RequestHeader(value = "X-User-Role") String role
+    ) {
+        try {
+            if (!"ADMIN".equals(role)) {
+                return ResponseEntity.status(403).body(
+                        tn.esprim.knowledgehub.resource.dto.response.ApiResponse.error("Forbidden", "Only admins can attach covers")
+                );
+            }
+
+            File updated = fileService.attachCoverToFile(fileId, coverPage);
+            return ResponseEntity.ok(tn.esprim.knowledgehub.resource.dto.response.ApiResponse.success(updated, "Cover attached successfully"));
+        } catch (Exception e) {
+            log.error("Error attaching cover for file {}: {}", fileId, e.getMessage(), e);
+            return ResponseEntity.badRequest().body(
+                    tn.esprim.knowledgehub.resource.dto.response.ApiResponse.error(e.getMessage(), "Failed to attach cover")
             );
         }
     }

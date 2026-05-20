@@ -45,30 +45,30 @@ public class StageService {
 
     /**
      * Autoriser un étudiant à créer un stage d'un type spécifique
-     * Si une autorisation existe déjà, elle sera écrasée
+     * Si une autorisation du même type existe déjà pour l'année en cours, elle est écrasée (mise à jour)
+     * Si c'est un type différent, une nouvelle autorisation est créée
      */
     @Transactional
     public void authorizeStudent(Long studentId, TypeStage typeStage){
         log.info("Authorizing student {} for stage type {}", studentId, typeStage);
 
-        // Vérifier si une autorisation existe déjà
+        int currentYear = LocalDate.now().getYear();
+
+        // Vérifier si une autorisation du même type existe déjà pour l'année en cours
         Optional<StageCreationAutorisation> existingAuth = stageCreationAutorisationRepository
-                .findByStudentId(studentId);
+                .findByStudentIdAndTypeStageAndYear(studentId, typeStage, currentYear);
 
         if (existingAuth.isPresent()) {
-            // Écraser l'ancienne autorisation
-            StageCreationAutorisation autorisation = existingAuth.get();
-            autorisation.setTypeStage(typeStage);
-            stageCreationAutorisationRepository.save(autorisation);
-            log.info("Updated existing authorization for student {}", studentId);
+            // Même type déjà autorisé - mise à jour (refresh)
+            log.info("Authorization already exists for student {} for type {} in year {}", studentId, typeStage, currentYear);
         } else {
-            // Créer une nouvelle autorisation
+            // Type différent ou nouvelle autorisation - créer une nouvelle entrée
             StageCreationAutorisation autorisation = StageCreationAutorisation.builder()
                     .studentId(studentId)
                     .typeStage(typeStage)
                     .build();
             stageCreationAutorisationRepository.save(autorisation);
-            log.info("Created new authorization for student {}", studentId);
+            log.info("Created new authorization for student {} for type {}", studentId, typeStage);
         }
     }
 
@@ -113,7 +113,7 @@ public class StageService {
     }
 
     /**
-     * Créer un stage si l'étudiant a une autorisation valide pour l'année en cours
+     * Créer un stage si l'étudiant a une autorisation valide pour le type choisi et l'année en cours
      */
     @Transactional
     public StageResponse createStageForStudent(Long userId, StudentCreateStageRequest request) {
@@ -123,36 +123,27 @@ public class StageService {
             throw new RuntimeException("La convention de stage est obligatoire");
         }
 
+        if (request.getTypeStage() == null) {
+            throw new RuntimeException("Le type de stage est obligatoire");
+        }
+
         // Récupérer l'année en cours
         int currentYear = LocalDate.now().getYear();
 
-        // Vérifier si l'étudiant a une autorisation valide pour cette année
+        // Vérifier si l'étudiant a une autorisation valide pour ce type de stage et cette année
         Optional<StageCreationAutorisation> autorisationOpt = stageCreationAutorisationRepository
-                .findByStudentId(userId);
+                .findByStudentIdAndTypeStageAndYear(userId, request.getTypeStage(), currentYear);
 
         if (autorisationOpt.isEmpty()) {
-            log.error("No authorization found for student {}", userId);
+            log.error("No authorization found for student {} for type {} in year {}",
+                    userId, request.getTypeStage(), currentYear);
             throw new RuntimeException(
-                    "Vous n'avez pas d'autorisation pour créer un stage. Veuillez contacter l'administration."
+                    "Vous n'avez pas d'autorisation pour créer un stage de type " + request.getTypeStage() +
+                    ". Veuillez contacter l'administration."
             );
         }
 
         StageCreationAutorisation autorisation = autorisationOpt.get();
-
-        // Vérifier que l'autorisation est de l'année en cours
-        int authYear = autorisation.getCreatedAt().toInstant()
-                .atZone(java.time.ZoneId.systemDefault())
-                .toLocalDate()
-                .getYear();
-
-        if (authYear != currentYear) {
-            log.error("Authorization for student {} is not for current year {} (found year {})",
-                    userId, currentYear, authYear);
-            throw new RuntimeException(
-                    "Votre autorisation n'est pas valide pour l'année " + currentYear +
-                    ". Veuillez demander une nouvelle autorisation à l'administration."
-            );
-        }
 
         // Récupérer les informations de l'étudiant depuis le user-service
         StudentDTO student;
@@ -169,12 +160,12 @@ public class StageService {
             throw new RuntimeException("Erreur lors de la récupération des informations de l'étudiant: " + e.getMessage());
         }
 
-        // Créer le stage avec le typeStage de l'autorisation
+        // Créer le stage avec le typeStage choisi par l'étudiant
         Stage stage = Stage.builder()
                 .title(request.getTitle())
                 .companyName(request.getCompanyName())
                 .durationMonths(request.getDurationMonths())
-                .typeStage(autorisation.getTypeStage())
+                .typeStage(request.getTypeStage())
                 .year(currentYear)
                 .studentId(userId)
                 .studentName(student.getNom() + " " + student.getPrenom())
@@ -348,8 +339,10 @@ public class StageService {
         if (stage.getConventionFileId() != null) {
             fileService.deleteFile(stage.getConventionFileId());
         }
-        StageCreationAutorisation autorisation=stageCreationAutorisationRepository.findByStudentId(stage.getStudentId()).orElse(null);
-        if(autorisation!=null){
+        StageCreationAutorisation autorisation = stageCreationAutorisationRepository
+                .findByStudentIdAndTypeStage(stage.getStudentId(), stage.getTypeStage())
+                .orElse(null);
+        if (autorisation != null) {
             stageCreationAutorisationRepository.delete(autorisation);
         }
         stageRepository.delete(stage);
@@ -465,11 +458,11 @@ public class StageService {
     }
 
     /**
-     * Get student's stage authorization
+     * Get all stage authorizations for a student
      */
-    public StageCreationAutorisation getStudentAuthorization(Long studentId) {
-        log.info("Checking authorization for student ID: {}", studentId);
-        return stageCreationAutorisationRepository.findByStudentId(studentId).orElse(null);
+    public List<StageCreationAutorisation> getStudentAuthorizations(Long studentId) {
+        log.info("Checking authorizations for student ID: {}", studentId);
+        return stageCreationAutorisationRepository.findByStudentId(studentId);
     }
 }
 
