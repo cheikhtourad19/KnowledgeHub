@@ -18,5 +18,7 @@ export interface FileUploadResponse {
   uploadedByUserName?: string;
   pageCount?: number;
   isPublished: boolean;
+  coverImagePath?: string;
+  coverOriginalFileName?: string;
   message: string;
 }

@@ -34,10 +34,18 @@ export class ResourceApiService {
     bucketType: string,
     title: string,
     description?: string,
+    coverPage?: globalThis.File,
+    isPublished?: boolean,
   ): Observable<ApiResponse<FileUploadResponse>> {
     const formData = new FormData();
     formData.append('file', file);
-    formData.append('fileType', fileType);
+    if (coverPage) {
+      formData.append('coverPage', coverPage);
+    }
+    if (isPublished !== undefined) {
+      formData.append('isPublished', String(isPublished));
+    }
+    formData.append('fileType', fileType as unknown as string);
     formData.append('bucketType', bucketType);
     formData.append('title', title);
     if (description) {
@@ -145,6 +153,26 @@ export class ResourceApiService {
             response.data = presignedUrl.toString();
           }
           console.log('Presigned URL:', response.data);
+          return response;
+        }),
+      );
+  }
+
+  getCoverPresignedUrl(fileId: number): Observable<ApiResponse<string>> {
+    return this.http
+      .get<ApiResponse<string>>(
+        `${this.baseUrl}/api/library/document/${fileId}/cover-presigned-url`,
+      )
+      .pipe(
+        map((response) => {
+          if (response.data) {
+            const presignedUrl = new URL(response.data);
+            const publicUrl = new URL(environment.minioPublicUrl);
+            presignedUrl.hostname = publicUrl.hostname;
+            presignedUrl.port = publicUrl.port;
+            presignedUrl.protocol = publicUrl.protocol;
+            response.data = presignedUrl.toString();
+          }
           return response;
         }),
       );
@@ -370,6 +398,7 @@ export class ResourceApiService {
     formData.append('title', request.title);
     formData.append('companyName', request.companyName);
     formData.append('durationMonths', request.durationMonths.toString());
+    formData.append('typeStage', request.typeStage);
     formData.append('conventionFile', request.conventionFile);
 
     return this.http.post<ApiResponse<Stage>>(

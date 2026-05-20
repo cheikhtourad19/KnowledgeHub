@@ -14,6 +14,9 @@
       "
     ></div>
     <div class="relative z-10">
+        <div *ngIf="coverUrl" class="mb-4">
+          <img [src]="coverUrl" alt="Cover" class="w-full max-h-64 object-cover rounded-md shadow-sm" />
+        </div>
       <button
         (click)="goBack()"
         class="mb-4 flex items-center gap-2 text-white/80 transition-colors hover:text-white"

@@ -1,0 +1,67 @@
+// Modal styling
+:deep(.create-stage-modal) {
+  .p-dialog-header {
+    background: linear-gradient(135deg, #c60c30 0%, #a30a26 100%) !important;
+    color: #ffffff !important;
+    font-weight: bold !important;
+    padding: 1.5rem !important;
+    border-radius: 0.75rem 0.75rem 0 0 !important;
+  }
+
+  .p-dialog-header-label {
+    color: #ffffff !important;
+    font-weight: bold !important;
+  }
+
+  .p-dialog-header-icon {
+    color: #ffffff !important;
+
+    &:hover {
+      background-color: rgba(255, 255, 255, 0.1) !important;
+    }
+  }
+
+  .p-dialog-content {
+    padding: 2rem 1.5rem !important;
+  }
+}
+
+// Table improvements
+:deep(.p-datatable) {
+  .p-datatable-thead > tr > th {
+    background: linear-gradient(
+      to right,
+      rgba(198, 12, 48, 0.05),
+      transparent
+    ) !important;
+    font-weight: 700 !important;
+    letter-spacing: 0.5px !important;
+  }
+
+  .p-datatable-tbody > tr {
+    transition: all 0.2s ease-in-out !important;
+
+    &:hover {
+      background-color: rgba(198, 12, 48, 0.05) !important;
+    }
+  }
+}
+
+// Dark mode table
+:deep(.dark) {
+  .p-datatable {
+    .p-datatable-thead > tr > th {
+      background: linear-gradient(
+        to right,
+        rgba(198, 12, 48, 0.1),
+        transparent
+      ) !important;
+    }
+
+    .p-datatable-tbody > tr {
+      &:hover {
+        background-color: rgba(198, 12, 48, 0.1) !important;
+      }
+    }
+  }
+}

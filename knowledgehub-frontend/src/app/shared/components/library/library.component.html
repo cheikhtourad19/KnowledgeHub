@@ -247,7 +247,14 @@
           [ngClass]="getThumbnailClass(doc.fileType)"
         >
           <img
-            *ngIf="getTypeImage(doc.fileType)"
+            *ngIf="coverUrls[doc.id]"
+            [src]="coverUrls[doc.id]"
+            [alt]="doc.title + ' cover'"
+            class="h-full w-full object-cover transition-transform duration-500 group-hover:scale-105"
+          />
+
+          <img
+            *ngIf="!coverUrls[doc.id] && getTypeImage(doc.fileType)"
             [src]="getTypeImage(doc.fileType)"
             [alt]="typeLabels[doc.fileType]"
             class="h-full w-full object-cover opacity-80 dark:opacity-60 transition-transform duration-500 group-hover:scale-105"
@@ -390,4 +397,4 @@
       </button>
     </div>
   </div>
-
+</div>

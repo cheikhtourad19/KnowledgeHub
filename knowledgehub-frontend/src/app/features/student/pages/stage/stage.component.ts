@@ -18,7 +18,10 @@ export class StageComponent implements OnInit {
   stages: Stage[] = [];
   filteredStages: Stage[] = [];
   hasAuthorization = false;
-  authorizationType: TypeStage | null = null;
+  availableAuthorizationTypes: TypeStage[] = [];
+  availableTypeOptions: { label: string; value: TypeStage }[] = [];
+  authorizedTypesLabel = '';
+  canCreateNewStage = false;
   isLoading = true;
   private pendingInitialLoads = 2;
 
@@ -35,6 +38,7 @@ export class StageComponent implements OnInit {
     companyName: '',
     durationMonths: null as number | null,
     conventionFile: null as globalThis.File | null,
+    typeStage: null as TypeStage | null,
   };
 
   constructor(
@@ -60,11 +64,19 @@ export class StageComponent implements OnInit {
           this.stages = response.data ?? [];
           this.extractYears();
           this.applyFilter();
+          this.updateCanCreateFlag();
         },
         error: (err) => {
           console.error('Error loading stages:', err);
+          this.updateCanCreateFlag();
         },
       });
+  }
+
+  private updateCanCreateFlag(): void {
+    // Can create if there are any unused authorizations
+    // Each authorization is type-specific and deleted after use
+    this.canCreateNewStage = this.availableAuthorizationTypes.length > 0;
   }
 
   checkAuthorization(): void {
@@ -73,17 +85,42 @@ export class StageComponent implements OnInit {
       .pipe(finalize(() => this.finishInitialLoad()))
       .subscribe({
         next: (response) => {
-          if (response.success && response.data) {
-            this.hasAuthorization = true;
-            this.authorizationType = response.data.typeStage;
+          if (
+            response.success &&
+            response.data &&
+            Array.isArray(response.data)
+          ) {
+            const types = response.data.map((auth: any) => auth.typeStage);
+            this.availableAuthorizationTypes = types;
+            this.hasAuthorization = types.length > 0;
+            this.updateAuthorizationDisplay();
           } else {
             this.hasAuthorization = false;
+            this.availableAuthorizationTypes = [];
+            this.authorizedTypesLabel = '';
+            this.availableTypeOptions = [];
           }
         },
         error: () => {
           this.hasAuthorization = false;
+          this.availableAuthorizationTypes = [];
+          this.authorizedTypesLabel = '';
+          this.availableTypeOptions = [];
         },
       });
+  }
+
+  private updateAuthorizationDisplay(): void {
+    this.authorizedTypesLabel = this.availableAuthorizationTypes
+      .map((t) => this.getTypeStageLabel(t))
+      .join(', ');
+    this.availableTypeOptions = this.availableAuthorizationTypes.map(
+      (type) => ({
+        label: this.getTypeStageLabel(type),
+        value: type,
+      }),
+    );
+    this.updateCanCreateFlag();
   }
 
   private finishInitialLoad(): void {
@@ -155,6 +192,7 @@ export class StageComponent implements OnInit {
       companyName: '',
       durationMonths: null,
       conventionFile: null,
+      typeStage: null,
     };
   }
 
@@ -166,6 +204,7 @@ export class StageComponent implements OnInit {
       companyName: '',
       durationMonths: null,
       conventionFile: null,
+      typeStage: null,
     };
   }
 
@@ -305,12 +344,14 @@ export class StageComponent implements OnInit {
       !this.stageForm.title ||
       !this.stageForm.companyName ||
       !this.stageForm.durationMonths ||
-      !this.stageForm.conventionFile
+      !this.stageForm.conventionFile ||
+      !this.stageForm.typeStage
     ) {
       this.messageService.add({
         severity: 'warn',
         summary: 'Attention',
-        detail: 'Veuillez remplir tous les champs et joindre la convention',
+        detail:
+          'Veuillez remplir tous les champs, sélectionner un type et joindre la convention',
       });
       return;
     }
@@ -320,6 +361,7 @@ export class StageComponent implements OnInit {
       companyName: this.stageForm.companyName,
       durationMonths: this.stageForm.durationMonths,
       conventionFile: this.stageForm.conventionFile,
+      typeStage: this.stageForm.typeStage,
     };
 
     this.resourceApi.createStage(request).subscribe({
@@ -331,6 +373,7 @@ export class StageComponent implements OnInit {
         });
         this.closeCreateModal();
         this.loadStudentStages();
+        this.checkAuthorization(); // Refresh authorizations since one was consumed
       },
       error: (err) => {
         this.messageService.add({
@@ -354,10 +397,6 @@ export class StageComponent implements OnInit {
     if (stage.attestationFileId) count++;
     if (stage.conventionFileId) count++;
     return `${count}/4`;
-  }
-
-  hasCurrentYearStage(): boolean {
-    return this.stages.some((stage) => stage.year === this.currentYear);
   }
 
   getYearOptions(): { label: string; value: number }[] {

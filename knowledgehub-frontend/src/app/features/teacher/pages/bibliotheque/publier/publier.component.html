@@ -204,6 +204,23 @@
       </p>
     </div>
 
+      <div class="flex flex-col gap-1.5">
+        <label class="text-[11px] font-bold uppercase tracking-widest text-gray-700 dark:text-gray-300">
+          Page de garde (optionnel)
+        </label>
+        <p-fileUpload
+          mode="basic"
+          [auto]="false"
+          [chooseLabel]="coverFile ? coverFile.name : 'Choisir une image'"
+          [maxFileSize]="5000000"
+          accept="image/*"
+          (onSelect)="onCoverSelect($event)"
+          [customUpload]="true"
+          class="w-full"
+        />
+        <p class="text-xs text-gray-400 dark:text-gray-500">Format accepté : JPG, PNG, WEBP · max 5 MB</p>
+      </div>
+
     <div class="flex flex-col gap-1.5">
       <label
         class="text-[11px] font-bold uppercase tracking-widest text-gray-700 dark:text-gray-300"

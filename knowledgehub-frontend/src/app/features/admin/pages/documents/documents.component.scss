@@ -1,0 +1,23 @@
+:host ::ng-deep .admin-upload-modal .p-dialog-header {
+  background: linear-gradient(135deg, #c60c30 0%, #a00828 100%);
+  color: #ffffff;
+}
+
+:host ::ng-deep .admin-upload-modal .p-dialog-title {
+  font-weight: 700;
+  letter-spacing: 0.2px;
+}
+
+:host ::ng-deep .admin-confirm-modal .p-dialog-header {
+  background: linear-gradient(135deg, #333333 0%, #1f1f1f 100%);
+  color: #ffffff;
+}
+
+:host ::ng-deep .admin-upload-modal .p-dialog-content,
+:host ::ng-deep .admin-confirm-modal .p-dialog-content {
+  padding-top: 1rem;
+}
+
+:host ::ng-deep .p-toggleswitch.p-toggleswitch-checked .p-toggleswitch-slider {
+  background: #16a34a;
+}

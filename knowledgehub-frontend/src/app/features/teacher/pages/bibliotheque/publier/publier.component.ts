@@ -19,6 +19,7 @@ export class PublierComponent implements OnInit {
 
   showUploadModal = false;
   uploadedFile: globalThis.File | null = null;
+  coverFile: globalThis.File | null = null;
   uploadTitle = '';
   uploadDescription = '';
   uploading = false;
@@ -100,17 +101,23 @@ export class PublierComponent implements OnInit {
     if (event.files?.length) this.uploadedFile = event.files[0];
   }
 
+  onCoverSelect(event: any): void {
+    if (event.files?.length) this.coverFile = event.files[0];
+  }
+
   uploadDocument(): void {
     if (!this.uploadedFile || !this.uploadTitle.trim()) return;
     this.uploading = true;
 
     this.resourceApi
       .uploadFile(
-        this.uploadedFile,
+        this.uploadedFile!,
         FileType.EDUCATIONAL_MATERIAL,
         'documents',
         this.uploadTitle,
         this.uploadDescription || undefined,
+        this.coverFile || undefined,
+        undefined,
       )
       .subscribe({
         next: () => {

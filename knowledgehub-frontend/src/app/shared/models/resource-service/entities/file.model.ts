@@ -18,4 +18,6 @@ export interface File {
   pageCount?: number;
   fileType: FileType;
   isScanned: boolean;
+  coverImagePath?: string;
+  coverOriginalFileName?: string;
 }

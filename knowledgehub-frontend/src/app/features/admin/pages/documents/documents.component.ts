@@ -14,13 +14,17 @@ import { FileType } from '../../../../shared/models/resource-service/enums/file-
 export class DocumentsComponent implements OnInit {
   documents: File[] = [];
   filteredDocuments: File[] = [];
+  coverUrls: Record<number, string> = {};
+  publicationLoading: Record<number, boolean> = {};
   loading = false;
 
   // Upload Modal
   showUploadModal = false;
   uploadedFile: globalThis.File | null = null;
+  coverFile: globalThis.File | null = null;
   uploadTitle = '';
   uploadDescription = '';
+  isPublishedOnUpload: boolean = false;
   selectedFileType: FileType = FileType.EDUCATIONAL_MATERIAL;
   uploading = false;
 
@@ -40,10 +44,7 @@ export class DocumentsComponent implements OnInit {
   selectedFilterType: FileType | 'ALL' = 'ALL';
 
   get allFileTypeOptions() {
-    return [
-      { label: 'Tous les types', value: 'ALL' },
-      ...this.fileTypeOptions,
-    ];
+    return [{ label: 'Tous les types', value: 'ALL' }, ...this.fileTypeOptions];
   }
 
   constructor(
@@ -62,6 +63,7 @@ export class DocumentsComponent implements OnInit {
       next: (response) => {
         if (response.success && response.data) {
           this.documents = response.data;
+          this.preloadCovers(this.documents);
           this.applyFilters();
           this.messageService.add({
             severity: 'success',
@@ -90,7 +92,9 @@ export class DocumentsComponent implements OnInit {
 
     // Filter by type
     if (this.selectedFilterType !== 'ALL') {
-      filtered = filtered.filter((doc) => doc.fileType === this.selectedFilterType);
+      filtered = filtered.filter(
+        (doc) => doc.fileType === this.selectedFilterType,
+      );
     }
 
     // Filter by search query
@@ -136,6 +140,12 @@ export class DocumentsComponent implements OnInit {
     }
   }
 
+  onCoverSelect(event: any): void {
+    if (event.files && event.files.length > 0) {
+      this.coverFile = event.files[0];
+    }
+  }
+
   uploadDocument(): void {
     if (!this.uploadedFile || !this.uploadTitle.trim()) {
       this.messageService.add({
@@ -155,6 +165,8 @@ export class DocumentsComponent implements OnInit {
         'documents',
         this.uploadTitle,
         this.uploadDescription,
+        this.coverFile || undefined,
+        this.isPublishedOnUpload,
       )
       .subscribe({
         next: (response) => {
@@ -193,17 +205,40 @@ export class DocumentsComponent implements OnInit {
     }
   }
 
+  onPublicationSwitchChange(document: File, nextValue: boolean): void {
+    if (this.publicationLoading[document.id]) {
+      return;
+    }
+
+    // Keep previous behavior: publishing requires password confirmation.
+    if (nextValue) {
+      this.openPasswordConfirmationModal(document);
+      return;
+    }
+
+    this.togglePublicationStatus(document);
+  }
+
   openPasswordConfirmationModal(document: File): void {
     this.pendingPublicationDocument = document;
     this.passwordConfirmation = '';
     this.showPasswordModal = true;
   }
 
-  closePasswordModal(): void {
+  closePasswordModal(revertSwitch: boolean = true): void {
+    if (revertSwitch) {
+      this.revertPendingPublicationSwitch();
+    }
     this.showPasswordModal = false;
     this.passwordConfirmation = '';
     this.pendingPublicationDocument = null;
     this.verifyingPassword = false;
+  }
+
+  private revertPendingPublicationSwitch(): void {
+    if (this.pendingPublicationDocument) {
+      this.pendingPublicationDocument.isPublished = false;
+    }
   }
 
   confirmPasswordAndPublish(): void {
@@ -214,6 +249,7 @@ export class DocumentsComponent implements OnInit {
         detail: 'Veuillez entrer votre mot de passe',
         life: 3000,
       });
+      this.revertPendingPublicationSwitch();
       return;
     }
 
@@ -225,8 +261,9 @@ export class DocumentsComponent implements OnInit {
         if (response.success) {
           // Mot de passe correct, procéder à la publication
           this.publishDocument(this.pendingPublicationDocument!);
-          this.closePasswordModal();
+          this.closePasswordModal(false);
         } else {
+          this.revertPendingPublicationSwitch();
           this.messageService.add({
             severity: 'error',
             summary: 'Mot de passe incorrect',
@@ -238,6 +275,7 @@ export class DocumentsComponent implements OnInit {
       },
       error: (error) => {
         console.error('Error verifying password:', error);
+        this.revertPendingPublicationSwitch();
         this.messageService.add({
           severity: 'error',
           summary: 'Erreur',
@@ -250,6 +288,7 @@ export class DocumentsComponent implements OnInit {
   }
 
   publishDocument(document: File): void {
+    this.publicationLoading[document.id] = true;
     this.resourceApiService
       .updatePublicationStatus(document.id, true)
       .subscribe({
@@ -263,20 +302,24 @@ export class DocumentsComponent implements OnInit {
               life: 3000,
             });
           }
+          this.publicationLoading[document.id] = false;
         },
         error: (error) => {
           console.error('Error publishing document:', error);
+          document.isPublished = false;
           this.messageService.add({
             severity: 'error',
             summary: 'Erreur',
             detail: 'Impossible de publier le document',
             life: 5000,
           });
+          this.publicationLoading[document.id] = false;
         },
       });
   }
 
   unpublishDocument(document: File): void {
+    this.publicationLoading[document.id] = true;
     this.resourceApiService
       .updatePublicationStatus(document.id, false)
       .subscribe({
@@ -290,16 +333,36 @@ export class DocumentsComponent implements OnInit {
               life: 3000,
             });
           }
+          this.publicationLoading[document.id] = false;
         },
         error: (error) => {
           console.error('Error unpublishing document:', error);
+          document.isPublished = true;
           this.messageService.add({
             severity: 'error',
             summary: 'Erreur',
             detail: 'Impossible de dépublier le document',
             life: 5000,
           });
+          this.publicationLoading[document.id] = false;
         },
+      });
+  }
+
+  private preloadCovers(files: File[]): void {
+    files
+      .filter((file) => file.coverImagePath && !this.coverUrls[file.id])
+      .forEach((file) => {
+        this.resourceApiService.getCoverPresignedUrl(file.id).subscribe({
+          next: (response) => {
+            if (response.success && response.data) {
+              this.coverUrls[file.id] = response.data;
+            }
+          },
+          error: () => {
+            // Keep placeholder when cover fetch fails.
+          },
+        });
       });
   }
 
@@ -344,7 +407,7 @@ export class DocumentsComponent implements OnInit {
         this.messageService.add({
           severity: 'error',
           summary: 'Erreur',
-          detail: 'Impossible d\'afficher le document',
+          detail: "Impossible d'afficher le document",
           life: 5000,
         });
       },
@@ -367,16 +430,27 @@ export class DocumentsComponent implements OnInit {
 
   getFileTypeClass(fileType: FileType): string {
     const classes: Partial<Record<FileType, string>> = {
-      [FileType.EDUCATIONAL_MATERIAL]: 'bg-blue-100 text-blue-700 dark:bg-blue-900/30 dark:text-blue-400',
-      [FileType.PFA_REPORT]: 'bg-purple-100 text-purple-700 dark:bg-purple-900/30 dark:text-purple-400',
-      [FileType.PFE_REPORT]: 'bg-indigo-100 text-indigo-700 dark:bg-indigo-900/30 dark:text-indigo-400',
-      [FileType.STAGE_REPORT]: 'bg-cyan-100 text-cyan-700 dark:bg-cyan-900/30 dark:text-cyan-400',
-      [FileType.JOURNAL]: 'bg-green-100 text-green-700 dark:bg-green-900/30 dark:text-green-400',
-      [FileType.ATTESTATION]: 'bg-orange-100 text-orange-700 dark:bg-orange-900/30 dark:text-orange-400',
-      [FileType.DEMANDE]: 'bg-yellow-100 text-yellow-700 dark:bg-yellow-900/30 dark:text-yellow-400',
-      [FileType.SUPPLEMENTARY]: 'bg-gray-100 text-gray-700 dark:bg-gray-800 dark:text-gray-400',
+      [FileType.EDUCATIONAL_MATERIAL]:
+        'bg-blue-100 text-blue-700 dark:bg-blue-900/30 dark:text-blue-400',
+      [FileType.PFA_REPORT]:
+        'bg-purple-100 text-purple-700 dark:bg-purple-900/30 dark:text-purple-400',
+      [FileType.PFE_REPORT]:
+        'bg-indigo-100 text-indigo-700 dark:bg-indigo-900/30 dark:text-indigo-400',
+      [FileType.STAGE_REPORT]:
+        'bg-cyan-100 text-cyan-700 dark:bg-cyan-900/30 dark:text-cyan-400',
+      [FileType.JOURNAL]:
+        'bg-green-100 text-green-700 dark:bg-green-900/30 dark:text-green-400',
+      [FileType.ATTESTATION]:
+        'bg-orange-100 text-orange-700 dark:bg-orange-900/30 dark:text-orange-400',
+      [FileType.DEMANDE]:
+        'bg-yellow-100 text-yellow-700 dark:bg-yellow-900/30 dark:text-yellow-400',
+      [FileType.SUPPLEMENTARY]:
+        'bg-gray-100 text-gray-700 dark:bg-gray-800 dark:text-gray-400',
     };
-    return classes[fileType] || 'bg-gray-100 text-gray-700 dark:bg-gray-800 dark:text-gray-400';
+    return (
+      classes[fileType] ||
+      'bg-gray-100 text-gray-700 dark:bg-gray-800 dark:text-gray-400'
+    );
   }
 
   formatFileSize(bytes: number): string {
@@ -384,7 +458,7 @@ export class DocumentsComponent implements OnInit {
     const k = 1024;
     const sizes = ['B', 'KB', 'MB', 'GB'];
     const i = Math.floor(Math.log(bytes) / Math.log(k));
-    return Math.round(bytes / Math.pow(k, i) * 100) / 100 + ' ' + sizes[i];
+    return Math.round((bytes / Math.pow(k, i)) * 100) / 100 + ' ' + sizes[i];
   }
 
   formatDate(date: Date): string {

@@ -25,6 +25,7 @@ import { ToastModule } from 'primeng/toast';
 import { FileUploadModule } from 'primeng/fileupload';
 import { Badge } from 'primeng/badge';
 import { TooltipModule } from 'primeng/tooltip';
+import { ToggleSwitchModule } from 'primeng/toggleswitch';
 import { PfeDetailsComponent } from './pages/pfe.gestion/pfe-details/pfe-details.component';
 import { TopbarComponent } from '../../shared/components/topbar/topbar.component';
 import { SidebarComponent } from '../../shared/components/sidebar/sidebar.component';
@@ -64,6 +65,7 @@ import { LogoutModalComponent } from '../../shared/components/logout-modal/logou
     ConfirmDialogModule,
     ReactiveFormsModule,
     TooltipModule,
+    ToggleSwitchModule,
   ],
 })
 export class AdminModule {}

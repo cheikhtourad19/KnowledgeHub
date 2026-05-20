@@ -16,6 +16,7 @@ export class DocumentComponent implements OnInit {
   document: File | null = null;
   documentId: number = 0;
   pdfUrl: string = '';
+  coverUrl: string | null = null;
   showPdfModal = false;
   aiQuestion: string = '';
   aiResponse: string = '';
@@ -57,6 +58,7 @@ constructor(
         if (response.success && response.data) {
           this.document = response.data;
           this.loadPresignedUrl();
+          this.loadCoverUrl();
         } else {
           this.showError('Document non trouvé');
           this.goBack();
@@ -84,6 +86,27 @@ constructor(
         },
       });
     }
+  }
+
+  loadCoverUrl(): void {
+    if (!this.document) return;
+    if (!this.document.coverImagePath) {
+      this.coverUrl = null;
+      return;
+    }
+
+    this.resourceApiService.getCoverPresignedUrl(this.document.id).subscribe({
+      next: (response) => {
+        if (response.success && response.data) {
+          this.coverUrl = response.data;
+        } else {
+          this.coverUrl = null;
+        }
+      },
+      error: () => {
+        this.coverUrl = null;
+      },
+    });
   }
 
   openPdfModal(): void {

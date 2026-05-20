@@ -14,6 +14,7 @@ import { AuthService } from '../../../core/services/auth.service';
 })
 export class LibraryComponent implements OnInit {
   public documents: File[] = [];
+  public coverUrls: Record<number, string> = {};
   public searchQuery: string = '';
   public activeFilter: string = 'ALL';
   public aiSearchEnabled: boolean = false;
@@ -78,6 +79,7 @@ export class LibraryComponent implements OnInit {
           this.displayableTypes.includes(doc.fileType),
         );
         this.documents = [...this.allDocuments];
+        this.preloadCoverUrls(this.allDocuments);
       },
       error: (error) => {
         console.error('Error fetching documents:', error);
@@ -139,6 +141,7 @@ export class LibraryComponent implements OnInit {
         });
 
         this.documents = Array.from(mergedMap.values());
+        this.preloadCoverUrls(this.documents);
         this.isAiResults = true;
         this.isAiLoading = false;
       },
@@ -214,6 +217,23 @@ export class LibraryComponent implements OnInit {
 
   getTypeImage(fileType: FileType): string | null {
     return this.typeImages[fileType] ?? null;
+  }
+
+  private preloadCoverUrls(files: File[]): void {
+    files
+      .filter((file) => file.coverImagePath && !this.coverUrls[file.id])
+      .forEach((file) => {
+        this.ressourceService.getCoverPresignedUrl(file.id).subscribe({
+          next: (response) => {
+            if (response.success && response.data) {
+              this.coverUrls[file.id] = response.data;
+            }
+          },
+          error: () => {
+            // Keep placeholders when no cover URL can be fetched.
+          },
+        });
+      });
   }
 
   getThumbnailClass(fileType: FileType): string {
