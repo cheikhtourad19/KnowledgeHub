@@ -24,6 +24,8 @@ import { PfeComponent } from './pages/pfe/pfe.component';
 import { StageComponent } from './pages/stage/stage.component';
 import { StudentStageDetailsComponent } from './pages/stage/stage-details/stage-details.component';
 import { DemandePfeComponent } from './pages/demande.pfe/demande.pfe.component';
+import { StudentAnnonceComponent } from './pages/annonce/annonce.component';
+import { StudentAnnonceDetailsComponent } from './pages/annonce/annonce-details.component';
 import { SharedModule } from '../../shared/shared.module';
 import { TopbarComponent } from '../../shared/components/topbar/topbar.component';
 import { SidebarComponent } from '../../shared/components/sidebar/sidebar.component';
@@ -36,6 +38,8 @@ import { MarkdownModule } from 'ngx-markdown';
     StageComponent,
     StudentStageDetailsComponent,
     DemandePfeComponent,
+    StudentAnnonceComponent,
+    StudentAnnonceDetailsComponent,
   ],
   imports: [
     CommonModule,

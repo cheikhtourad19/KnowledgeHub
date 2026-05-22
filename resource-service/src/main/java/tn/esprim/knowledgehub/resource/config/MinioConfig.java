@@ -3,6 +3,7 @@ package tn.esprim.knowledgehub.resource.config;
 import io.minio.BucketExistsArgs;
 import io.minio.MakeBucketArgs;
 import io.minio.MinioClient;
+import io.minio.SetBucketPolicyArgs;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.context.annotation.Bean;
@@ -43,6 +44,10 @@ public class MinioConfig {
     @Value("${minio.buckets.cover-pages}")
     private String coverPagesBucket;
 
+    @Value("${minio.buckets.annonces}")
+    private String annoncesBucket;
+
+
     @Bean
     public MinioClient minioClient() {
         try {
@@ -51,7 +56,6 @@ public class MinioConfig {
                     .credentials(accessKey, secretKey)
                     .build();
 
-            // Create buckets if they don't exist
             createBucketIfNotExists(minioClient, documentsBucket);
             createBucketIfNotExists(minioClient, pfaBucket);
             createBucketIfNotExists(minioClient, pfeBucket);
@@ -59,6 +63,10 @@ public class MinioConfig {
             createBucketIfNotExists(minioClient, journalBucket);
             createBucketIfNotExists(minioClient, attestationBucket);
             createBucketIfNotExists(minioClient, coverPagesBucket);
+            createBucketIfNotExists(minioClient, annoncesBucket);
+
+            // bucket annonces public en lecture
+            setBucketPublicReadPolicy(minioClient, annoncesBucket);
 
             log.info("MinIO client initialized successfully");
             return minioClient;
@@ -68,6 +76,34 @@ public class MinioConfig {
         }
     }
 
+    private void setBucketPublicReadPolicy(MinioClient minioClient, String bucketName) {
+        try {
+            String policy = """
+                {
+                  "Version": "2012-10-17",
+                  "Statement": [
+                    {
+                      "Effect": "Allow",
+                      "Principal": {"AWS": ["*"]},
+                      "Action": ["s3:GetObject"],
+                      "Resource": ["arn:aws:s3:::%s/*"]
+                    }
+                  ]
+                }
+                """.formatted(bucketName);
+
+            minioClient.setBucketPolicy(
+                    SetBucketPolicyArgs.builder()
+                            .bucket(bucketName)
+                            .config(policy)
+                            .build()
+            );
+            log.info("Public read policy applied to bucket '{}'", bucketName);
+        } catch (Exception e) {
+            log.error("Error setting public policy on bucket '{}': {}", bucketName, e.getMessage(), e);
+            throw new RuntimeException("Failed to set public policy on bucket: " + bucketName, e);
+        }
+    }
     /**
      * MinIO client for generating presigned URLs with external endpoint
      * This ensures browsers can access the URLs

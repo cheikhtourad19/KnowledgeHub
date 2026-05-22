@@ -18,6 +18,12 @@ import { FileUploadResponse } from '../../shared/models/resource-service/respons
 import { InternshipConventionExtractionResponse } from '../../shared/models/resource-service/responses/internship-convention-extraction-response.model';
 import { FileType } from '../../shared/models/resource-service/enums/file-type.enum';
 import { map } from 'rxjs/operators';
+import {
+  AnnonceStage,
+  AnnonceStageRequest,
+} from '../models/resource-service/entities/annonce.model';
+import { ModaliteTravail } from '../models/resource-service/enums/modalite-travail.enum';
+import { TypeAnnonceStage } from '../models/resource-service/enums/type-annonce-stage.enum';
 @Injectable({
   providedIn: 'root',
 })
@@ -160,9 +166,9 @@ export class ResourceApiService {
 
   getCoverPresignedUrl(fileId: number): Observable<ApiResponse<string>> {
     return this.http
-      .get<ApiResponse<string>>(
-        `${this.baseUrl}/api/library/document/${fileId}/cover-presigned-url`,
-      )
+      .get<
+        ApiResponse<string>
+      >(`${this.baseUrl}/api/library/document/${fileId}/cover-presigned-url`)
       .pipe(
         map((response) => {
           if (response.data) {
@@ -790,5 +796,106 @@ export class ResourceApiService {
           },
         })),
       );
+  }
+
+  // ========== Annonce Methods ==========
+
+  findAllAnnonces(): Observable<ApiResponse<AnnonceStage[]>> {
+    return this.http.get<ApiResponse<AnnonceStage[]>>(
+      `${this.baseUrl}/api/annonces`,
+    );
+  }
+
+  findAllActiveAnnonces(): Observable<ApiResponse<AnnonceStage[]>> {
+    return this.http.get<ApiResponse<AnnonceStage[]>>(
+      `${this.baseUrl}/api/annonces/active`,
+    );
+  }
+
+  findAnnonceById(id: number): Observable<ApiResponse<AnnonceStage>> {
+    return this.http.get<ApiResponse<AnnonceStage>>(
+      `${this.baseUrl}/api/annonces/${id}`,
+    );
+  }
+
+  findAnnoncesByType(
+    type: TypeAnnonceStage,
+  ): Observable<ApiResponse<AnnonceStage[]>> {
+    return this.http.get<ApiResponse<AnnonceStage[]>>(
+      `${this.baseUrl}/api/annonces/type/${type}`,
+    );
+  }
+
+  findAnnoncesByModalite(
+    modalite: ModaliteTravail,
+  ): Observable<ApiResponse<AnnonceStage[]>> {
+    return this.http.get<ApiResponse<AnnonceStage[]>>(
+      `${this.baseUrl}/api/annonces/modalite/${modalite}`,
+    );
+  }
+
+  findAnnoncesByVille(ville: string): Observable<ApiResponse<AnnonceStage[]>> {
+    return this.http.get<ApiResponse<AnnonceStage[]>>(
+      `${this.baseUrl}/api/annonces/ville/${ville}`,
+    );
+  }
+
+  searchAnnonces(keyword: string): Observable<ApiResponse<AnnonceStage[]>> {
+    const params = new HttpParams().set('keyword', keyword);
+    return this.http.get<ApiResponse<AnnonceStage[]>>(
+      `${this.baseUrl}/api/annonces/search`,
+      { params },
+    );
+  }
+
+  saveAnnonce(
+    annonce: AnnonceStageRequest,
+    image?: globalThis.File,
+  ): Observable<ApiResponse<AnnonceStage>> {
+    const form = this.buildAnnonceFormData(annonce, image);
+    return this.http.post<ApiResponse<AnnonceStage>>(
+      `${this.baseUrl}/api/annonces`,
+      form,
+    );
+  }
+
+  editAnnonce(
+    id: number,
+    annonce: AnnonceStageRequest,
+    image?: globalThis.File,
+  ): Observable<ApiResponse<AnnonceStage>> {
+    const form = this.buildAnnonceFormData(annonce, image);
+    return this.http.put<ApiResponse<AnnonceStage>>(
+      `${this.baseUrl}/api/annonces/${id}`,
+      form,
+    );
+  }
+
+  toggleAnnonceActive(id: number): Observable<ApiResponse<AnnonceStage>> {
+    return this.http.patch<ApiResponse<AnnonceStage>>(
+      `${this.baseUrl}/api/annonces/${id}/toggle`,
+      null,
+    );
+  }
+
+  deleteAnnonce(id: number): Observable<ApiResponse<void>> {
+    return this.http.delete<ApiResponse<void>>(
+      `${this.baseUrl}/api/annonces/${id}`,
+    );
+  }
+
+  private buildAnnonceFormData(
+    annonce: AnnonceStageRequest,
+    image?: globalThis.File,
+  ): FormData {
+    const form = new FormData();
+    form.append(
+      'annonce',
+      new Blob([JSON.stringify(annonce)], { type: 'application/json' }),
+    );
+    if (image) {
+      form.append('image', image);
+    }
+    return form;
   }
 }

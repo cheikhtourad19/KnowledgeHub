@@ -13,6 +13,8 @@ import { EnseignantComponent } from './pages/enseignant/enseignant.component';
 import { NotFoundComponent } from '../../shared/components/not-found/not-found.component';
 import { PfeDetailsComponent } from './pages/pfe.gestion/pfe-details/pfe-details.component';
 import { ProfileComponent } from '../../shared/components/profile/profile.component';
+import { AnnonceDetailsComponent } from './pages/annonce/annonce-details/annonce-details.component';
+import { AnnonceComponent } from './pages/annonce/annonce.component';
 
 const routes: Routes = [
   {
@@ -68,6 +70,14 @@ const routes: Routes = [
         path: 'profile',
         component: ProfileComponent,
       },
+      {
+        path:'annonce',
+        component: AnnonceComponent,
+      },
+      {
+        path: 'annonce/:id',
+        component: AnnonceDetailsComponent,
+      }
     ],
   },
 ];

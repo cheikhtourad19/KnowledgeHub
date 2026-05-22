@@ -30,6 +30,8 @@ import { PfeDetailsComponent } from './pages/pfe.gestion/pfe-details/pfe-details
 import { TopbarComponent } from '../../shared/components/topbar/topbar.component';
 import { SidebarComponent } from '../../shared/components/sidebar/sidebar.component';
 import { LogoutModalComponent } from '../../shared/components/logout-modal/logout-modal.component';
+import { AnnonceDetailsComponent } from './pages/annonce/annonce-details/annonce-details.component';
+import { AnnonceComponent } from './pages/annonce/annonce.component';
 @NgModule({
   declarations: [
     AdminLayoutComponent,
@@ -43,6 +45,8 @@ import { LogoutModalComponent } from '../../shared/components/logout-modal/logou
     EnseignantComponent,
     DocumentsComponent,
     PfeDetailsComponent,
+    AnnonceDetailsComponent,
+    AnnonceComponent,
   ],
   imports: [
     CommonModule,

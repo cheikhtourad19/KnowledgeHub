@@ -8,6 +8,8 @@ import { DemandePfeComponent } from './pages/demande.pfe/demande.pfe.component';
 import { ProfileComponent } from '../../shared/components/profile/profile.component';
 import { StudentStageDetailsComponent } from './pages/stage/stage-details/stage-details.component';
 import { DocumentComponent } from '../../shared/components/library/document/document.component';
+import { StudentAnnonceComponent } from './pages/annonce/annonce.component';
+import { StudentAnnonceDetailsComponent } from './pages/annonce/annonce-details.component';
 
 const routes: Routes = [
   {
@@ -34,6 +36,14 @@ const routes: Routes = [
       {
         path: 'library',
         component: LibraryComponent,
+      },
+      {
+        path: 'annonces',
+        component: StudentAnnonceComponent,
+      },
+      {
+        path: 'annonces/:id',
+        component: StudentAnnonceDetailsComponent,
       },
       {
         path: 'pfe/demandes',

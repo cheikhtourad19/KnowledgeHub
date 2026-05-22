@@ -1,0 +1,139 @@
+<!-- Back -->
+<div class="mb-5">
+  <button
+    (click)="goBack()"
+    class="flex items-center gap-2 text-sm text-[#666666] dark:text-gray-400 hover:text-[#C60C30] transition-colors"
+  >
+    <i class="pi pi-arrow-left text-xs"></i> Retour aux annonces
+  </button>
+</div>
+
+<!-- Loader -->
+@if (loading) {
+  <div class="flex justify-center py-20">
+    <i class="pi pi-spin pi-spinner text-[#C60C30] text-2xl"></i>
+  </div>
+}
+
+<!-- Not found -->
+@if (notFound) {
+  <div class="text-center py-20 text-[#666666] dark:text-gray-400">
+    <i class="pi pi-exclamation-circle text-4xl mb-3 block opacity-30"></i>
+    <p class="text-sm">Annonce introuvable</p>
+  </div>
+}
+
+<!-- Content -->
+@if (!loading && annonce) {
+  <div class="space-y-6">
+
+    <!-- Image + titre -->
+    <div class="relative rounded-xl overflow-hidden bg-gray-100 dark:bg-gray-800">
+      @if (annonce.imageUrl) {
+        <img [src]="annonce.imageUrl" [alt]="annonce.titre" class="w-full h-56 object-cover" />
+      } @else {
+        <div class="w-full h-56 flex items-center justify-center">
+          <i class="pi pi-image text-5xl text-gray-300 dark:text-gray-600"></i>
+        </div>
+      }
+      <!-- badge statut -->
+      <span
+        class="absolute top-3 right-3 text-xs font-medium px-3 py-1 rounded-full"
+        [ngClass]="annonce.estActive
+          ? 'bg-green-100 text-green-700 dark:bg-green-900/40 dark:text-green-400'
+          : 'bg-gray-200 text-gray-500 dark:bg-gray-700 dark:text-gray-400'"
+      >
+        {{ annonce.estActive ? 'Active' : 'Inactive' }}
+      </span>
+    </div>
+
+    <!-- Info principale -->
+    <div class="grid grid-cols-1 sm:grid-cols-2 gap-4">
+
+      <!-- Titre + description -->
+      <div class="sm:col-span-2">
+        <h1 class="text-lg font-500 text-[#333333] dark:text-white">{{ annonce.titre }}</h1>
+        <p class="mt-2 text-sm text-[#666666] dark:text-gray-400 leading-relaxed whitespace-pre-line">
+          {{ annonce.description }}
+        </p>
+      </div>
+
+      <!-- Entreprise -->
+      <div class="bg-gray-50 dark:bg-gray-800 rounded-lg p-4">
+        <p class="text-[10px] uppercase tracking-widest text-[#999] dark:text-gray-500 mb-1">Entreprise</p>
+        <p class="text-sm font-medium text-[#333333] dark:text-white flex items-center gap-2">
+          <i class="pi pi-building text-[#C60C30] text-xs"></i> {{ annonce.nomEntreprise }}
+        </p>
+      </div>
+
+      <!-- Localisation -->
+      <div class="bg-gray-50 dark:bg-gray-800 rounded-lg p-4">
+        <p class="text-[10px] uppercase tracking-widest text-[#999] dark:text-gray-500 mb-1">Localisation</p>
+        <p class="text-sm font-medium text-[#333333] dark:text-white flex items-center gap-2">
+          <i class="pi pi-map-marker text-[#C60C30] text-xs"></i>
+          {{ annonce.ville }}, {{ annonce.pays }}
+        </p>
+      </div>
+
+      <!-- Modalité -->
+      <div class="bg-gray-50 dark:bg-gray-800 rounded-lg p-4">
+        <p class="text-[10px] uppercase tracking-widest text-[#999] dark:text-gray-500 mb-1">Modalité</p>
+        <p class="text-sm font-medium text-[#333333] dark:text-white flex items-center gap-2">
+          <i [class]="ModaliteTravailIcons[annonce.modaliteTravail] + ' text-[#C60C30] text-xs'"></i>
+          {{ ModaliteTravailLabels[annonce.modaliteTravail] }}
+        </p>
+      </div>
+
+      <!-- Types de stage -->
+      <div class="bg-gray-50 dark:bg-gray-800 rounded-lg p-4">
+        <p class="text-[10px] uppercase tracking-widest text-[#999] dark:text-gray-500 mb-2">Types de stage</p>
+        <div class="flex flex-wrap gap-1">
+          @for (t of annonce.typesStage; track t) {
+            <span class="text-xs px-2 py-0.5 bg-red-50 dark:bg-red-900/20 text-[#C60C30] rounded-full">
+              {{ TypeAnnonceStageLabels[t] }}
+            </span>
+          }
+        </div>
+      </div>
+    </div>
+
+    <!-- Liens -->
+    @if (annonce.urls.length > 0) {
+      <div>
+        <h2 class="text-sm font-500 text-[#333333] dark:text-white mb-3">Liens utiles</h2>
+        <div class="space-y-2">
+          @for (u of annonce.urls; track u.id) {
+            <button
+              (click)="openUrl(u.url)"
+              class="w-full flex items-center gap-3 px-4 py-3 rounded-lg border border-gray-200 dark:border-gray-700 hover:border-[#C60C30] hover:bg-red-50 dark:hover:bg-red-900/10 transition-colors group text-left"
+            >
+              <i [class]="TypeUrlIcons[u.typeUrl] + ' text-[#C60C30] text-sm'"></i>
+              <div class="min-w-0 flex-1">
+                <p class="text-xs font-medium text-[#333333] dark:text-white">
+                  {{ TypeUrlLabels[u.typeUrl] }}
+                </p>
+                <p class="text-[11px] text-[#666666] dark:text-gray-400 truncate">{{ u.url }}</p>
+              </div>
+              <i class="pi pi-external-link text-xs text-[#999] group-hover:text-[#C60C30] transition-colors"></i>
+            </button>
+          }
+        </div>
+      </div>
+    }
+
+    <!-- Actions admin -->
+    <div class="flex gap-3 pt-2 border-t border-gray-100 dark:border-gray-800">
+      <button
+        (click)="toggle()"
+        class="flex items-center gap-2 px-4 py-2 text-sm rounded-lg border transition-colors"
+        [ngClass]="annonce.estActive
+          ? 'border-red-200 text-red-500 hover:bg-red-50 dark:hover:bg-red-900/10'
+          : 'border-green-200 text-green-600 hover:bg-green-50 dark:hover:bg-green-900/10'"
+      >
+        <i [class]="'pi text-xs ' + (annonce.estActive ? 'pi-eye-slash' : 'pi-eye')"></i>
+        {{ annonce.estActive ? 'Désactiver' : 'Activer' }}
+      </button>
+    </div>
+
+  </div>
+}

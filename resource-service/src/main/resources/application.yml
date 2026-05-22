@@ -74,6 +74,7 @@ minio:
     journal: knowledgehub-journal
     attestation: knowledgehub-attestation
     cover-pages: knowledgehub-cover-pages
+    annonces: annonces
 
 # CORS Configuration
 cors:

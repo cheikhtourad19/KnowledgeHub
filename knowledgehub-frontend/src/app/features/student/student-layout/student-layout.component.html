@@ -48,6 +48,31 @@
     }
   </a>
 
+  <!-- Annonces -->
+  <a
+    routerLink="annonces"
+    (click)="closeDrawer()"
+    class="flex items-center gap-3 px-3 py-2.5 rounded-lg transition-all duration-200 group"
+    [ngClass]="
+      isActive('annonces')
+        ? 'bg-[#C60C30] text-white shadow-sm'
+        : 'text-[#333333] dark:text-gray-300 hover:bg-[#F0F0F0] dark:hover:bg-gray-800'
+    "
+  >
+    <i
+      class="pi pi-megaphone text-base"
+      [ngClass]="
+        isActive('annonces')
+          ? 'text-white'
+          : 'text-[#666666] dark:text-gray-400 group-hover:text-[#C60C30]'
+      "
+    ></i>
+    <span class="text-sm font-medium">Annonces De Stage</span>
+    @if (isActive("annonces")) {
+      <span class="ms-auto w-1.5 h-1.5 bg-white rounded-full opacity-80"></span>
+    }
+  </a>
+
   <!-- Stage -->
   <a
     routerLink="stage"

@@ -28,6 +28,11 @@ export class DocumentsComponent implements OnInit {
   selectedFileType: FileType = FileType.EDUCATIONAL_MATERIAL;
   uploading = false;
 
+  // Delete Confirmation Modal
+  showDeleteModal = false;
+  pendingDeleteDocumentId: number | null = null;
+  deleting = false;
+
   // Password Confirmation Modal
   showPasswordModal = false;
   passwordConfirmation = '';
@@ -366,12 +371,22 @@ export class DocumentsComponent implements OnInit {
       });
   }
 
-  deleteDocument(documentId: number): void {
-    if (!confirm('Êtes-vous sûr de vouloir supprimer ce document ?')) {
-      return;
-    }
+  openDeleteModal(documentId: number): void {
+    this.pendingDeleteDocumentId = documentId;
+    this.showDeleteModal = true;
+  }
 
-    this.resourceApiService.deleteFile(documentId).subscribe({
+  closeDeleteModal(): void {
+    this.showDeleteModal = false;
+    this.pendingDeleteDocumentId = null;
+    this.deleting = false;
+  }
+
+  confirmDelete(): void {
+    if (!this.pendingDeleteDocumentId) return;
+
+    this.deleting = true;
+    this.resourceApiService.deleteFile(this.pendingDeleteDocumentId).subscribe({
       next: (response) => {
         if (response.success) {
           this.messageService.add({
@@ -380,8 +395,10 @@ export class DocumentsComponent implements OnInit {
             detail: 'Document supprimé avec succès',
             life: 3000,
           });
+          this.closeDeleteModal();
           this.loadDocuments();
         }
+        this.deleting = false;
       },
       error: (error) => {
         console.error('Error deleting document:', error);
@@ -391,6 +408,7 @@ export class DocumentsComponent implements OnInit {
           detail: 'Impossible de supprimer le document',
           life: 5000,
         });
+        this.deleting = false;
       },
     });
   }

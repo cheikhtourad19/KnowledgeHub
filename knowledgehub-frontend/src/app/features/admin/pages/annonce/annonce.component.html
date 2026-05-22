@@ -1,0 +1,361 @@
+<!-- Header -->
+<div class="flex items-center justify-between mb-6">
+  <div>
+    <h1 class="text-xl font-500 text-[#333333] dark:text-white">Annonces de stage</h1>
+    <p class="text-sm text-[#666666] dark:text-gray-400 mt-0.5">
+      {{ annonces.length }} annonce(s) au total
+    </p>
+  </div>
+  <button
+    (click)="openCreate()"
+    class="flex items-center gap-2 px-4 py-2 bg-[#C60C30] text-white text-sm font-medium rounded-lg hover:bg-[#a50a28] transition-colors"
+  >
+    <i class="pi pi-plus text-xs"></i> Nouvelle annonce
+  </button>
+</div>
+
+<!-- Search -->
+<div class="mb-5">
+  <div class="relative">
+    <i class="pi pi-search absolute left-3 top-1/2 -translate-y-1/2 text-[#666666] text-sm"></i>
+    <input
+      type="text"
+      [(ngModel)]="searchKeyword"
+      (ngModelChange)="applyFilter()"
+      placeholder="Rechercher par titre, entreprise, ville…"
+      class="w-full pl-9 pr-4 py-2.5 text-sm border border-gray-200 dark:border-gray-700 rounded-lg bg-white dark:bg-gray-800 text-[#333333] dark:text-white placeholder-[#999] focus:outline-none focus:ring-2 focus:ring-[#C60C30]/30"
+    />
+  </div>
+</div>
+
+<!-- Loader -->
+@if (loading) {
+  <div class="flex justify-center py-16">
+    <i class="pi pi-spin pi-spinner text-[#C60C30] text-2xl"></i>
+  </div>
+}
+
+<!-- Empty -->
+@if (!loading && filtered.length === 0) {
+  <div class="text-center py-16 text-[#666666] dark:text-gray-400">
+    <i class="pi pi-megaphone text-4xl mb-3 block opacity-30"></i>
+    <p class="text-sm">Aucune annonce trouvée</p>
+  </div>
+}
+
+<!-- Grid -->
+@if (!loading && filtered.length > 0) {
+  <div class="grid grid-cols-1 sm:grid-cols-2 xl:grid-cols-3 gap-4">
+    @for (a of filtered; track a.id) {
+      <div
+        class="bg-white dark:bg-gray-800 border border-gray-200 dark:border-gray-700 rounded-xl overflow-hidden hover:shadow-md transition-shadow"
+      >
+        <!-- Image -->
+        <div class="relative h-36 bg-gray-100 dark:bg-gray-700">
+          @if (a.imageUrl) {
+            <img [src]="a.imageUrl" [alt]="a.titre" class="w-full h-full object-cover" />
+          } @else {
+            <div class="w-full h-full flex items-center justify-center">
+              <i class="pi pi-image text-3xl text-gray-300 dark:text-gray-600"></i>
+            </div>
+          }
+          <!-- badge actif -->
+          <span
+            class="absolute top-2 right-2 text-[10px] font-medium px-2 py-0.5 rounded-full"
+            [ngClass]="a.estActive
+              ? 'bg-green-100 text-green-700 dark:bg-green-900/30 dark:text-green-400'
+              : 'bg-gray-100 text-gray-500 dark:bg-gray-700 dark:text-gray-400'"
+          >
+            {{ a.estActive ? 'Active' : 'Inactive' }}
+          </span>
+        </div>
+
+        <!-- Body -->
+        <div class="p-4">
+          <h3 class="text-sm font-500 text-[#333333] dark:text-white truncate">{{ a.titre }}</h3>
+          <p class="text-xs text-[#666666] dark:text-gray-400 mt-0.5 flex items-center gap-1">
+            <i class="pi pi-building text-[10px]"></i> {{ a.nomEntreprise }}
+          </p>
+          <p class="text-xs text-[#666666] dark:text-gray-400 flex items-center gap-1 mt-0.5">
+            <i class="pi pi-map-marker text-[10px]"></i> {{ a.ville }}, {{ a.pays }}
+          </p>
+
+          <!-- types -->
+          <div class="flex flex-wrap gap-1 mt-2">
+            @for (t of a.typesStage; track t) {
+              <span class="text-[10px] px-2 py-0.5 bg-red-50 dark:bg-red-900/20 text-[#C60C30] rounded-full">
+                {{ TypeAnnonceStageLabels[t] }}
+              </span>
+            }
+          </div>
+
+          <!-- modalité -->
+          <p class="text-xs text-[#666666] dark:text-gray-400 mt-2 flex items-center gap-1">
+            <i [class]="ModaliteTravailIcons[a.modaliteTravail] + ' text-[10px]'"></i>
+            {{ ModaliteTravailLabels[a.modaliteTravail] }}
+          </p>
+        </div>
+
+        <!-- Actions -->
+        <div class="px-4 pb-4 flex items-center gap-2">
+          <button
+            (click)="goToDetails(a.id!)"
+            class="flex-1 text-xs py-1.5 rounded-lg border border-gray-200 dark:border-gray-600 text-[#333333] dark:text-white hover:bg-gray-50 dark:hover:bg-gray-700 transition-colors"
+          >
+            Détails
+          </button>
+          <button
+            (click)="openEdit(a)"
+            class="p-1.5 rounded-lg border border-gray-200 dark:border-gray-600 text-[#666666] hover:text-[#C60C30] hover:border-[#C60C30] transition-colors"
+          >
+            <i class="pi pi-pencil text-xs"></i>
+          </button>
+          <button
+            (click)="toggle(a)"
+            class="p-1.5 rounded-lg border border-gray-200 dark:border-gray-600 transition-colors"
+            [ngClass]="a.estActive
+              ? 'text-green-600 hover:text-red-500 hover:border-red-300'
+              : 'text-gray-400 hover:text-green-600 hover:border-green-300'"
+            [title]="a.estActive ? 'Désactiver' : 'Activer'"
+          >
+            <i [class]="'pi text-xs ' + (a.estActive ? 'pi-eye' : 'pi-eye-slash')"></i>
+          </button>
+          <button
+            (click)="confirmDelete(a.id!)"
+            class="p-1.5 rounded-lg border border-gray-200 dark:border-gray-600 text-[#666666] hover:text-red-500 hover:border-red-300 transition-colors"
+          >
+            <i class="pi pi-trash text-xs"></i>
+          </button>
+        </div>
+      </div>
+    }
+  </div>
+}
+
+<!-- Modal création / édition -->
+@if (showModal) {
+  <div class="fixed inset-0 z-50 flex items-center justify-center bg-gray-900/50 backdrop-blur-sm p-4">
+    <div class="bg-white dark:bg-gray-900 rounded-xl shadow-xl w-full max-w-2xl max-h-[90vh] overflow-y-auto">
+
+      <!-- header modal -->
+      <div class="flex items-center justify-between px-6 py-4 border-b border-gray-100 dark:border-gray-800">
+        <h2 class="text-base font-500 text-[#333333] dark:text-white">
+          {{ isEditing ? 'Modifier l\'annonce' : 'Nouvelle annonce' }}
+        </h2>
+        <button (click)="closeModal()" class="text-[#666666] hover:text-[#333333] dark:hover:text-white">
+          <i class="pi pi-times"></i>
+        </button>
+      </div>
+
+      <div class="px-6 py-5 space-y-5">
+
+        <!-- Image -->
+        <div>
+          <label class="block text-xs font-medium text-[#666666] dark:text-gray-400 mb-2">
+            Image de l'annonce (optionnelle)
+          </label>
+          @if (imagePreview) {
+            <div class="relative w-full h-40 rounded-lg overflow-hidden mb-2">
+              <img [src]="imagePreview" alt="preview" class="w-full h-full object-cover" />
+              <button
+                (click)="removeImage()"
+                class="absolute top-2 right-2 bg-white/80 hover:bg-white rounded-full p-1 text-red-500"
+              >
+                <i class="pi pi-times text-xs"></i>
+              </button>
+            </div>
+          } @else {
+            <label
+              class="flex flex-col items-center justify-center w-full h-28 border-2 border-dashed border-gray-200 dark:border-gray-700 rounded-lg cursor-pointer hover:border-[#C60C30] transition-colors"
+            >
+              <i class="pi pi-upload text-xl text-gray-300 mb-1"></i>
+              <span class="text-xs text-[#666666]">Cliquer pour uploader une image</span>
+              <input type="file" accept="image/*" class="hidden" (change)="onImageSelected($event)" />
+            </label>
+          }
+        </div>
+
+        <!-- Titre -->
+        <div>
+          <label class="block text-xs font-medium text-[#666666] dark:text-gray-400 mb-1">Titre</label>
+          <input
+            type="text"
+            [(ngModel)]="form.titre"
+            class="w-full px-3 py-2 text-sm border border-gray-200 dark:border-gray-700 rounded-lg bg-white dark:bg-gray-800 text-[#333333] dark:text-white focus:outline-none focus:ring-2 focus:ring-[#C60C30]/30"
+          />
+        </div>
+
+        <!-- Description -->
+        <div>
+          <label class="block text-xs font-medium text-[#666666] dark:text-gray-400 mb-1">Description</label>
+          <textarea
+            [(ngModel)]="form.description"
+            rows="4"
+            class="w-full px-3 py-2 text-sm border border-gray-200 dark:border-gray-700 rounded-lg bg-white dark:bg-gray-800 text-[#333333] dark:text-white focus:outline-none focus:ring-2 focus:ring-[#C60C30]/30 resize-none"
+          ></textarea>
+        </div>
+
+        <!-- Entreprise / Ville / Pays -->
+        <div class="grid grid-cols-1 sm:grid-cols-3 gap-3">
+          <div>
+            <label class="block text-xs font-medium text-[#666666] dark:text-gray-400 mb-1">Entreprise</label>
+            <input
+              type="text"
+              [(ngModel)]="form.nomEntreprise"
+              class="w-full px-3 py-2 text-sm border border-gray-200 dark:border-gray-700 rounded-lg bg-white dark:bg-gray-800 text-[#333333] dark:text-white focus:outline-none focus:ring-2 focus:ring-[#C60C30]/30"
+            />
+          </div>
+          <div>
+            <label class="block text-xs font-medium text-[#666666] dark:text-gray-400 mb-1">Ville</label>
+            <input
+              type="text"
+              [(ngModel)]="form.ville"
+              class="w-full px-3 py-2 text-sm border border-gray-200 dark:border-gray-700 rounded-lg bg-white dark:bg-gray-800 text-[#333333] dark:text-white focus:outline-none focus:ring-2 focus:ring-[#C60C30]/30"
+            />
+          </div>
+          <div>
+            <label class="block text-xs font-medium text-[#666666] dark:text-gray-400 mb-1">Pays</label>
+            <input
+              type="text"
+              [(ngModel)]="form.pays"
+              class="w-full px-3 py-2 text-sm border border-gray-200 dark:border-gray-700 rounded-lg bg-white dark:bg-gray-800 text-[#333333] dark:text-white focus:outline-none focus:ring-2 focus:ring-[#C60C30]/30"
+            />
+          </div>
+        </div>
+
+        <!-- Types de stage -->
+        <div>
+          <label class="block text-xs font-medium text-[#666666] dark:text-gray-400 mb-2">
+            Types de stage
+          </label>
+          <div class="flex flex-wrap gap-2">
+            @for (t of typeOptions; track t) {
+              <button
+                type="button"
+                (click)="toggleType(t)"
+                class="text-xs px-3 py-1.5 rounded-full border transition-colors"
+                [ngClass]="isTypeSelected(t)
+                  ? 'bg-[#C60C30] text-white border-[#C60C30]'
+                  : 'border-gray-200 dark:border-gray-600 text-[#666666] dark:text-gray-400 hover:border-[#C60C30]'"
+              >
+                {{ TypeAnnonceStageLabels[t] }}
+              </button>
+            }
+          </div>
+        </div>
+
+        <!-- Modalité -->
+        <div>
+          <label class="block text-xs font-medium text-[#666666] dark:text-gray-400 mb-2">Modalité</label>
+          <div class="flex gap-2">
+            @for (m of modaliteOptions; track m) {
+              <button
+                type="button"
+                (click)="form.modaliteTravail = m"
+                class="flex-1 flex items-center justify-center gap-2 text-xs py-2 rounded-lg border transition-colors"
+                [ngClass]="form.modaliteTravail === m
+                  ? 'bg-[#C60C30] text-white border-[#C60C30]'
+                  : 'border-gray-200 dark:border-gray-600 text-[#666666] dark:text-gray-400 hover:border-[#C60C30]'"
+              >
+                <i [class]="ModaliteTravailIcons[m] + ' text-xs'"></i>
+                {{ ModaliteTravailLabels[m] }}
+              </button>
+            }
+          </div>
+        </div>
+
+        <!-- URLs -->
+        <div>
+          <div class="flex items-center justify-between mb-2">
+            <label class="text-xs font-medium text-[#666666] dark:text-gray-400">Liens</label>
+            <button
+              type="button"
+              (click)="addUrl()"
+              class="text-xs text-[#C60C30] hover:underline flex items-center gap-1"
+            >
+              <i class="pi pi-plus text-[10px]"></i> Ajouter
+            </button>
+          </div>
+          <div class="space-y-2">
+            @for (u of form.urls; track $index) {
+              <div class="flex gap-2 items-center">
+                <select
+                  [(ngModel)]="u.typeUrl"
+                  class="text-xs px-2 py-2 border border-gray-200 dark:border-gray-700 rounded-lg bg-white dark:bg-gray-800 text-[#333333] dark:text-white focus:outline-none focus:ring-2 focus:ring-[#C60C30]/30"
+                >
+                  @for (opt of typeUrlOptions; track opt) {
+                    <option [value]="opt">{{ opt }}</option>
+                  }
+                </select>
+                <input
+                  type="url"
+                  [(ngModel)]="u.url"
+                  placeholder="https://..."
+                  class="flex-1 px-3 py-2 text-xs border border-gray-200 dark:border-gray-700 rounded-lg bg-white dark:bg-gray-800 text-[#333333] dark:text-white focus:outline-none focus:ring-2 focus:ring-[#C60C30]/30"
+                />
+                <button
+                  type="button"
+                  (click)="removeUrl($index)"
+                  class="text-red-400 hover:text-red-600"
+                >
+                  <i class="pi pi-trash text-xs"></i>
+                </button>
+              </div>
+            }
+          </div>
+        </div>
+      </div>
+
+      <!-- footer modal -->
+      <div class="px-6 py-4 border-t border-gray-100 dark:border-gray-800 flex justify-end gap-3">
+        <button
+          (click)="closeModal()"
+          class="px-4 py-2 text-sm border border-gray-200 dark:border-gray-600 rounded-lg text-[#666666] dark:text-gray-400 hover:bg-gray-50 dark:hover:bg-gray-800 transition-colors"
+        >
+          Annuler
+        </button>
+        <button
+          (click)="submit()"
+          [disabled]="submitting"
+          class="px-4 py-2 text-sm bg-[#C60C30] text-white rounded-lg hover:bg-[#a50a28] transition-colors disabled:opacity-50 flex items-center gap-2"
+        >
+          @if (submitting) { <i class="pi pi-spin pi-spinner text-xs"></i> }
+          {{ isEditing ? 'Enregistrer' : 'Créer' }}
+        </button>
+      </div>
+    </div>
+  </div>
+}
+
+<!-- Modal suppression -->
+@if (showDeleteModal) {
+  <div class="fixed inset-0 z-50 flex items-center justify-center bg-gray-900/50 backdrop-blur-sm p-4">
+    <div class="bg-white dark:bg-gray-900 rounded-xl shadow-xl w-full max-w-sm p-6">
+      <div class="flex items-center gap-3 mb-4">
+        <div class="w-10 h-10 rounded-full bg-red-100 dark:bg-red-900/30 flex items-center justify-center">
+          <i class="pi pi-trash text-[#C60C30]"></i>
+        </div>
+        <div>
+          <h3 class="text-sm font-500 text-[#333333] dark:text-white">Supprimer l'annonce</h3>
+          <p class="text-xs text-[#666666] dark:text-gray-400">Cette action est irréversible.</p>
+        </div>
+      </div>
+      <div class="flex gap-3 justify-end">
+        <button
+          (click)="cancelDelete()"
+          class="px-4 py-2 text-sm border border-gray-200 dark:border-gray-600 rounded-lg text-[#666666] hover:bg-gray-50 dark:hover:bg-gray-800 transition-colors"
+        >
+          Annuler
+        </button>
+        <button
+          (click)="executeDelete()"
+          [disabled]="deleting"
+          class="px-4 py-2 text-sm bg-[#C60C30] text-white rounded-lg hover:bg-[#a50a28] transition-colors disabled:opacity-50 flex items-center gap-2"
+        >
+          @if (deleting) { <i class="pi pi-spin pi-spinner text-xs"></i> }
+          Supprimer
+        </button>
+      </div>
+    </div>
+  </div>
+}

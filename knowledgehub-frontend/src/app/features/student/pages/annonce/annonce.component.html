@@ -1,0 +1,210 @@
+<div class="space-y-6">
+  <div class="flex flex-col gap-3 sm:flex-row sm:items-end sm:justify-between">
+    <div>
+      <h1 class="text-xl font-semibold text-[#333333] dark:text-white">
+        Annonces de stage
+      </h1>
+      <p class="text-sm text-[#666666] dark:text-gray-400 mt-1">
+        {{ filteredAnnonces.length }} annonce(s) active(s)
+      </p>
+    </div>
+    <button
+      type="button"
+      (click)="loadAll()"
+      class="inline-flex items-center gap-2 px-4 py-2 rounded-lg border border-gray-200 dark:border-gray-700 text-sm text-[#333333] dark:text-gray-200 hover:bg-gray-50 dark:hover:bg-gray-800 transition-colors"
+    >
+      <i class="pi pi-refresh text-xs"></i>
+      Rafraîchir
+    </button>
+  </div>
+
+  <div
+    class="rounded-xl border border-gray-200 dark:border-gray-700 bg-gray-50 dark:bg-gray-900/70 p-4 space-y-4"
+  >
+    <div class="grid grid-cols-1 lg:grid-cols-4 gap-3">
+      <div class="lg:col-span-2">
+        <label
+          class="block text-xs font-medium text-[#666666] dark:text-gray-400 mb-1"
+          >Recherche</label
+        >
+        <div class="relative">
+          <i
+            class="pi pi-search absolute left-3 top-1/2 -translate-y-1/2 text-[#999] text-sm"
+          ></i>
+          <input
+            type="text"
+            [(ngModel)]="searchKeyword"
+            (ngModelChange)="applyFilters()"
+            placeholder="Titre, entreprise, ville, pays ou description"
+            class="w-full pl-9 pr-3 py-2.5 rounded-lg border border-gray-200 dark:border-gray-700 bg-white dark:bg-gray-800 text-sm text-[#333333] dark:text-white placeholder:text-[#999] focus:outline-none focus:ring-2 focus:ring-[#C60C30]/30"
+          />
+        </div>
+      </div>
+
+      <div>
+        <label
+          class="block text-xs font-medium text-[#666666] dark:text-gray-400 mb-1"
+          >Type</label
+        >
+        <select
+          [(ngModel)]="selectedType"
+          (ngModelChange)="applyFilters()"
+          class="w-full px-3 py-2.5 rounded-lg border border-gray-200 dark:border-gray-700 bg-white dark:bg-gray-800 text-sm text-[#333333] dark:text-white focus:outline-none focus:ring-2 focus:ring-[#C60C30]/30"
+        >
+          <option value="">Tous les types</option>
+          @for (type of typeOptions; track type) {
+            <option [value]="type">{{ TypeAnnonceStageLabels[type] }}</option>
+          }
+        </select>
+      </div>
+
+      <div>
+        <label
+          class="block text-xs font-medium text-[#666666] dark:text-gray-400 mb-1"
+          >Modalité</label
+        >
+        <select
+          [(ngModel)]="selectedModalite"
+          (ngModelChange)="applyFilters()"
+          class="w-full px-3 py-2.5 rounded-lg border border-gray-200 dark:border-gray-700 bg-white dark:bg-gray-800 text-sm text-[#333333] dark:text-white focus:outline-none focus:ring-2 focus:ring-[#C60C30]/30"
+        >
+          <option value="">Toutes les modalités</option>
+          @for (modalite of modaliteOptions; track modalite) {
+            <option [value]="modalite">
+              {{ ModaliteTravailLabels[modalite] }}
+            </option>
+          }
+        </select>
+      </div>
+    </div>
+
+    <div class="grid grid-cols-1 lg:grid-cols-4 gap-3">
+      <div class="lg:col-span-3">
+        <label
+          class="block text-xs font-medium text-[#666666] dark:text-gray-400 mb-1"
+          >Ville</label
+        >
+        <input
+          type="text"
+          [(ngModel)]="selectedVille"
+          (ngModelChange)="applyFilters()"
+          placeholder="Filtrer par ville"
+          class="w-full px-3 py-2.5 rounded-lg border border-gray-200 dark:border-gray-700 bg-white dark:bg-gray-800 text-sm text-[#333333] dark:text-white placeholder:text-[#999] focus:outline-none focus:ring-2 focus:ring-[#C60C30]/30"
+        />
+      </div>
+
+      <div class="flex items-end">
+        <button
+          type="button"
+          (click)="clearFilters()"
+          class="w-full px-4 py-2.5 rounded-lg border border-dashed border-gray-300 dark:border-gray-600 text-sm text-[#666666] dark:text-gray-400 hover:border-[#C60C30] hover:text-[#C60C30] transition-colors"
+        >
+          Réinitialiser
+        </button>
+      </div>
+    </div>
+  </div>
+
+  @if (loading) {
+    <div class="flex justify-center py-16">
+      <i class="pi pi-spin pi-spinner text-[#C60C30] text-2xl"></i>
+    </div>
+  }
+
+  @if (!loading && filteredAnnonces.length === 0) {
+    <div class="text-center py-16 text-[#666666] dark:text-gray-400">
+      <i class="pi pi-megaphone text-4xl mb-3 block opacity-30"></i>
+      <p class="text-sm">Aucune annonce active ne correspond à vos filtres</p>
+    </div>
+  }
+
+  @if (!loading && filteredAnnonces.length > 0) {
+    <div class="grid grid-cols-1 md:grid-cols-2 xl:grid-cols-3 gap-4">
+      @for (annonce of filteredAnnonces; track trackById($index, annonce)) {
+        <article
+          class="group overflow-hidden rounded-xl border border-gray-200 dark:border-gray-700 bg-white dark:bg-gray-900 shadow-sm hover:shadow-md transition-shadow"
+        >
+          <div class="relative h-40 bg-gray-100 dark:bg-gray-800">
+            @if (annonce.imageUrl) {
+              <img
+                [src]="annonce.imageUrl"
+                [alt]="annonce.titre"
+                class="h-full w-full object-cover"
+              />
+            } @else {
+              <div class="flex h-full items-center justify-center">
+                <i
+                  class="pi pi-image text-4xl text-gray-300 dark:text-gray-600"
+                ></i>
+              </div>
+            }
+
+            <span
+              class="absolute top-3 right-3 rounded-full px-2.5 py-1 text-[10px] font-medium bg-emerald-100 text-emerald-700 dark:bg-emerald-900/30 dark:text-emerald-300"
+            >
+              Active
+            </span>
+          </div>
+
+          <div class="p-4 space-y-3">
+            <div>
+              <h2
+                class="text-sm font-semibold text-[#333333] dark:text-white line-clamp-2"
+              >
+                {{ annonce.titre }}
+              </h2>
+              <p
+                class="mt-1 text-xs text-[#666666] dark:text-gray-400 flex items-center gap-1"
+              >
+                <i class="pi pi-building text-[10px]"></i>
+                {{ annonce.nomEntreprise }}
+              </p>
+              <p
+                class="mt-0.5 text-xs text-[#666666] dark:text-gray-400 flex items-center gap-1"
+              >
+                <i class="pi pi-map-marker text-[10px]"></i>
+                {{ annonce.ville }}, {{ annonce.pays }}
+              </p>
+            </div>
+
+            <div class="flex flex-wrap gap-1.5">
+              @for (type of annonce.typesStage; track type) {
+                <span
+                  class="rounded-full bg-red-50 dark:bg-red-900/20 px-2.5 py-1 text-[10px] font-medium text-[#C60C30]"
+                >
+                  {{ TypeAnnonceStageLabels[type] }}
+                </span>
+              }
+            </div>
+
+            <p
+              class="flex items-center gap-2 text-xs text-[#666666] dark:text-gray-400"
+            >
+              <i
+                [class]="
+                  ModaliteTravailIcons[annonce.modaliteTravail] +
+                  ' text-[#C60C30] text-[10px]'
+                "
+              ></i>
+              {{ ModaliteTravailLabels[annonce.modaliteTravail] }}
+            </p>
+
+            <p
+              class="text-xs text-[#666666] dark:text-gray-400 line-clamp-3 whitespace-pre-line"
+            >
+              {{ annonce.description }}
+            </p>
+
+            <button
+              type="button"
+              (click)="goToDetails(annonce.id!)"
+              class="w-full rounded-lg bg-[#C60C30] px-4 py-2.5 text-sm font-medium text-white hover:bg-[#a50a28] transition-colors"
+            >
+              Voir les détails
+            </button>
+          </div>
+        </article>
+      }
+    </div>
+  }
+</div>
