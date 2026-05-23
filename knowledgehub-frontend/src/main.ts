@@ -6,6 +6,11 @@ import './pdf-worker.config';
 
 import { environment } from './environments/environment';
 
+const win = window as any;
+if (win.__env) {
+  Object.assign(environment, win.__env);
+}
+
 if (environment.production) {
   window.console.log = () => {};
   window.console.debug = () => {};

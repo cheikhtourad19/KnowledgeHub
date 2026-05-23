@@ -16,11 +16,20 @@ services:
       - mysql_data:/var/lib/mysql
       - ./init-scripts:/docker-entrypoint-initdb.d
     networks:
-    
       - knowledgehub-network
     restart: unless-stopped
     healthcheck:
-      test: ["CMD", "mysqladmin", "ping", "-h", "localhost", "-u", "root", "-p${MYSQL_ROOT_PASSWORD}"]
+      test:
+        [
+          "CMD",
+          "mysqladmin",
+          "ping",
+          "-h",
+          "localhost",
+          "-u",
+          "root",
+          "-p${MYSQL_ROOT_PASSWORD}",
+        ]
       interval: 10s
       timeout: 5s
       retries: 5
@@ -59,10 +68,10 @@ services:
       MINIO_ROOT_USER: ${MINIO_ROOT_USER}
       MINIO_ROOT_PASSWORD: ${MINIO_ROOT_PASSWORD}
     volumes:
-      - ${HOME}/knowledgehub-minio-backup:/data
+      - minio_data:/data
     command: server /data --console-address ":9001"
     healthcheck:
-      test: [ "CMD", "curl", "-f", "http://localhost:9000/minio/health/live" ]
+      test: ["CMD", "curl", "-f", "http://localhost:9000/minio/health/live"]
       interval: 30s
       timeout: 20s
       retries: 3
@@ -288,35 +297,46 @@ services:
       start_period: 60s
 
   # AI & Search Service
-#  ai-search-service:
-#    image: ${REGISTRY:-docker.io}/${REGISTRY_USERNAME}/knowledgehub-ai-search-service:${IMAGE_TAG:-latest}
-#    build:
-#      context: ./ai-and-search-service
-#      dockerfile: Dockerfile
-#    container_name: knowledgehub-ai-search-service
-#    env_file:
-#      - ./ai-and-search-service/.env
-#    environment:
-#      MINIO_ENDPOINT: minio:9000
-#      MINIO_ACCESS_KEY: ${MINIO_ACCESS_KEY}
-#      MINIO_SECRET_KEY: ${MINIO_SECRET_KEY}
-#      MINIO_SECURE: "false"
-#    ports:
-#      - "${AI_SEARCH_SERVICE_PORT:-8000}:8000"
-#    volumes:
-#      - chromadb_data:/app/chroma_db
-#    depends_on:
-#      minio:
-#        condition: service_healthy
-#    networks:
-#      - knowledgehub-network
-#    restart: unless-stopped
-#    healthcheck:
-#      test: ["CMD", "curl", "-f", "http://localhost:8000/api/v1/health"]
-#      interval: 30s
-#      timeout: 10s
-#      retries: 3
-#      start_period: 60s
+  ai-search-service:
+    image: ${REGISTRY:-docker.io}/${REGISTRY_USERNAME}/knowledgehub-ai-search-service:${IMAGE_TAG:-latest}
+    build:
+      context: ./ai-and-search-service
+      dockerfile: Dockerfile
+    container_name: knowledgehub-ai-search-service
+    env_file:
+      - ./ai-and-search-service/.env
+    environment:
+      API_HOST: 0.0.0.0
+      API_PORT: ${AI_SEARCH_SERVICE_PORT:-8000}
+      MINIO_ENDPOINT: minio:9000
+      MINIO_ACCESS_KEY: ${MINIO_ACCESS_KEY}
+      MINIO_SECRET_KEY: ${MINIO_SECRET_KEY}
+      MINIO_SECURE: "false"
+      MONGO_URI: ${MONGO_URI}
+      CHROMA_PERSIST_DIRECTORY: ${CHROMA_PERSIST_DIRECTORY}
+      CHROMA_COLLECTION_NAME: ${CHROMA_COLLECTION_NAME}
+      CHROMA_COLLECTION_NAME_V2: ${CHROMA_COLLECTION_NAME_V2}
+      EMBEDDING_MODEL: ${EMBEDDING_MODEL}
+      CHUNK_SIZE: ${CHUNK_SIZE}
+      CHUNK_OVERLAP: ${CHUNK_OVERLAP}
+    ports:
+      - "${AI_SEARCH_SERVICE_PORT:-8000}:8000"
+    volumes:
+      - chromadb_data:/app/chroma_db
+    depends_on:
+      minio:
+        condition: service_healthy
+      mongodb:
+        condition: service_healthy
+    networks:
+      - knowledgehub-network
+    restart: unless-stopped
+    healthcheck:
+      test: ["CMD", "curl", "-f", "http://localhost:8000/api/v1/health"]
+      interval: 30s
+      timeout: 10s
+      retries: 3
+      start_period: 60s
 
   # Angular Frontend
   frontend:
@@ -327,6 +347,10 @@ services:
     container_name: knowledgehub-frontend
     ports:
       - "${FRONTEND_PORT:-80}:80"
+    environment:
+      API_URL: ${FRONTEND_API_URL:-http://localhost:8080}
+      CONVENTION_EXTRACTION_API_URL: ${FRONTEND_CONVENTION_EXTRACTION_API_URL:-http://localhost:8000}
+      MINIO_PUBLIC_URL: ${FRONTEND_MINIO_PUBLIC_URL:-http://localhost:9000}
     depends_on:
       api-gateway:
         condition: service_started
@@ -334,7 +358,15 @@ services:
       - knowledgehub-network
     restart: unless-stopped
     healthcheck:
-      test: ["CMD", "wget", "--quiet", "--tries=1", "--spider", "http://localhost/health"]
+      test:
+        [
+          "CMD",
+          "wget",
+          "--quiet",
+          "--tries=1",
+          "--spider",
+          "http://localhost/health",
+        ]
       interval: 30s
       timeout: 10s
       retries: 3
@@ -349,15 +381,14 @@ services:
       - ./prometheus/prometheus.yml:/etc/prometheus/prometheus.yml:ro
       - prometheus_data:/prometheus
     extra_hosts:
-      - "host.docker.internal:host-gateway"   # Linux needs this; Mac/Win have it automatically
+      - "host.docker.internal:host-gateway" # Linux needs this; Mac/Win have it automatically
     command:
-      - '--config.file=/etc/prometheus/prometheus.yml'
-      - '--storage.tsdb.retention.time=15d'
-      - '--web.enable-lifecycle'
+      - "--config.file=/etc/prometheus/prometheus.yml"
+      - "--storage.tsdb.retention.time=15d"
+      - "--web.enable-lifecycle"
     networks:
       - knowledgehub-network
     restart: unless-stopped
-
 
   grafana:
     image: grafana/grafana:latest
@@ -392,12 +423,12 @@ volumes:
   mongodb_data:
     driver: local
     name: knowledgehub-mongodb-data
-#  minio_data:
-#    driver: local
-#    name: knowledgehub-minio-data
-#  chromadb_data:
-#    driver: local
-#    name: knowledgehub-chromadb-data
+  minio_data:
+    driver: local
+    name: knowledgehub-minio-data
+  chromadb_data:
+    driver: local
+    name: knowledgehub-chromadb-data
   prometheus_data:
     driver: local
     name: knowledgehub-prometheus-data

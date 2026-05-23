@@ -22,7 +22,7 @@ public class NotificationClient {
 
     private final RestTemplate notificationRestTemplate;
 
-    @Value("${notification.service.url:http://localhost:8081}")
+    @Value("${notification.service.url:http://localhost:8084}")
     private String notificationServiceUrl;
 
     private static final String SEND_ENDPOINT = "/api/notifications/send";

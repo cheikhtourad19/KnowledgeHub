@@ -77,6 +77,9 @@ notification:
   service:
     url: ${NOTIFICATION_SERVICE_URL}
 
+user-service:
+  url: ${USER_SERVICE_URL}
+
 jwt:
   secret: ${JWT_SECRET}
   expiration: ${JWT_EXPIRATION}
