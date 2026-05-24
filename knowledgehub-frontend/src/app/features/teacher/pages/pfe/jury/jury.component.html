@@ -1,3 +1,8 @@
+@if (loading) {
+  <div class="flex justify-center items-center py-20">
+    <i class="pi pi-spin pi-spinner text-4xl text-[#C60C30]"></i>
+  </div>
+}
 <app-pfe-table
   [allPfes]="allPfes"
   title="PFE dont je suis Chef de Jury"

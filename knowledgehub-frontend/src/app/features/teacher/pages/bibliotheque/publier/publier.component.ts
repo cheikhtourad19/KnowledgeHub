@@ -23,6 +23,8 @@ export class PublierComponent implements OnInit {
   uploadTitle = '';
   uploadDescription = '';
   uploading = false;
+  loading = false;
+  deleting = false;
 
   showDeleteModal = false;
   pendingDeleteDocument: File | null = null;
@@ -48,17 +50,21 @@ export class PublierComponent implements OnInit {
   }
 
   loadDocuments(): void {
+    this.loading = true;
     this.resourceApi.getMyDocuments().subscribe({
       next: (res) => {
+        this.loading = false;
         this.documents = res.data ?? [];
         this.applyFilters();
       },
-      error: () =>
+      error: () => {
+        this.loading = false;
         this.messageService.add({
           severity: 'error',
           summary: 'Erreur',
           detail: 'Impossible de charger vos documents.',
-        }),
+        });
+      },
     });
   }
 
@@ -155,9 +161,11 @@ export class PublierComponent implements OnInit {
     if (!this.pendingDeleteDocument) return;
     const id = this.pendingDeleteDocument.id;
     this.showDeleteModal = false;
+    this.deleting = true;
 
     this.resourceApi.deleteFile(id).subscribe({
       next: () => {
+        this.deleting = false;
         this.documents = this.documents.filter((d) => d.id !== id);
         this.applyFilters();
         this.messageService.add({
@@ -167,12 +175,14 @@ export class PublierComponent implements OnInit {
         });
         this.pendingDeleteDocument = null;
       },
-      error: () =>
+      error: () => {
+        this.deleting = false;
         this.messageService.add({
           severity: 'error',
           summary: 'Erreur',
           detail: 'Impossible de supprimer le document.',
-        }),
+        });
+      },
     });
   }
 

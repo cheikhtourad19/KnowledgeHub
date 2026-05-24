@@ -21,6 +21,8 @@ export class StageDetailsComponent implements OnInit {
   stage_details: Stage | null = null;
   stage_id: number = 0;
   list_teachers: TeacherOption[] = [];
+  loading = false;
+  actionLoading = false;
 
   // Jury modal
   showSupervisorModal = false;
@@ -59,6 +61,7 @@ export class StageDetailsComponent implements OnInit {
   }
 
   loadTeachers(): void {
+    this.loading = true;
     this.userService.getAllTeachers().subscribe({
       next: (response) => {
         this.list_teachers = (response.data ?? []).map((t: Teacher) => ({
@@ -67,6 +70,7 @@ export class StageDetailsComponent implements OnInit {
           fullName:
             `${t.prenom ?? ''} ${t.nom ?? ''}`.trim() || t.email || 'Sans nom',
         }));
+        this.loading = false;
       },
       error: () => {
         this.messageService.add({
@@ -75,14 +79,17 @@ export class StageDetailsComponent implements OnInit {
           detail: 'Impossible de charger les enseignants',
           life: 5000,
         });
+        this.loading = false;
       },
     });
   }
 
   loadStageDetails(stageId: number): void {
+    this.loading = true;
     this.resourceApiService.getStageById(stageId).subscribe({
       next: (response) => {
         this.stage_details = response.data ?? null;
+        this.loading = false;
 
         // Load presigned URLs for files
         if (this.stage_details?.reportFileId) {
@@ -111,6 +118,7 @@ export class StageDetailsComponent implements OnInit {
           detail: 'Impossible de charger les détails du stage',
           life: 5000,
         });
+        this.loading = false;
       },
     });
   }
@@ -169,6 +177,7 @@ export class StageDetailsComponent implements OnInit {
       return;
     }
 
+    this.actionLoading = true;
     this.resourceApiService
       .assignStageSupervisor(this.stage_id, this.selectedSupervisorId)
       .subscribe({
@@ -190,6 +199,7 @@ export class StageDetailsComponent implements OnInit {
             detail: 'Jury assigné avec succès',
             life: 3000,
           });
+          this.actionLoading = false;
           this.closeSupervisorModal();
         },
         error: () => {
@@ -199,6 +209,7 @@ export class StageDetailsComponent implements OnInit {
             detail: "Erreur lors de l'assignation du jury",
             life: 5000,
           });
+          this.actionLoading = false;
         },
       });
   }
@@ -218,6 +229,7 @@ export class StageDetailsComponent implements OnInit {
       ? this.resourceApiService.openStageByAdmin(this.stage_id)
       : this.resourceApiService.closeStageByAdmin(this.stage_id);
 
+    this.actionLoading = true;
     request.subscribe({
       next: () => {
         this.messageService.add({
@@ -228,6 +240,7 @@ export class StageDetailsComponent implements OnInit {
             : 'Le stage a été clôturé',
           life: 3000,
         });
+        this.actionLoading = false;
         this.closeStatusConfirmModal();
         this.loadStageDetails(this.stage_id);
       },
@@ -238,6 +251,7 @@ export class StageDetailsComponent implements OnInit {
           detail: 'Impossible de clôturer le stage',
           life: 5000,
         });
+        this.actionLoading = false;
       },
     });
   }
@@ -248,6 +262,7 @@ export class StageDetailsComponent implements OnInit {
     }
 
     const nextValue = !this.stage_details.canEdit;
+    this.actionLoading = true;
     this.resourceApiService
       .setStageCanEditByAdmin(this.stage_id, nextValue)
       .subscribe({
@@ -260,6 +275,7 @@ export class StageDetailsComponent implements OnInit {
               : 'Edition désactivée pour ce stage',
             life: 3000,
           });
+          this.actionLoading = false;
           this.loadStageDetails(this.stage_id);
         },
         error: () => {
@@ -269,6 +285,7 @@ export class StageDetailsComponent implements OnInit {
             detail: "Impossible de mettre à jour l'état d'édition",
             life: 5000,
           });
+          this.actionLoading = false;
         },
       });
   }
@@ -284,6 +301,7 @@ export class StageDetailsComponent implements OnInit {
   confirmDeleteStage(): void {
     if (!this.stage_id) return;
 
+    this.actionLoading = true;
     this.resourceApiService.deleteStageByAdmin(this.stage_id).subscribe({
       next: () => {
         this.messageService.add({
@@ -292,6 +310,7 @@ export class StageDetailsComponent implements OnInit {
           detail: 'Stage supprimé avec succès',
           life: 3000,
         });
+        this.actionLoading = false;
         this.closeDeleteConfirmModal();
         this.router.navigate(['/admin/stage']);
       },
@@ -302,6 +321,7 @@ export class StageDetailsComponent implements OnInit {
           detail: 'Impossible de supprimer le stage',
           life: 5000,
         });
+        this.actionLoading = false;
       },
     });
   }

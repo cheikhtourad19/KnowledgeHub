@@ -15,6 +15,8 @@ import { UserRole } from '../../../../shared/models/auth-service/entities/auth-u
 })
 export class EnseignantComponent implements OnInit {
   teachers: Teacher[] = [];
+  loading = false;
+  actionLoading = false;
   createVisible: boolean = false;
   teacherForm!: FormGroup;
   displayBulkCreateModal: boolean = false;
@@ -33,9 +35,11 @@ export class EnseignantComponent implements OnInit {
   ) {}
 
   fetchteachers() {
+    this.loading = true;
     this.userService.getAllTeachers().subscribe({
       next: (response) => {
         this.teachers = response.data ?? [];
+        this.loading = false;
       },
       error: (err) => {
         this.messageService.add({
@@ -43,6 +47,7 @@ export class EnseignantComponent implements OnInit {
           summary: 'Erreur',
           detail: 'Impossible de charger les enseignants.',
         });
+        this.loading = false;
       },
     });
   }
@@ -88,6 +93,7 @@ export class EnseignantComponent implements OnInit {
   submitCsv(): void {
     if (!this.selectedCsvFile) return;
 
+    this.actionLoading = true;
     this.userService.bulkCreateTeachers(this.selectedCsvFile).subscribe({
       next: (response) => {
         const data = response.data;
@@ -113,6 +119,7 @@ export class EnseignantComponent implements OnInit {
             });
           }
         }
+        this.actionLoading = false;
       },
       error: (error) => {
         this.messageService.add({
@@ -120,6 +127,7 @@ export class EnseignantComponent implements OnInit {
           summary: 'Erreur',
           detail: 'Impossible de créer les enseignants en masse',
         });
+        this.actionLoading = false;
       },
     });
   }
@@ -142,6 +150,7 @@ export class EnseignantComponent implements OnInit {
         console.log('Accept - Deleting teacher ID:', teacherIdToDelete);
 
         if (teacherIdToDelete) {
+          this.actionLoading = true;
           this.userService.deleteUser(teacherIdToDelete).subscribe({
             next: (response) => {
               this.messageService.add({
@@ -149,6 +158,7 @@ export class EnseignantComponent implements OnInit {
                 summary: 'Succès',
                 detail: 'Enseignant supprimé avec succès',
               });
+              this.actionLoading = false;
               this.fetchteachers();
               this.selectedTeacherId = null;
               console.log('Delete successful for teacher ID:', response);
@@ -160,6 +170,7 @@ export class EnseignantComponent implements OnInit {
                 summary: 'Erreur',
                 detail: "Impossible de supprimer l'enseignant.",
               });
+              this.actionLoading = false;
               this.selectedTeacherId = null;
             },
           });
@@ -198,6 +209,7 @@ export class EnseignantComponent implements OnInit {
       password: this.teacherForm.value.password,
       role: UserRole.TEACHER,
     };
+    this.actionLoading = true;
     this.userService.createTeacher(teacher).subscribe({
       next: (response) => {
         this.messageService.add({
@@ -207,6 +219,7 @@ export class EnseignantComponent implements OnInit {
         });
         this.createVisible = false;
         this.teacherForm.reset();
+        this.actionLoading = false;
         this.fetchteachers();
       },
       error: (err) => {
@@ -215,6 +228,7 @@ export class EnseignantComponent implements OnInit {
           summary: 'Erreur',
           detail: "Impossible de créer l'enseignant.",
         });
+        this.actionLoading = false;
       },
     });
   }

@@ -29,6 +29,8 @@ export class PfeDetailsComponent implements OnInit {
   showClotureConfirmModal = false;
   showDeleteConfirmModal = false;
 
+  loading = false;
+  actionLoading = false;
   reportFileUrl: string = '';
   showPdfModal: boolean = false;
 
@@ -67,8 +69,10 @@ export class PfeDetailsComponent implements OnInit {
   }
 
   loadTeachers(): void {
+    this.loading = true;
     this.userService.getAllTeachers().subscribe({
       next: (response) => {
+        this.loading = false;
         this.list_teachers = (response.data ?? []).map((t: Teacher) => ({
           ...t,
           id: Number(t.teacherId),
@@ -76,13 +80,17 @@ export class PfeDetailsComponent implements OnInit {
             `${t.prenom ?? ''} ${t.nom ?? ''}`.trim() || t.email || 'Sans nom',
         }));
       },
-      error: () => {},
+      error: () => {
+        this.loading = false;
+      },
     });
   }
 
   loadPfeDetails(pfeId: number): void {
+    this.loading = true;
     this.ressourceApiService.getPFEById(pfeId).subscribe({
       next: (response) => {
+        this.loading = false;
         this.pfe_details = response.data ?? null;
         if (this.pfe_details?.reportFile?.id) {
           this.signedUrl(this.pfe_details.reportFile.id);
@@ -90,7 +98,9 @@ export class PfeDetailsComponent implements OnInit {
           this.reportFileUrl = '';
         }
       },
-      error: () => {},
+      error: () => {
+        this.loading = false;
+      },
     });
   }
 
@@ -110,12 +120,14 @@ export class PfeDetailsComponent implements OnInit {
   confirmCloturePFE(): void {
     if (!this.pfe_id) return;
 
+    this.actionLoading = true;
     const request = this.pfe_details?.cloture
       ? this.ressourceApiService.cancelPFEClotureByAdmin(this.pfe_id)
       : this.ressourceApiService.closePFEByAdmin(this.pfe_id);
 
     request.subscribe({
       next: () => {
+        this.actionLoading = false;
         this.messageService.add({
           severity: 'success',
           summary: 'Succès',
@@ -127,6 +139,7 @@ export class PfeDetailsComponent implements OnInit {
         this.loadPfeDetails(this.pfe_id);
       },
       error: () => {
+        this.actionLoading = false;
         this.messageService.add({
           severity: 'error',
           summary: 'Erreur',
@@ -149,8 +162,10 @@ export class PfeDetailsComponent implements OnInit {
   confirmDeletePFE(): void {
     if (!this.pfe_id) return;
 
+    this.actionLoading = true;
     this.ressourceApiService.deletePFEByAdmin(this.pfe_id).subscribe({
       next: () => {
+        this.actionLoading = false;
         this.messageService.add({
           severity: 'success',
           summary: 'Succès',
@@ -160,6 +175,7 @@ export class PfeDetailsComponent implements OnInit {
         this.router.navigate(['/admin/pfe/gestion']);
       },
       error: () => {
+        this.actionLoading = false;
         this.messageService.add({
           severity: 'error',
           summary: 'Erreur',
@@ -181,10 +197,12 @@ export class PfeDetailsComponent implements OnInit {
   confirmJury(): void {
     if (!this.selectedJuryId) return;
 
+    this.actionLoading = true;
     this.ressourceApi
       .assignJury(this.pfe_id, this.selectedJuryId, undefined)
       .subscribe({
         next: () => {
+          this.actionLoading = false;
           // Patch locally — don't rely on API to return resolved names
           if (this.pfe_details) {
             this.pfe_details = {
@@ -204,6 +222,7 @@ export class PfeDetailsComponent implements OnInit {
           this.closeJuryModal();
         },
         error: () => {
+          this.actionLoading = false;
           this.messageService.add({
             severity: 'error',
             summary: 'Erreur',
@@ -225,10 +244,12 @@ export class PfeDetailsComponent implements OnInit {
   confirmRapporteur(): void {
     if (!this.selectedRapporteurId) return;
 
+    this.actionLoading = true;
     this.ressourceApi
       .assignJury(this.pfe_id, undefined, this.selectedRapporteurId)
       .subscribe({
         next: () => {
+          this.actionLoading = false;
           if (this.pfe_details) {
             this.pfe_details = {
               ...this.pfe_details,
@@ -247,6 +268,7 @@ export class PfeDetailsComponent implements OnInit {
           this.closeRapporteurModal();
         },
         error: () => {
+          this.actionLoading = false;
           this.messageService.add({
             severity: 'error',
             summary: 'Erreur',

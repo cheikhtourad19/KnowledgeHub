@@ -12,6 +12,7 @@ import { OnInit } from '@angular/core';
 })
 export class JuryComponent implements OnInit {
   allPfes: PFE[] = [];
+  loading = false;
 
   constructor(
     private resourceApi: ResourceApiService,
@@ -19,9 +20,16 @@ export class JuryComponent implements OnInit {
   ) {}
 
   ngOnInit(): void {
+    this.loading = true;
     this.resourceApi.getTeacherJuryPFE().subscribe({
-      next: (res) => (this.allPfes = res.data ?? []),
-      error: (err) => console.error(err),
+      next: (res) => {
+        this.allPfes = res.data ?? [];
+        this.loading = false;
+      },
+      error: (err) => {
+        console.error(err);
+        this.loading = false;
+      },
     });
   }
 

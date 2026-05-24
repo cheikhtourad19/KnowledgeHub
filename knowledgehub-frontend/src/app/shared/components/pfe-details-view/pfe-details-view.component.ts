@@ -14,6 +14,7 @@ export class PfeDetailsViewComponent implements OnChanges {
 
   reportFileUrl: string = '';
   showPdfModal = false;
+  reportLoading = false;
 
   constructor(private resourceApi: ResourceApiService) {}
 
@@ -24,12 +25,15 @@ export class PfeDetailsViewComponent implements OnChanges {
   }
 
   private loadReportUrl(fileId: number): void {
+    this.reportLoading = true;
     this.resourceApi.viewpdf(fileId).subscribe({
       next: (response) => {
         this.reportFileUrl = response.data ?? '';
+        this.reportLoading = false;
       },
       error: () => {
         this.reportFileUrl = '';
+        this.reportLoading = false;
       },
     });
   }

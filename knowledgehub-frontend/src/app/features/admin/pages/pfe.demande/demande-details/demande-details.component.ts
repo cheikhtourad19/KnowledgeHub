@@ -18,6 +18,8 @@ export class DemandeDetailsComponent implements OnInit {
   demande: DemandePFE | null = null;
   demandeId: number | null = null;
   DemandStatus = DemandStatus;
+  loading = false;
+  actionLoading = false;
   pdf_presigned_url: string = '';
   displayApproveDialog: boolean = false;
   displayRejectDialog: boolean = false;
@@ -55,8 +57,10 @@ export class DemandeDetailsComponent implements OnInit {
   deleteDemande(): void {
     if (!this.demandeId) return;
 
+    this.actionLoading = true;
     this.resourceApiService.deleteDemande(this.demandeId).subscribe({
       next: () => {
+        this.actionLoading = false;
         this.messageService.add({
           severity: 'success',
           summary: 'Succès',
@@ -68,6 +72,7 @@ export class DemandeDetailsComponent implements OnInit {
         }, 1000);
       },
       error: () => {
+        this.actionLoading = false;
         this.messageService.add({
           severity: 'error',
           summary: 'Erreur',
@@ -78,8 +83,10 @@ export class DemandeDetailsComponent implements OnInit {
   }
 
   fetchteachers() {
+    this.loading = true;
     this.userService.getAllTeachers().subscribe({
       next: (response) => {
+        this.loading = false;
         this.teachers = (response.data ?? []).map((t: Teacher) => ({
           ...t,
           fullName:
@@ -87,6 +94,7 @@ export class DemandeDetailsComponent implements OnInit {
         }));
       },
       error: () => {
+        this.loading = false;
         this.messageService.add({
           severity: 'error',
           summary: 'Erreur',
@@ -123,12 +131,15 @@ export class DemandeDetailsComponent implements OnInit {
   loadDemandeDetails(): void {
     if (!this.demandeId) return;
 
+    this.loading = true;
     this.resourceApiService.getDemandePFEById(this.demandeId).subscribe({
       next: (response) => {
+        this.loading = false;
         this.demande = response.data || null;
         this.loadDemandePdf();
       },
       error: (error) => {
+        this.loading = false;
         this.messageService.add({
           severity: 'error',
           summary: 'Erreur',
@@ -166,6 +177,7 @@ export class DemandeDetailsComponent implements OnInit {
   approveDemand(): void {
     if (!this.demandeId) return;
 
+    this.actionLoading = true;
     const request: UpdateDemandStatusRequest = {
       status: DemandStatus.ACCEPTED,
       adminFeedback: this.adminFeedback || undefined,
@@ -179,6 +191,7 @@ export class DemandeDetailsComponent implements OnInit {
       )
       .subscribe({
         next: (response) => {
+          this.actionLoading = false;
           this.messageService.add({
             severity: 'success',
             summary: 'Succès',
@@ -188,6 +201,7 @@ export class DemandeDetailsComponent implements OnInit {
           this.router.navigate(['/admin/pfe/demandes']);
         },
         error: (error) => {
+          this.actionLoading = false;
           this.messageService.add({
             severity: 'error',
             summary: 'Erreur',
@@ -209,6 +223,7 @@ export class DemandeDetailsComponent implements OnInit {
       return;
     }
 
+    this.actionLoading = true;
     const request: UpdateDemandStatusRequest = {
       status: DemandStatus.REJECTED,
       adminFeedback: this.adminFeedback,
@@ -218,6 +233,7 @@ export class DemandeDetailsComponent implements OnInit {
       .updateDemandStatus(this.demandeId, request)
       .subscribe({
         next: (response) => {
+          this.actionLoading = false;
           this.messageService.add({
             severity: 'success',
             summary: 'Succès',
@@ -227,6 +243,7 @@ export class DemandeDetailsComponent implements OnInit {
           this.router.navigate(['/admin/pfe/demandes']);
         },
         error: (error) => {
+          this.actionLoading = false;
           this.messageService.add({
             severity: 'error',
             summary: 'Erreur',

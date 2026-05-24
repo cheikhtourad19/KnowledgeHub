@@ -16,7 +16,7 @@
     </button>
   </div>
   <p-confirmdialog />
-  <p-table [value]="teachers" [tableStyle]="{ 'min-width': '50rem' }">
+  <p-table [value]="teachers" [loading]="loading" [tableStyle]="{ 'min-width': '50rem' }">
     <ng-template #header>
       <tr>
         <th>Nom</th>
@@ -34,6 +34,7 @@
           <button
             class="p-button p-button-text p-button-sm p-button-danger"
             (click)="deleteTeacher($event, teacher.authId)"
+            [disabled]="actionLoading"
           >
             <i class="pi pi-trash"></i>
           </button>
@@ -168,7 +169,8 @@
       <p-button
         label="Enregistrer"
         type="submit"
-        [disabled]="teacherForm.invalid"
+        [loading]="actionLoading"
+        [disabled]="teacherForm.invalid || actionLoading"
       />
     </div>
   </form>
@@ -285,7 +287,8 @@
       label="Importer"
       [outlined]="true"
       severity="primary"
-      [disabled]="!selectedCsvFile"
+      [loading]="actionLoading"
+      [disabled]="actionLoading || !selectedCsvFile"
       (click)="submitCsv()"
     />
   </ng-template>

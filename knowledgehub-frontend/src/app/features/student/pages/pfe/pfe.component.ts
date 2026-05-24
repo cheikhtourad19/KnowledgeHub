@@ -1,5 +1,6 @@
 import { Component, OnInit } from '@angular/core';
 import { Router } from '@angular/router';
+import { forkJoin } from 'rxjs';
 import { ResourceApiService } from '../../../../shared/services/resource-api.service';
 import { PFE } from '../../../../shared/models/resource-service/entities/pfe.model';
 import { DemandePFE } from '../../../../shared/models/resource-service/entities/demande-pfe.model';
@@ -18,6 +19,7 @@ export class PfeComponent implements OnInit {
   demandes: DemandePFE | null = null;
   pendingDemande: DemandePFE | null = null;
   rejectedDemande: DemandePFE | null = null;
+  loading = false;
 
   // Store presigned URLs separately
   reportFileUrl: string | null = null;
@@ -52,42 +54,35 @@ export class PfeComponent implements OnInit {
   }
 
   loadStudentData(): void {
-    // Load student's PFE
-    this.resourceApi.getStudentPFE().subscribe({
-      next: (response) => {
-        console.log('PFE Response:', response);
-        // Backend returns a list
-        const pfeList = response.data ?? [];
+    this.loading = true;
+
+    forkJoin({
+      pfe: this.resourceApi.getStudentPFE(),
+      demandes: this.resourceApi.getMyDemandes(),
+    }).subscribe({
+      next: (results) => {
+        const pfeList = results.pfe.data ?? [];
         this.pfe = pfeList.length > 0 ? pfeList[0] : null;
 
-        console.log('Parsed PFE:', this.pfe);
-
-        // If student has a PFE, load the presigned URLs for files
         if (this.pfe?.reportFile?.id) {
           this.loadFileUrl(this.pfe.reportFile.id, 'report');
         }
         if (this.pfe?.attestationFile?.id) {
           this.loadFileUrl(this.pfe.attestationFile.id, 'attestation');
         }
-      },
-      error: (err) => {
-        console.error('Error loading PFE:', err);
-      },
-    });
 
-    // Load student's demandes
-    this.resourceApi.getMyDemandes().subscribe({
-      next: (response) => {
-        this.demandes = response.data ?? null;
-
-        // Find pending or rejected demand
+        this.demandes = results.demandes.data ?? null;
         this.pendingDemande =
           this.demandes && this.demandes.status === DemandStatus.UPLOADED ? this.demandes : null;
-
         this.rejectedDemande =
           this.demandes && this.demandes.status === DemandStatus.REJECTED ? this.demandes : null;
+
+        this.loading = false;
       },
-      error: () => {},
+      error: (err) => {
+        console.error('Error loading data:', err);
+        this.loading = false;
+      },
     });
   }
 

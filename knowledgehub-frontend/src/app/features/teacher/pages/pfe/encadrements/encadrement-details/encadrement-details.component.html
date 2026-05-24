@@ -1,3 +1,8 @@
+@if (loading) {
+  <div class="flex justify-center items-center py-20">
+    <i class="pi pi-spin pi-spinner text-4xl text-[#C60C30]"></i>
+  </div>
+} @else {
 <!-- ── Header ── -->
 <div
   class="flex items-center gap-3 mb-6 pb-5 border-b border-gray-200 dark:border-gray-700"
@@ -201,3 +206,4 @@
 
 <!-- ── Shared read-only PFE details ── -->
 <app-pfe-details-view [pfe]="pfe!" />
+}

@@ -1,3 +1,8 @@
+@if (loading) {
+  <div class="flex justify-center items-center py-20">
+    <i class="pi pi-spin pi-spinner text-4xl text-[#C60C30]"></i>
+  </div>
+} @else {
 <div *ngIf="stage_details">
   <!-- ── Page Header ── -->
   <div
@@ -607,8 +612,7 @@
     Stage introuvable ou inaccessible.
   </p>
 </div>
-
-<!-- ===== JURY MODAL ===== -->
+}
 
 <!-- ===== STATUS CONFIRMATION MODAL ===== -->
 <p-dialog

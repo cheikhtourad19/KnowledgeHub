@@ -14,6 +14,8 @@ export class StudentStageDetailsComponent implements OnInit {
   stage: Stage | null = null;
   stageId: number = 0;
   currentYear = new Date().getFullYear();
+  loading = false;
+  actionLoading = false;
 
   reportFileUrl: string = '';
   journalFileUrl: string = '';
@@ -51,6 +53,7 @@ export class StudentStageDetailsComponent implements OnInit {
     this.route.params.subscribe((params) => {
       this.stageId = +params['id'];
       if (this.stageId) {
+        this.loading = true;
         this.loadStageDetails(this.stageId);
       }
     });
@@ -68,6 +71,7 @@ export class StudentStageDetailsComponent implements OnInit {
           this.loadPresignedUrl(this.stage.attestationFileId, 'attestation');
         if (this.stage?.conventionFileId)
           this.loadPresignedUrl(this.stage.conventionFileId, 'convention');
+        this.loading = false;
       },
       error: () => {
         this.messageService.add({
@@ -76,6 +80,7 @@ export class StudentStageDetailsComponent implements OnInit {
           detail: 'Impossible de charger les détails du stage',
           life: 5000,
         });
+        this.loading = false;
       },
     });
   }
@@ -191,6 +196,7 @@ export class StudentStageDetailsComponent implements OnInit {
       return;
     }
 
+    this.actionLoading = true;
     this.resourceApiService
       .updateStageMetadata(this.stageId, {
         title,
@@ -206,6 +212,7 @@ export class StudentStageDetailsComponent implements OnInit {
             life: 3000,
           });
           this.closeEditMetadataModal();
+          this.actionLoading = false;
           this.loadStageDetails(this.stageId);
         },
         error: () => {
@@ -215,6 +222,7 @@ export class StudentStageDetailsComponent implements OnInit {
             detail: 'Impossible de mettre à jour les métadonnées',
             life: 5000,
           });
+          this.actionLoading = false;
         },
       });
   }
@@ -236,6 +244,7 @@ export class StudentStageDetailsComponent implements OnInit {
 
   uploadReport(): void {
     if (!this.selectedFile || !this.stageId) return;
+    this.actionLoading = true;
     this.resourceApiService
       .uploadStageReport(this.stageId, this.selectedFile, 'Rapport de stage')
       .subscribe({
@@ -247,6 +256,7 @@ export class StudentStageDetailsComponent implements OnInit {
             life: 3000,
           });
           this.closeUploadModal();
+          this.actionLoading = false;
           this.loadStageDetails(this.stageId);
         },
         error: () => {
@@ -256,12 +266,14 @@ export class StudentStageDetailsComponent implements OnInit {
             detail: "Erreur lors de l'upload du rapport",
             life: 5000,
           });
+          this.actionLoading = false;
         },
       });
   }
 
   uploadJournal(): void {
     if (!this.selectedFile || !this.stageId) return;
+    this.actionLoading = true;
     this.resourceApiService
       .uploadStageJournal(this.stageId, this.selectedFile, 'Journal de stage')
       .subscribe({
@@ -273,6 +285,7 @@ export class StudentStageDetailsComponent implements OnInit {
             life: 3000,
           });
           this.closeUploadModal();
+          this.actionLoading = false;
           this.loadStageDetails(this.stageId);
         },
         error: () => {
@@ -282,12 +295,14 @@ export class StudentStageDetailsComponent implements OnInit {
             detail: "Erreur lors de l'upload du journal",
             life: 5000,
           });
+          this.actionLoading = false;
         },
       });
   }
 
   uploadAttestation(): void {
     if (!this.selectedFile || !this.stageId) return;
+    this.actionLoading = true;
     this.resourceApiService
       .uploadStageAttestation(
         this.stageId,
@@ -303,6 +318,7 @@ export class StudentStageDetailsComponent implements OnInit {
             life: 3000,
           });
           this.closeUploadModal();
+          this.actionLoading = false;
           this.loadStageDetails(this.stageId);
         },
         error: () => {
@@ -312,12 +328,14 @@ export class StudentStageDetailsComponent implements OnInit {
             detail: "Erreur lors de l'upload de l'attestation",
             life: 5000,
           });
+          this.actionLoading = false;
         },
       });
   }
 
   uploadConvention(): void {
     if (!this.selectedFile || !this.stageId) return;
+    this.actionLoading = true;
     this.resourceApiService
       .uploadStageConvention(
         this.stageId,
@@ -333,6 +351,7 @@ export class StudentStageDetailsComponent implements OnInit {
             life: 3000,
           });
           this.closeUploadModal();
+          this.actionLoading = false;
           this.loadStageDetails(this.stageId);
         },
         error: () => {
@@ -342,6 +361,7 @@ export class StudentStageDetailsComponent implements OnInit {
             detail: "Erreur lors de l'upload de la convention",
             life: 5000,
           });
+          this.actionLoading = false;
         },
       });
   }

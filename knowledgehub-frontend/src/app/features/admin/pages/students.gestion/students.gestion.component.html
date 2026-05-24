@@ -138,7 +138,7 @@
             <div class="flex gap-3">
               <button
                 (click)="openBulkAssignModal()"
-                [disabled]="classes.length === 0"
+                [disabled]="actionLoading || classes.length === 0"
                 class="inline-flex items-center px-4 py-2 text-sm font-medium text-white bg-[#C60C30] rounded-lg hover:bg-[#A00A28] focus:outline-none focus:ring-2 focus:ring-[#C60C30] disabled:opacity-50 disabled:cursor-not-allowed transition-colors"
               >
                 <i class="pi pi-users mr-2"></i>
@@ -146,6 +146,13 @@
               </button>
             </div>
           </div>
+        </div>
+      }
+
+      <!-- Loading Spinner -->
+      @if (loading) {
+        <div class="flex justify-center items-center py-12">
+          <i class="pi pi-spin pi-spinner text-4xl text-[#C60C30]"></i>
         </div>
       }
 
@@ -238,7 +245,7 @@
                   <div class="flex items-center gap-2">
                     <button
                       (click)="openAssignClassModal(student)"
-                      [disabled]="classes.length === 0"
+                      [disabled]="actionLoading || classes.length === 0"
                       class="inline-flex items-center px-3 py-1.5 text-xs font-medium text-[#C60C30] bg-white dark:bg-gray-900 border border-[#C60C30] rounded-lg hover:bg-[#C60C30]/5 dark:hover:bg-[#C60C30]/10 focus:outline-none focus:ring-2 focus:ring-[#C60C30] disabled:opacity-50 disabled:cursor-not-allowed transition-colors"
                     >
                       <i class="pi pi-users mr-1.5 text-xs"></i>
@@ -247,6 +254,7 @@
                     <button
                       class="p-button p-button-text p-button-sm p-button-danger"
                       (click)="deleteTeacher($event, student.authId)"
+                      [disabled]="actionLoading"
                     >
                       <i class="pi pi-trash"></i>
                     </button>
@@ -375,7 +383,7 @@
           </button>
           <button
             (click)="bulkAssignToClass()"
-            [disabled]="!selectedClass"
+            [disabled]="actionLoading || !selectedClass"
             class="flex-1 px-4 py-2.5 text-sm font-medium text-white bg-[#C60C30] rounded-lg hover:bg-[#A00A28] focus:outline-none focus:ring-2 focus:ring-[#C60C30] disabled:opacity-50 disabled:cursor-not-allowed transition-colors"
           >
             <i class="pi pi-check mr-2"></i>
@@ -486,6 +494,7 @@
           <button
             (click)="createStudent()"
             [disabled]="
+              actionLoading ||
               !studentForm.email ||
               !studentForm.nom ||
               !studentForm.prenom ||
@@ -594,7 +603,7 @@
           </button>
           <button
             (click)="assignToClass()"
-            [disabled]="!selectedClass"
+            [disabled]="actionLoading || !selectedClass"
             class="flex-1 px-4 py-2.5 text-sm font-medium text-white bg-[#C60C30] rounded-lg hover:bg-[#A00A28] focus:outline-none focus:ring-2 focus:ring-[#C60C30] disabled:opacity-50 disabled:cursor-not-allowed transition-colors"
           >
             <i class="pi pi-check mr-2"></i>
@@ -705,7 +714,7 @@
           </button>
           <button
             (click)="bulkCreateStudents()"
-            [disabled]="!selectedFile"
+            [disabled]="actionLoading || !selectedFile"
             class="flex-1 px-4 py-2.5 text-sm font-medium text-white bg-[#C60C30] rounded-lg hover:bg-[#A00A28] focus:outline-none focus:ring-2 focus:ring-[#C60C30] disabled:opacity-50 disabled:cursor-not-allowed transition-colors"
           >
             <i class="pi pi-check mr-2"></i>

@@ -19,6 +19,8 @@ import { AuthApiService } from '../../../auth/services/auth-api.service';
 export class StudentsGestionComponent implements OnInit {
   students: Student[] = [];
   classes: Classe[] = [];
+  loading = false;
+  actionLoading = false;
 
   currentFilter: 'all' | 'no-class' | 'class' = 'all';
   selectedClassFilter: number | null = null;
@@ -57,10 +59,12 @@ export class StudentsGestionComponent implements OnInit {
   }
 
   loadStudents(): void {
+    this.loading = true;
     this.userApiService.getAllStudents().subscribe({
       next: (response) => {
         this.students = response.data ?? [];
         this.applyFilter();
+        this.loading = false;
       },
       error: (error) => {
         this.messageService.add({
@@ -68,6 +72,7 @@ export class StudentsGestionComponent implements OnInit {
           summary: 'Erreur',
           detail: 'Impossible de charger les étudiants',
         });
+        this.loading = false;
       },
     });
   }
@@ -127,12 +132,15 @@ export class StudentsGestionComponent implements OnInit {
   }
 
   loadClasses(): void {
+    this.loading = true;
     this.userApiService.getAllClasses().subscribe({
       next: (response) => {
         this.classes = response.data ?? [];
+        this.loading = false;
       },
       error: (error) => {
         console.error('Error  classes', error);
+        this.loading = false;
       },
     });
   }
@@ -161,6 +169,7 @@ export class StudentsGestionComponent implements OnInit {
   }
 
   createStudent(): void {
+    this.actionLoading = true;
     this.authApiService.register(this.studentForm).subscribe({
       next: (response) => {
         this.messageService.add({
@@ -169,6 +178,7 @@ export class StudentsGestionComponent implements OnInit {
           detail: 'Étudiant créé avec succès',
         });
         this.displayCreateModal = false;
+        this.actionLoading = false;
         this.loadStudents();
       },
       error: (error) => {
@@ -177,6 +187,7 @@ export class StudentsGestionComponent implements OnInit {
           summary: 'Erreur',
           detail: "Impossible de créer l'étudiant",
         });
+        this.actionLoading = false;
       },
     });
   }
@@ -191,6 +202,7 @@ export class StudentsGestionComponent implements OnInit {
     if (studentId && classId) {
       // Close modal first
       this.displayAssignClassModal = false;
+      this.actionLoading = true;
 
       this.userApiService
         .assignStudentToClass({
@@ -204,6 +216,7 @@ export class StudentsGestionComponent implements OnInit {
               summary: 'Succès',
               detail: 'Étudiant assigné à la classe avec succès',
             });
+            this.actionLoading = false;
             this.loadStudents();
           },
           error: (error) => {
@@ -212,6 +225,7 @@ export class StudentsGestionComponent implements OnInit {
               summary: 'Erreur',
               detail: "Impossible d'assigner l'étudiant à la classe",
             });
+            this.actionLoading = false;
           },
         });
     }
@@ -224,6 +238,7 @@ export class StudentsGestionComponent implements OnInit {
 
   bulkCreateStudents(): void {
     if (this.selectedFile) {
+      this.actionLoading = true;
       this.userApiService.bulkCreateStudents(this.selectedFile).subscribe({
         next: (response) => {
           const data = response.data;
@@ -251,6 +266,7 @@ export class StudentsGestionComponent implements OnInit {
               });
             }
           }
+          this.actionLoading = false;
         },
         error: (error) => {
           this.messageService.add({
@@ -258,6 +274,7 @@ export class StudentsGestionComponent implements OnInit {
             summary: 'Erreur',
             detail: 'Impossible de créer les étudiants en masse',
           });
+          this.actionLoading = false;
         },
       });
     }
@@ -318,6 +335,7 @@ export class StudentsGestionComponent implements OnInit {
 
     // Close modal first
     this.displayBulkAssignModal = false;
+    this.actionLoading = true;
 
     this.userApiService
       .bulkAssignStudentsToClass({
@@ -331,6 +349,7 @@ export class StudentsGestionComponent implements OnInit {
             summary: 'Succès',
             detail: `${studentIds.length} étudiant(s) assigné(s) à la classe avec succès`,
           });
+          this.actionLoading = false;
           this.clearSelection();
           this.loadStudents();
         },
@@ -340,6 +359,7 @@ export class StudentsGestionComponent implements OnInit {
             summary: 'Erreur',
             detail: "Impossible d'assigner les étudiants à la classe",
           });
+          this.actionLoading = false;
         },
       });
   }
@@ -369,6 +389,7 @@ export class StudentsGestionComponent implements OnInit {
         console.log('Accept - Deleting teacher ID:', teacherIdToDelete);
 
         if (teacherIdToDelete) {
+          this.actionLoading = true;
           this.userService.deleteUser(teacherIdToDelete).subscribe({
             next: (response) => {
               this.messageService.add({
@@ -376,6 +397,7 @@ export class StudentsGestionComponent implements OnInit {
                 summary: 'Succès',
                 detail: 'Enseignant supprimé avec succès',
               });
+              this.actionLoading = false;
               this.loadStudents();
               this.selectedTeacherId = null;
               console.log('Delete successful for teacher ID:', response);
@@ -387,6 +409,7 @@ export class StudentsGestionComponent implements OnInit {
                 summary: 'Erreur',
                 detail: "Impossible de supprimer l'enseignant.",
               });
+              this.actionLoading = false;
               this.selectedTeacherId = null;
             },
           });

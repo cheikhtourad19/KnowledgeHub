@@ -3,9 +3,16 @@ FROM node:20-alpine AS build
 
 WORKDIR /app
 
+ENV npm_config_fetch_retries=5 \
+	npm_config_fetch_retry_factor=2 \
+	npm_config_fetch_retry_mintimeout=20000 \
+	npm_config_fetch_retry_maxtimeout=120000 \
+	npm_config_network_timeout=600000
+
 COPY package*.json ./
 
-RUN npm ci --prefer-offline
+RUN --mount=type=cache,target=/root/.npm \
+	npm ci --prefer-offline --no-audit --no-fund
 
 COPY . .
 

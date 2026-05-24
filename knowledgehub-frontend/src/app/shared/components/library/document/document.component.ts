@@ -17,6 +17,8 @@ export class DocumentComponent implements OnInit {
   documentId: number = 0;
   pdfUrl: string = '';
   coverUrl: string | null = null;
+  loading = false;
+  pdfLoading = false;
   showPdfModal = false;
   aiQuestion: string = '';
   aiResponse: string = '';
@@ -53,8 +55,10 @@ constructor(
   }
 
   loadDocument(): void {
+    this.loading = true;
     this.resourceApiService.getFileById(this.documentId).subscribe({
       next: (response) => {
+        this.loading = false;
         if (response.success && response.data) {
           this.document = response.data;
           this.loadPresignedUrl();
@@ -65,6 +69,7 @@ constructor(
         }
       },
       error: (error) => {
+        this.loading = false;
         console.error('Error fetching document:', error);
         this.showError('Erreur lors du chargement du document');
         this.goBack();
@@ -74,13 +79,16 @@ constructor(
 
   loadPresignedUrl(): void {
     if (this.document) {
+      this.pdfLoading = true;
       this.resourceApiService.getPresignedUrl(this.document.id).subscribe({
         next: (response) => {
+          this.pdfLoading = false;
           if (response.success && response.data) {
             this.pdfUrl = response.data;
           }
         },
         error: (error) => {
+          this.pdfLoading = false;
           console.error('Error fetching presigned URL:', error);
           this.showError('Erreur lors du chargement du document');
         },

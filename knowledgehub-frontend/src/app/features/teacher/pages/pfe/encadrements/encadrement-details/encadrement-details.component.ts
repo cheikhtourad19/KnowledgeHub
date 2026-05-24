@@ -15,6 +15,7 @@ export class EncadrementDetailsComponent implements OnInit {
   pfe: PFE | null = null;
   submitting = false;
   markingUnderReview = false;
+  loading = false;
 
   selectedStatus: SubmissionStatus | null = null;
   supervisorFeedback: string = '';
@@ -31,8 +32,10 @@ export class EncadrementDetailsComponent implements OnInit {
   ngOnInit(): void {
     const id = +this.route.snapshot.params['id'];
     if (id) {
+      this.loading = true;
       this.resourceApi.getPFEById(id).subscribe({
         next: (res) => {
+          this.loading = false;
           this.pfe = res.data ?? null;
           const status = this.pfe?.status;
           if (
@@ -43,12 +46,14 @@ export class EncadrementDetailsComponent implements OnInit {
           }
           this.supervisorFeedback = this.pfe?.supervisorFeedback ?? '';
         },
-        error: () =>
+        error: () => {
+          this.loading = false;
           this.messageService.add({
             severity: 'error',
             summary: 'Erreur',
             detail: 'Impossible de charger le PFE.',
-          }),
+          });
+        },
       });
     }
   }

@@ -17,6 +17,7 @@ import { AuthService } from '../../../core/services/auth.service';
 export class ProfileComponent implements OnInit {
   public passwordForm: FormGroup;
   public userInitials = '';
+  public submitting = false;
 
   constructor(
     private authService: AuthApiService,
@@ -62,9 +63,11 @@ export class ProfileComponent implements OnInit {
 
   private editPassword(oldPassword: string, newPassword: string): void {
     const request: ResetPasswordRequest = { oldPassword, newPassword };
+    this.submitting = true;
 
     this.authService.updatePassword(request).subscribe({
       next: () => {
+        this.submitting = false;
         this.messageService.add({
           severity: 'success',
           summary: 'Succès',
@@ -73,6 +76,7 @@ export class ProfileComponent implements OnInit {
         this.passwordForm.reset();
       },
       error: (error) => {
+        this.submitting = false;
         if (error.status === 400) {
           this.messageService.add({
             severity: 'error',

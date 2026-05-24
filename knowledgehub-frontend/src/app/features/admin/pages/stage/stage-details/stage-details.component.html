@@ -1,3 +1,9 @@
+@if (loading) {
+  <div class="flex justify-center items-center py-20">
+    <i class="pi pi-spin pi-spinner text-4xl text-[#C60C30]"></i>
+  </div>
+}
+
 <div *ngIf="stage_details">
   <!-- ── Page Header ── -->
   <div
@@ -59,7 +65,8 @@
       <button
         type="button"
         (click)="openSupervisorModal()"
-        class="inline-flex items-center gap-1.5 px-4 py-2 text-sm font-semibold rounded-lg bg-[#C60C30] text-white hover:bg-[#a00828] transition-all duration-200 shadow-sm"
+        [disabled]="actionLoading"
+        class="inline-flex items-center gap-1.5 px-4 py-2 text-sm font-semibold rounded-lg bg-[#C60C30] text-white hover:bg-[#a00828] transition-all duration-200 shadow-sm disabled:opacity-50 disabled:cursor-not-allowed"
       >
         <svg
           class="w-3.5 h-3.5"
@@ -79,7 +86,7 @@
       <button
         type="button"
         (click)="toggleCanEdit()"
-        [disabled]="!!stage_details.cloture"
+        [disabled]="actionLoading || !!stage_details.cloture"
         class="inline-flex items-center gap-1.5 px-4 py-2 text-sm font-semibold rounded-lg bg-blue-600 text-white hover:bg-blue-700 transition-all duration-200 shadow-sm disabled:opacity-50 disabled:cursor-not-allowed"
       >
         {{ stage_details.canEdit ? "Verrouiller" : "Activer édition" }}
@@ -87,14 +94,16 @@
       <button
         type="button"
         (click)="openStatusConfirmModal()"
-        class="inline-flex items-center gap-1.5 px-4 py-2 text-sm font-semibold rounded-lg bg-[#333333] text-white hover:bg-[#1a1a1a] transition-all duration-200 shadow-sm"
+        [disabled]="actionLoading"
+        class="inline-flex items-center gap-1.5 px-4 py-2 text-sm font-semibold rounded-lg bg-[#333333] text-white hover:bg-[#1a1a1a] transition-all duration-200 shadow-sm disabled:opacity-50 disabled:cursor-not-allowed"
       >
         {{ stage_details.cloture ? "Ouvrir" : "Clôturer" }}
       </button>
       <button
         type="button"
         (click)="openDeleteConfirmModal()"
-        class="inline-flex items-center gap-1.5 px-4 py-2 text-sm font-semibold rounded-lg bg-red-600 text-white hover:bg-red-700 transition-all duration-200 shadow-sm"
+        [disabled]="actionLoading"
+        class="inline-flex items-center gap-1.5 px-4 py-2 text-sm font-semibold rounded-lg bg-red-600 text-white hover:bg-red-700 transition-all duration-200 shadow-sm disabled:opacity-50 disabled:cursor-not-allowed"
       >
         Supprimer
       </button>
@@ -696,7 +705,8 @@
         type="button"
         label="Confirmer"
         (click)="confirmSupervisor()"
-        [disabled]="!selectedSupervisorId"
+        [loading]="actionLoading"
+        [disabled]="actionLoading || !selectedSupervisorId"
         class="!bg-[#C60C30] !border-[#C60C30] !text-white hover:!bg-[#a00828]"
       ></button>
     </div>
@@ -767,6 +777,8 @@
         [label]="stage_details?.cloture ? 'Rouvrir' : 'Clôturer'"
         icon="pi pi-check"
         (click)="confirmStageStatus()"
+        [loading]="actionLoading"
+        [disabled]="actionLoading"
         class="!bg-[#C60C30] !border-[#C60C30] !text-white hover:!bg-[#a00828]"
       ></button>
     </div>
@@ -828,6 +840,8 @@
         label="Supprimer"
         icon="pi pi-trash"
         (click)="confirmDeleteStage()"
+        [loading]="actionLoading"
+        [disabled]="actionLoading"
         class="!bg-red-600 !border-red-600 !text-white hover:!bg-red-700"
       ></button>
     </div>

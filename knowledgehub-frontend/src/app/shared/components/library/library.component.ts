@@ -20,6 +20,7 @@ export class LibraryComponent implements OnInit {
   public aiSearchEnabled: boolean = false;
   public isAiLoading: boolean = false;
   public isAiResults: boolean = false;
+  public loading: boolean = false;
   @Input() documentRoute: string = 'student/document'; // default, can be overridden
 
   public displayableTypes: FileType[] = [
@@ -72,8 +73,10 @@ export class LibraryComponent implements OnInit {
   }
 
   loadDocuments(): void {
+    this.loading = true;
     this.ressourceService.getPublishedDocuments().subscribe({
       next: (response) => {
+        this.loading = false;
         const all: File[] = response.data || [];
         this.allDocuments = all.filter((doc) =>
           this.displayableTypes.includes(doc.fileType),
@@ -82,6 +85,7 @@ export class LibraryComponent implements OnInit {
         this.preloadCoverUrls(this.allDocuments);
       },
       error: (error) => {
+        this.loading = false;
         console.error('Error fetching documents:', error);
       },
     });

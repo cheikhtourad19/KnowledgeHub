@@ -17,6 +17,7 @@ export class PfeDemandeComponent implements OnInit {
   allDemandes: DemandePFE[] = [];
   demandes: DemandePFE[] = [];
   DemandStatus = DemandStatus;
+  loading = false;
 
   // Filters
   selectedYear: number = new Date().getFullYear();
@@ -43,13 +44,16 @@ export class PfeDemandeComponent implements OnInit {
   }
 
   loadDemandes(): void {
+    this.loading = true;
     this.resourceApiService.getAllDemandes().subscribe({
       next: (response) => {
+        this.loading = false;
         this.allDemandes = response.data || [];
         this.buildYearOptions();
         this.applyFilters();
       },
       error: () => {
+        this.loading = false;
         this.messageService.add({
           severity: 'error',
           summary: 'Erreur',

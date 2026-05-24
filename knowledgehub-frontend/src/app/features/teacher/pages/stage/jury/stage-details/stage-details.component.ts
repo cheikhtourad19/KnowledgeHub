@@ -21,6 +21,8 @@ export class StageDetailsComponent implements OnInit {
   stage_details: Stage | null = null;
   stage_id: number = 0;
   list_teachers: TeacherOption[] = [];
+  loading = false;
+  actionLoading = false;
 
   // Jury modal
   showSupervisorModal = false;
@@ -57,8 +59,10 @@ export class StageDetailsComponent implements OnInit {
   }
 
   loadStageDetails(stageId: number): void {
+    this.loading = true;
     this.resourceApiService.getStageById(stageId).subscribe({
       next: (response) => {
+        this.loading = false;
         this.stage_details = response.data ?? null;
 
         // Load presigned URLs for files
@@ -82,6 +86,7 @@ export class StageDetailsComponent implements OnInit {
         }
       },
       error: () => {
+        this.loading = false;
         this.messageService.add({
           severity: 'error',
           summary: 'Erreur',
@@ -139,8 +144,10 @@ export class StageDetailsComponent implements OnInit {
       ? this.resourceApiService.openStageByTeacher(this.stage_id)
       : this.resourceApiService.closeStageByTeacher(this.stage_id);
 
+    this.actionLoading = true;
     request.subscribe({
       next: () => {
+        this.actionLoading = false;
         this.messageService.add({
           severity: 'success',
           summary: 'Succès',
@@ -153,6 +160,7 @@ export class StageDetailsComponent implements OnInit {
         this.loadStageDetails(this.stage_id);
       },
       error: () => {
+        this.actionLoading = false;
         this.messageService.add({
           severity: 'error',
           summary: 'Erreur',

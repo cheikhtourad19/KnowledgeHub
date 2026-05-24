@@ -209,6 +209,9 @@
             class="flex items-center gap-3 p-3.5 bg-red-50 dark:bg-red-900/10 border border-red-200 dark:border-red-800/50 rounded-lg cursor-pointer hover:bg-red-100 dark:hover:bg-red-900/20 transition-colors"
             (click)="openPdfModal()"
           >
+            @if (reportLoading) {
+              <i class="pi pi-spin pi-spinner text-[#C60C30] text-xl mx-auto"></i>
+            } @else {
             <svg
               class="w-8 h-8 text-[#C60C30] flex-shrink-0"
               fill="none"
@@ -253,6 +256,7 @@
                 d="M2.458 12C3.732 7.943 7.523 5 12 5c4.478 0 8.268 2.943 9.542 7-1.274 4.057-5.064 7-9.542 7-4.477 0-8.268-2.943-9.542-7z"
               />
             </svg>
+            }
           </div>
           <ng-template #noReport>
             <div

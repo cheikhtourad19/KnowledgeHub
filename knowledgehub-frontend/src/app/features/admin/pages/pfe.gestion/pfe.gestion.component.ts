@@ -14,6 +14,7 @@ export class PfeGestionComponent implements OnInit {
   allPfes: PFE[] = [];
   pfes: PFE[] = [];
   SubmissionStatus = SubmissionStatus;
+  loading = false;
 
   searchQuery: string = '';
   selectedYear: number | null = new Date().getFullYear();
@@ -47,13 +48,16 @@ export class PfeGestionComponent implements OnInit {
   }
 
   loadPFEs(): void {
+    this.loading = true;
     this.ressourceApiService.getAllPFE().subscribe({
       next: (response) => {
+        this.loading = false;
         this.allPfes = response.data ?? [];
         this.buildYearOptions();
         this.applyFilters();
       },
       error: (error) => {
+        this.loading = false;
         console.error('Error loading PFEs:', error);
       },
     });

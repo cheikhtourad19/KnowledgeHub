@@ -1,3 +1,11 @@
+@if (loading) {
+  <div class="flex min-h-screen items-center justify-center bg-gray-50">
+    <div class="text-center">
+      <i class="pi pi-spin pi-spinner mb-4 text-4xl text-[#C60C30]"></i>
+      <p class="text-sm text-gray-500">Chargement du document...</p>
+    </div>
+  </div>
+} @else {
 <div class="min-h-screen bg-gray-50" *ngIf="document">
   <!-- Header -->
   <div class="relative overflow-hidden bg-[#C60C30] px-10 py-8">
@@ -14,9 +22,6 @@
       "
     ></div>
     <div class="relative z-10">
-        <div *ngIf="coverUrl" class="mb-4">
-          <img [src]="coverUrl" alt="Cover" class="w-full max-h-64 object-cover rounded-md shadow-sm" />
-        </div>
       <button
         (click)="goBack()"
         class="mb-4 flex items-center gap-2 text-white/80 transition-colors hover:text-white"
@@ -88,7 +93,7 @@
                 ></pdf-viewer>
               </div>
               <div
-                *ngIf="!pdfUrl"
+                *ngIf="pdfLoading || !pdfUrl"
                 class="flex h-96 items-center justify-center rounded-lg bg-gray-100"
               >
                 <div class="text-center text-gray-400">
@@ -302,16 +307,7 @@
   </div>
 </div>
 
-<!-- Loading State -->
-<div
-  *ngIf="!document"
-  class="flex min-h-screen items-center justify-center bg-gray-50"
->
-  <div class="text-center">
-    <i class="pi pi-spin pi-spinner mb-4 text-4xl text-[#C60C30]"></i>
-    <p class="text-sm text-gray-500">Chargement du document...</p>
-  </div>
-</div>
+}
 
 <!-- PDF Modal -->
 <app-pdf-viewer-modal

@@ -1,3 +1,9 @@
+@if (loading) {
+  <div class="flex justify-center items-center py-20">
+    <i class="pi pi-spin pi-spinner text-4xl text-[#C60C30]"></i>
+  </div>
+}
+@if (!loading) {
 <div *ngIf="pfe_details">
   <!-- ── Page Header ── -->
   <div
@@ -690,6 +696,7 @@
         label="Confirmer"
         icon="pi pi-check"
         (click)="confirmJury()"
+        [loading]="actionLoading"
         [disabled]="!selectedJuryId"
         class="!bg-[#333333] !border-[#333333] !text-white hover:!bg-black"
       ></button>
@@ -745,6 +752,7 @@
         label="Confirmer"
         icon="pi pi-check"
         (click)="confirmRapporteur()"
+        [loading]="actionLoading"
         [disabled]="!selectedRapporteurId"
         class="!bg-[#C60C30] !border-[#C60C30] !text-white hover:!bg-[#a00828]"
       ></button>
@@ -785,6 +793,7 @@
         [label]="pfe_details?.cloture ? 'Rouvrir' : 'Confirmer'"
         [icon]="pfe_details?.cloture ? 'pi pi-lock-open' : 'pi pi-lock'"
         (click)="confirmCloturePFE()"
+        [loading]="actionLoading"
         class="!bg-[#333333] !border-[#333333] !text-white hover:!bg-black"
       ></button>
     </div>
@@ -820,6 +829,7 @@
         label="Supprimer"
         icon="pi pi-trash"
         (click)="confirmDeletePFE()"
+        [loading]="actionLoading"
         class="!bg-red-600 !border-red-600 !text-white hover:!bg-red-700"
       ></button>
     </div>
@@ -833,3 +843,4 @@
   [title]="'Rapport PFE'"
 >
 </app-pdf-viewer-modal>
+}

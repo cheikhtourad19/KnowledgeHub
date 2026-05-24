@@ -157,10 +157,9 @@ export class ResourceApiService {
   }
 
   getCoverPresignedUrl(fileId: number): Observable<ApiResponse<string>> {
-    return this.http
-      .get<
-        ApiResponse<string>
-      >(`${this.baseUrl}/api/library/document/${fileId}/cover-presigned-url`);
+    return this.http.get<ApiResponse<string>>(
+      `${this.baseUrl}/api/library/document/${fileId}/cover-presigned-url`,
+    );
   }
 
   // ========== PFE Demande Methods ==========
@@ -801,7 +800,9 @@ export class ResourceApiService {
     type: TypeAnnonceStage,
   ): Observable<ApiResponse<AnnonceStage[]>> {
     return this.http
-      .get<ApiResponse<AnnonceStage[]>>(`${this.baseUrl}/api/annonces/type/${type}`)
+      .get<
+        ApiResponse<AnnonceStage[]>
+      >(`${this.baseUrl}/api/annonces/type/${type}`)
       .pipe(map((res) => this.mapAnnoncesResponse(res)));
   }
 
@@ -809,20 +810,26 @@ export class ResourceApiService {
     modalite: ModaliteTravail,
   ): Observable<ApiResponse<AnnonceStage[]>> {
     return this.http
-      .get<ApiResponse<AnnonceStage[]>>(`${this.baseUrl}/api/annonces/modalite/${modalite}`)
+      .get<
+        ApiResponse<AnnonceStage[]>
+      >(`${this.baseUrl}/api/annonces/modalite/${modalite}`)
       .pipe(map((res) => this.mapAnnoncesResponse(res)));
   }
 
   findAnnoncesByVille(ville: string): Observable<ApiResponse<AnnonceStage[]>> {
     return this.http
-      .get<ApiResponse<AnnonceStage[]>>(`${this.baseUrl}/api/annonces/ville/${ville}`)
+      .get<
+        ApiResponse<AnnonceStage[]>
+      >(`${this.baseUrl}/api/annonces/ville/${ville}`)
       .pipe(map((res) => this.mapAnnoncesResponse(res)));
   }
 
   searchAnnonces(keyword: string): Observable<ApiResponse<AnnonceStage[]>> {
     const params = new HttpParams().set('keyword', keyword);
     return this.http
-      .get<ApiResponse<AnnonceStage[]>>(`${this.baseUrl}/api/annonces/search`, { params })
+      .get<
+        ApiResponse<AnnonceStage[]>
+      >(`${this.baseUrl}/api/annonces/search`, { params })
       .pipe(map((res) => this.mapAnnoncesResponse(res)));
   }
 
@@ -843,13 +850,17 @@ export class ResourceApiService {
   ): Observable<ApiResponse<AnnonceStage>> {
     const form = this.buildAnnonceFormData(annonce, image);
     return this.http
-      .put<ApiResponse<AnnonceStage>>(`${this.baseUrl}/api/annonces/${id}`, form)
+      .put<
+        ApiResponse<AnnonceStage>
+      >(`${this.baseUrl}/api/annonces/${id}`, form)
       .pipe(map((res) => this.mapAnnonceResponse(res)));
   }
 
   toggleAnnonceActive(id: number): Observable<ApiResponse<AnnonceStage>> {
     return this.http
-      .patch<ApiResponse<AnnonceStage>>(`${this.baseUrl}/api/annonces/${id}/toggle`, null)
+      .patch<
+        ApiResponse<AnnonceStage>
+      >(`${this.baseUrl}/api/annonces/${id}/toggle`, null)
       .pipe(map((res) => this.mapAnnonceResponse(res)));
   }
 
@@ -874,14 +885,18 @@ export class ResourceApiService {
     return form;
   }
 
-  private mapAnnoncesResponse(res: ApiResponse<AnnonceStage[]>): ApiResponse<AnnonceStage[]> {
+  private mapAnnoncesResponse(
+    res: ApiResponse<AnnonceStage[]>,
+  ): ApiResponse<AnnonceStage[]> {
     if (res.data) {
       res.data = res.data.map((a) => this.toPublicAnnonceUrl(a));
     }
     return res;
   }
 
-  private mapAnnonceResponse(res: ApiResponse<AnnonceStage>): ApiResponse<AnnonceStage> {
+  private mapAnnonceResponse(
+    res: ApiResponse<AnnonceStage>,
+  ): ApiResponse<AnnonceStage> {
     if (res.data) {
       res.data = this.toPublicAnnonceUrl(res.data);
     }

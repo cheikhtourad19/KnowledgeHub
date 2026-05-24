@@ -12,7 +12,6 @@
 .env.production
 .env.staging
 *.env
-!.env
 
 # ---------------------------------------------
 # Maven (Java Build Tool)

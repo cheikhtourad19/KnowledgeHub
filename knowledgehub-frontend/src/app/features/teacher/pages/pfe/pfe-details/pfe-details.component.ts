@@ -14,6 +14,7 @@ export class PfeDetailsComponent implements OnInit {
   pfe: PFE | null = null;
   rapporteurFeedback = '';
   savingFeedback = false;
+  loading = false;
 
   constructor(
     private resourceApi: ResourceApiService,
@@ -31,17 +32,21 @@ export class PfeDetailsComponent implements OnInit {
   }
 
   loadPfeById(id: number): void {
+    this.loading = true;
     this.resourceApi.getPFEById(id).subscribe({
       next: (res) => {
+        this.loading = false;
         this.pfe = res.data ?? null;
         this.rapporteurFeedback = this.pfe?.reporteurFeedback ?? '';
       },
-      error: () =>
+      error: () => {
+        this.loading = false;
         this.messageService.add({
           severity: 'error',
           summary: 'Erreur',
           detail: 'Impossible de charger le PFE.',
-        }),
+        });
+      },
     });
   }
 
