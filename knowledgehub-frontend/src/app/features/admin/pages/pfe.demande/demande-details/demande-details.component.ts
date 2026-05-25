@@ -25,7 +25,7 @@ export class DemandeDetailsComponent implements OnInit {
   displayRejectDialog: boolean = false;
   adminFeedback: string = '';
   teachers: Teacher[] = [];
-  selectedTeacherId: number | null = null;
+  selectedTeacherAuthId: string | null = null;
   showPdfModal: boolean = false;
   constructor(
     private route: ActivatedRoute,
@@ -187,7 +187,7 @@ export class DemandeDetailsComponent implements OnInit {
       .updateDemandStatus(
         this.demandeId,
         request,
-        this.selectedTeacherId || undefined,
+        this.selectedTeacherAuthId ? Number(this.selectedTeacherAuthId) : undefined,
       )
       .subscribe({
         next: (response) => {

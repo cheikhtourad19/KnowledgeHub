@@ -50,7 +50,7 @@ export class StageComponent implements OnInit {
   showRemoveAuthorizationsModal = false;
 
   // Student authorization
-  selectedStudentId: number | null = null;
+  selectedStudentAuthId: string | null = null;
   students: Student[] = [];
 
   // Class authorization
@@ -195,7 +195,7 @@ export class StageComponent implements OnInit {
   openAuthorizationModal(): void {
     this.showAuthorizationModal = true;
     this.authorizationType = 'student';
-    this.selectedStudentId = null;
+    this.selectedStudentAuthId = null;
     this.selectedClassId = null;
     this.selectedTypeStage = null;
   }
@@ -203,7 +203,7 @@ export class StageComponent implements OnInit {
   closeAuthorizationModal(): void {
     this.showAuthorizationModal = false;
     this.authorizationType = 'student';
-    this.selectedStudentId = null;
+    this.selectedStudentAuthId = null;
     this.selectedClassId = null;
     this.selectedTypeStage = null;
   }
@@ -223,7 +223,7 @@ export class StageComponent implements OnInit {
   }
 
   authorizeStudent(): void {
-    if (!this.selectedStudentId || !this.selectedTypeStage) {
+    if (!this.selectedStudentAuthId || !this.selectedTypeStage) {
       this.messageService.add({
         severity: 'warn',
         summary: 'Attention',
@@ -234,7 +234,7 @@ export class StageComponent implements OnInit {
     }
     this.loading = true;
     this.resourceApiService
-      .authorizeStudent(this.selectedStudentId, this.selectedTypeStage)
+      .authorizeStudent(Number(this.selectedStudentAuthId), this.selectedTypeStage)
       .subscribe({
         next: (response) => {
           if (response.success) {
@@ -351,8 +351,8 @@ export class StageComponent implements OnInit {
       : 'bg-orange-100 text-orange-700 dark:bg-orange-900/30 dark:text-orange-400';
   }
 
-  getStudentName(studentId: number): string {
-    const student = this.students.find((s) => s.studentId === studentId);
+  getStudentName(authId: number): string {
+    const student = this.students.find((s) => Number(s.authId) === authId);
     return student ? `${student.nom} ${student.prenom}` : 'N/A';
   }
 

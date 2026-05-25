@@ -27,7 +27,7 @@ public class TeacherReviewController {
     @GetMapping("/supervised")
     public ResponseEntity<ApiResponse> getTeacherPFE(
             @RequestHeader(value = "X-User-Role") String role,
-            @RequestHeader(value = "X-User-Id") Long userId
+            @RequestHeader(value = "X-Auth-Id") Long authId
     ) {
         if (!role.equals("TEACHER") && !role.equals("ADMIN")) {
             return ResponseEntity.status(HttpStatus.FORBIDDEN).body(
@@ -36,14 +36,14 @@ public class TeacherReviewController {
         }
 
         return ResponseEntity.ok(
-                ApiResponse.success(pfeService.getPFEBySupervisor(userId), "All PFE")
+                ApiResponse.success(pfeService.getPFEBySupervisor(authId), "All PFE")
         );
     }
 
     @GetMapping("/jury")
     public ResponseEntity<ApiResponse> getTeacherJury(
             @RequestHeader(value = "X-User-Role") String role,
-            @RequestHeader(value = "X-User-Id") Long userId
+            @RequestHeader(value = "X-Auth-Id") Long authId
     ){
         if (!role.equals("TEACHER") && !role.equals("ADMIN")){
             return ResponseEntity.status(HttpStatus.FORBIDDEN).body(
@@ -52,7 +52,7 @@ public class TeacherReviewController {
         }
 
         return ResponseEntity.ok(
-                ApiResponse.success(pfeService.getPFEByJury(userId), "All PFE")
+                ApiResponse.success(pfeService.getPFEByJury(authId), "All PFE")
         );
 
 
@@ -61,7 +61,7 @@ public class TeacherReviewController {
     @GetMapping("/repporteur")
     public ResponseEntity<ApiResponse> getTeacherRepporteur(
             @RequestHeader(value = "X-User-Role") String role,
-            @RequestHeader(value = "X-User-Id") Long userId
+            @RequestHeader(value = "X-Auth-Id") Long authId
     ){
         if (!role.equals("TEACHER") && !role.equals("ADMIN")){
             return ResponseEntity.status(HttpStatus.FORBIDDEN).body(
@@ -70,7 +70,7 @@ public class TeacherReviewController {
         }
 
         return ResponseEntity.ok(
-                ApiResponse.success(pfeService.getPFEByRapporteur(userId), "All PFE")
+                ApiResponse.success(pfeService.getPFEByRapporteur(authId), "All PFE")
         );
 
 
@@ -81,7 +81,7 @@ public class TeacherReviewController {
     public ResponseEntity<ApiResponse<PFE>> updatePFEStatus(
             @PathVariable Long pfeId,
             @Valid @RequestBody UpdatePFEStatusRequest request,
-            @RequestHeader("X-User-Id") Long teacherId
+            @RequestHeader("X-Auth-Id") Long authId
     ) {
         PFE pfe = pfeService.getPFEById(pfeId);
         if (pfe == null) {
@@ -89,13 +89,13 @@ public class TeacherReviewController {
                     ApiResponse.error("Not Found", "PFE not found with id: " + pfeId)
             );
         }
-        if (!pfe.getSupervisorId().equals(teacherId)) {
+        if (!pfe.getSupervisorAuthId().equals(authId)) {
             return ResponseEntity.status(403).body(
                     ApiResponse.error("Forbidden", "You are not allowed to update this PFE")
             );
         }
         try {
-            PFE updatedPFE = pfeService.updatePFEStatus(pfe, request, teacherId);
+            PFE updatedPFE = pfeService.updatePFEStatus(pfe, request, authId);
 
             if (request.getStatus() == SubmissionStatus.REJECTED && updatedPFE.getReportFile() != null) {
                 Long fileId = updatedPFE.getReportFile().getId();
@@ -121,7 +121,7 @@ public class TeacherReviewController {
     public ResponseEntity<ApiResponse<PFE>> addRapporteurFeedback(
             @PathVariable Long pfeId,
             @Valid @RequestBody RapporteurFeedbackRequest request,
-            @RequestHeader("X-User-Id") Long rapporteurId
+            @RequestHeader("X-Auth-Id") Long authId
     ) {
         PFE pfe = pfeService.getPFEById(pfeId);
         if (pfe == null) {
@@ -131,7 +131,7 @@ public class TeacherReviewController {
         }
 
         // Check if the user is the rapporteur
-        if (!pfe.getRapporteurId().equals(rapporteurId)) {
+        if (!pfe.getRapporteurAuthId().equals(authId)) {
             return ResponseEntity.status(403).body(
                     ApiResponse.error("Forbidden", "You are not the rapporteur for this PFE")
             );

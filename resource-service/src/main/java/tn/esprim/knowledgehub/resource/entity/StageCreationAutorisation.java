@@ -19,7 +19,8 @@ public class StageCreationAutorisation {
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     private Long id;
-    private Long studentId;
+    @Column(name = "student_id")
+    private Long studentAuthId;
     @CreationTimestamp
     @Temporal(TemporalType.TIMESTAMP)
     @Column(nullable = false, updatable = false)

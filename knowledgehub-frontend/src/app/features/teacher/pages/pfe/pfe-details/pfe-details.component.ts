@@ -51,8 +51,8 @@ export class PfeDetailsComponent implements OnInit {
   }
 
   isAssignedRapporteur(): boolean {
-    const currentUserId = this.authService.getUserId();
-    return !!currentUserId && this.pfe?.rapporteurId === currentUserId;
+    const currentAuthId = this.authService.getAuthId();
+    return !!currentAuthId && this.pfe?.rapporteurAuthId === currentAuthId;
   }
 
   submitRapporteurFeedback(): void {

@@ -23,15 +23,15 @@ export class NotificationApiService {
     );
   }
 
-  getNotificationsByUserId(userId: string): Observable<Notification[]> {
+  getNotificationsByAuthId(authId: string): Observable<Notification[]> {
     return this.http.get<Notification[]>(
-      `${this.baseUrl}/api/notifications/user/${userId}`,
+      `${this.baseUrl}/api/notifications/user/${authId}`,
     );
   }
 
-  getUnreadNotifications(userId: string): Observable<Notification[]> {
+  getUnreadNotifications(authId: string): Observable<Notification[]> {
     return this.http.get<Notification[]>(
-      `${this.baseUrl}/api/notifications/user/${userId}/unread`,
+      `${this.baseUrl}/api/notifications/user/${authId}/unread`,
     );
   }
 
@@ -42,9 +42,9 @@ export class NotificationApiService {
     );
   }
 
-  markAllAsRead(userId: string): Observable<void> {
+  markAllAsRead(authId: string): Observable<void> {
     return this.http.put<void>(
-      `${this.baseUrl}/api/notifications/user/${userId}/read-all`,
+      `${this.baseUrl}/api/notifications/user/${authId}/read-all`,
       null,
     );
   }
@@ -55,9 +55,9 @@ export class NotificationApiService {
     );
   }
 
-  getUnreadCount(userId: string): Observable<number> {
+  getUnreadCount(authId: string): Observable<number> {
     return this.http.get<number>(
-      `${this.baseUrl}/api/notifications/user/${userId}/unread-count`,
+      `${this.baseUrl}/api/notifications/user/${authId}/unread-count`,
     );
   }
 }

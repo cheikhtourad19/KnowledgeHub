@@ -7,6 +7,7 @@ import lombok.*;
 import lombok.experimental.SuperBuilder;
 
 @Entity
+@Table(indexes = @Index(name = "idx_student_auth_id", columnList = "authId"))
 @Getter
 @Setter
 @NoArgsConstructor

@@ -137,7 +137,7 @@ public class AdminController {
                     ApiResponse.builder()
                             .success(true)
                             .data(
-                                    studentService.addStudentToClasse(request.getStudentId(),request.getClassId())
+                                    studentService.addStudentToClasse(request.getAuthId(),request.getClassId())
                             )
                             .message("Student added to classe successfully")
                             .build()
@@ -161,11 +161,11 @@ public class AdminController {
 
         }
         Long classId= request.getClassId();
-        List<Long> studentIds = request.getStudentId();
+        List<Long> authIds = request.getAuthIds();
         List<Student> students = new ArrayList<>();
-        for (Long studentId : studentIds) {
+        for (Long authId : authIds) {
             try {
-               students.add( studentService.addStudentToClasse(studentId, classId));
+               students.add( studentService.addStudentToClasse(authId, classId));
 
             } catch (Exception e) {
                 continue;

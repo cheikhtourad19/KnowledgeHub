@@ -6,6 +6,6 @@ import lombok.Data;
 @Data
 public class AssignJury {
 
-    private Long juryId;
-    private Long reporteur_id;
+    private Long juryAuthId;
+    private Long reporteurAuthId;
 }

@@ -21,9 +21,9 @@ public class DemandePFE {
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     private Long id;
 
-    // Student info - extracted from UserService via X-User-Id header
-    @Column(nullable = false)
-    private Long studentId;
+    // Student info - extracted from UserService via X-Auth-Id header
+    @Column(name = "student_id", nullable = false)
+    private Long studentAuthId;
 
     @Column(nullable = false)
     private String studentName;
@@ -83,7 +83,7 @@ public class DemandePFE {
     @Column(columnDefinition = "TEXT")
     private String adminFeedback;
 
-    private Long reviewedByAdminId;
+    private Long reviewedByAdminAuthId;
     private String reviewedByAdminName;
 
     @Temporal(TemporalType.TIMESTAMP)

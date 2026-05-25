@@ -26,7 +26,7 @@ export class StageDetailsComponent implements OnInit {
 
   // Jury modal
   showSupervisorModal = false;
-  selectedSupervisorId: number | null = null;
+  selectedSupervisorAuthId: number | null = null;
 
   // Status confirmation modal
   showStatusConfirmModal = false;

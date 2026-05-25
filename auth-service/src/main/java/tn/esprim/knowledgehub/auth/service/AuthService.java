@@ -71,25 +71,13 @@ public class AuthService {
         authUser.setLastLogin(LocalDateTime.now());
         authUserRepository.save(authUser);
 
-        // Fetch userId from user-service based on role
-        Long userId = null;
-        if (authUser.getRole() == AuthUser.Role.STUDENT) {
-            userId = userServiceClient.getStudentIdByAuthId(authUser.getId().toString());
-        } else if (authUser.getRole() == AuthUser.Role.TEACHER) {
-            userId = userServiceClient.getTeacherIdByAuthId(authUser.getId().toString());
-        }
-        else {
-            userId=userServiceClient.getAdminIdByAuthId(authUser.getId().toString());
-        }
-
         String token = jwtUtil.generateToken(
                 authUser.getUsername(),
                 authUser.getId().toString(),
-                userId != null ? userId.toString() : null,
                 authUser.getRole().name()
         );
 
-        return AuthResponse.authSuccess(token, authUser.getUsername(), authUser.getEmail(), authUser.getRole(), authUser.getId(), userId);
+        return AuthResponse.authSuccess(token, authUser.getUsername(), authUser.getEmail(), authUser.getRole(), authUser.getId());
     }
 
     @Transactional
@@ -368,7 +356,6 @@ public class AuthService {
                     .valid(true)
                     .username(claims.getSubject())
                     .authId(claims.get("authId", String.class))
-                    .userId(claims.get("userId", String.class))
                     .role(claims.get("role", String.class))
                     .build();
         } catch (Exception e) {

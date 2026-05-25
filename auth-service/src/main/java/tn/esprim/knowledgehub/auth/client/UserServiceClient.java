@@ -125,76 +125,21 @@ public class UserServiceClient {
         }
     }
 
-    public Long getStudentIdByAuthId(String authId) {
+    public void deleteStudent(Long authId) {
         try {
-            String url = userServiceUrl + "/api/students/by-auth-id/" + authId;
-            ResponseEntity<String> response = restTemplate.getForEntity(url, String.class);
-
-            JsonNode root = objectMapper.readTree(response.getBody());
-            JsonNode data = root.get("data");
-            if (data != null && data.has("studentId")) {
-                return data.get("studentId").asLong();
-            }
-            log.warn("Student not found for authId: {}", authId);
-            return null;
-        } catch (Exception e) {
-            log.error("Error fetching student by authId: {}", e.getMessage());
-            return null;
-        }
-    }
-
-    public Long getTeacherIdByAuthId(String authId) {
-        try {
-            String url = userServiceUrl + "/api/teachers/by-auth-id/" + authId;
-            ResponseEntity<String> response = restTemplate.getForEntity(url, String.class);
-
-            JsonNode root = objectMapper.readTree(response.getBody());
-            JsonNode data = root.get("data");
-            if (data != null && data.has("teacherId")) {
-                return data.get("teacherId").asLong();
-            }
-            log.warn("Teacher not found for authId: {}", authId);
-            return null;
-        } catch (Exception e) {
-            log.error("Error fetching teacher by authId: {}", e.getMessage());
-            return null;
-        }
-    }
-    public Long getAdminIdByAuthId(String authId) {
-        try {
-            String url = userServiceUrl + "/api/admin/by-Authid/" + authId;
-            ResponseEntity<String> response = restTemplate.getForEntity(url, String.class);
-
-            JsonNode root = objectMapper.readTree(response.getBody());
-            JsonNode data = root.get("data");
-            if (data != null && data.has("id")) {
-                return data.get("id").asLong();
-            }
-            log.warn("admin not found for authId: {}", authId);
-            return null;
-        } catch (Exception e) {
-            log.error("Error fetching teacher by authId: {}", e.getMessage());
-            return null;
-        }
-    }
-
-    public void deleteStudent(Long userId) {
-
-        try {
-            String url = userServiceUrl + "/api/students/delete/" + userId;
+            String url = userServiceUrl + "/api/students/delete/" + authId;
             restTemplate.delete(url, String.class);
         } catch (Exception e) {
-            log.error("Error deleting user: {}", e.getMessage());
+            log.error("Error deleting student by authId {}: {}", authId, e.getMessage());
         }
     }
 
-    public void deleteTeacher(Long userId) {
-
+    public void deleteTeacher(Long authId) {
         try {
-            String url = userServiceUrl + "/api/teachers/delete/" + userId;
+            String url = userServiceUrl + "/api/teachers/delete/" + authId;
             restTemplate.delete(url, String.class);
-        }catch (Exception e) {
-            log.error("Error deleting user: {}", e.getMessage());
+        } catch (Exception e) {
+            log.error("Error deleting teacher by authId {}: {}", authId, e.getMessage());
         }
     }
 

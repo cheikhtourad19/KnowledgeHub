@@ -19,8 +19,8 @@ public class CreatePFERequest {
     @NotNull(message = "Academic year is required")
     private Integer year;
 
-    @NotNull(message = "Student ID is required")
-    private Long studentId;
+    @NotNull(message = "Student auth ID is required")
+    private Long studentAuthId;
     private String studentName;
     private String studentEmail;
 
@@ -28,14 +28,14 @@ public class CreatePFERequest {
     private Date dateDebut;
     private Date dateFin;
 
-    @NotNull(message = "Supervisor ID is required")
-    private Long supervisorId;
+    @NotNull(message = "Supervisor auth ID is required")
+    private Long supervisorAuthId;
     private String supervisorName;
 
 
-    private Long chefDeJuryId;
+    private Long chefDeJuryAuthId;
     private String chefDeJuryName;
 
-    private Long rapporteurId;
+    private Long rapporteurAuthId;
     private String rapporteurName;
 }

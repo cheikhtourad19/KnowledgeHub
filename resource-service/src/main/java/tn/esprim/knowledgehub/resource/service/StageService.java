@@ -49,26 +49,26 @@ public class StageService {
      * Si c'est un type différent, une nouvelle autorisation est créée
      */
     @Transactional
-    public void authorizeStudent(Long studentId, TypeStage typeStage){
-        log.info("Authorizing student {} for stage type {}", studentId, typeStage);
+    public void authorizeStudent(Long authId, TypeStage typeStage){
+        log.info("Authorizing student {} for stage type {}", authId, typeStage);
 
         int currentYear = LocalDate.now().getYear();
 
         // Vérifier si une autorisation du même type existe déjà pour l'année en cours
         Optional<StageCreationAutorisation> existingAuth = stageCreationAutorisationRepository
-                .findByStudentIdAndTypeStageAndYear(studentId, typeStage, currentYear);
+                .findByStudentAuthIdAndTypeStageAndYear(authId, typeStage, currentYear);
 
         if (existingAuth.isPresent()) {
             // Même type déjà autorisé - mise à jour (refresh)
-            log.info("Authorization already exists for student {} for type {} in year {}", studentId, typeStage, currentYear);
+            log.info("Authorization already exists for student {} for type {} in year {}", authId, typeStage, currentYear);
         } else {
             // Type différent ou nouvelle autorisation - créer une nouvelle entrée
             StageCreationAutorisation autorisation = StageCreationAutorisation.builder()
-                    .studentId(studentId)
+                    .studentAuthId(authId)
                     .typeStage(typeStage)
                     .build();
             stageCreationAutorisationRepository.save(autorisation);
-            log.info("Created new authorization for student {} for type {}", studentId, typeStage);
+            log.info("Created new authorization for student {} for type {}", authId, typeStage);
         }
     }
 
@@ -94,10 +94,10 @@ public class StageService {
             int authorizedCount = 0;
             for (StudentDTO student : students) {
                 try {
-                    authorizeStudent(student.getStudentId(), typeStage);
+                    authorizeStudent(Long.valueOf(student.getAuthId()), typeStage);
                     authorizedCount++;
                 } catch (Exception e) {
-                    log.error("Error authorizing student {}: {}", student.getStudentId(), e.getMessage());
+                    log.error("Error authorizing student {}: {}", student.getAuthId(), e.getMessage());
                     // Continue avec les autres étudiants
                 }
             }
@@ -116,8 +116,8 @@ public class StageService {
      * Créer un stage si l'étudiant a une autorisation valide pour le type choisi et l'année en cours
      */
     @Transactional
-    public StageResponse createStageForStudent(Long userId, StudentCreateStageRequest request) {
-        log.info("Creating stage for user ID: {} with request: {}", userId, request);
+    public StageResponse createStageForStudent(Long authId, StudentCreateStageRequest request) {
+        log.info("Creating stage for auth ID: {} with request: {}", authId, request);
 
         if (request.getConventionFile() == null || request.getConventionFile().isEmpty()) {
             throw new RuntimeException("La convention de stage est obligatoire");
@@ -132,11 +132,11 @@ public class StageService {
 
         // Vérifier si l'étudiant a une autorisation valide pour ce type de stage et cette année
         Optional<StageCreationAutorisation> autorisationOpt = stageCreationAutorisationRepository
-                .findByStudentIdAndTypeStageAndYear(userId, request.getTypeStage(), currentYear);
+                .findByStudentAuthIdAndTypeStageAndYear(authId, request.getTypeStage(), currentYear);
 
         if (autorisationOpt.isEmpty()) {
             log.error("No authorization found for student {} for type {} in year {}",
-                    userId, request.getTypeStage(), currentYear);
+                    authId, request.getTypeStage(), currentYear);
             throw new RuntimeException(
                     "Vous n'avez pas d'autorisation pour créer un stage de type " + request.getTypeStage() +
                     ". Veuillez contacter l'administration."
@@ -148,15 +148,15 @@ public class StageService {
         // Récupérer les informations de l'étudiant depuis le user-service
         StudentDTO student;
         try {
-            var response = userServiceClient.getStudentById(userId);
+            var response = userServiceClient.getStudentByAuthId(String.valueOf(authId));
             if (response == null || response.getData() == null) {
-                log.error("Student not found with ID: {}", userId);
-                throw new RuntimeException("Étudiant non trouvé avec l'ID: " + userId);
+                log.error("Student not found with auth ID: {}", authId);
+                throw new RuntimeException("Étudiant non trouvé avec l'auth ID: " + authId);
             }
             student = response.getData();
             log.info("Retrieved student info: {} {}", student.getNom(), student.getPrenom());
         } catch (Exception e) {
-            log.error("Error retrieving student info for ID {}: {}", userId, e.getMessage());
+            log.error("Error retrieving student info for auth ID {}: {}", authId, e.getMessage());
             throw new RuntimeException("Erreur lors de la récupération des informations de l'étudiant: " + e.getMessage());
         }
 
@@ -167,11 +167,11 @@ public class StageService {
                 .durationMonths(request.getDurationMonths())
                 .typeStage(request.getTypeStage())
                 .year(currentYear)
-                .studentId(userId)
+                .studentAuthId(authId)
                 .studentName(student.getNom() + " " + student.getPrenom())
                 .studentEmail(student.getEmail())
-                // supervisorId sera assigné par l'admin plus tard
-                .supervisorId(null)
+                // supervisorAuthId sera assigné par l'admin plus tard
+                .supervisorAuthId(null)
                 .supervisorName(null)
             .cloture(false)
             .canEdit(false)
@@ -180,7 +180,7 @@ public class StageService {
         var uploadedConvention = fileService.uploadFile(
             request.getConventionFile(),
             FileType.CONVENTION_STAGE,
-            userId,
+            authId,
             student.getEmail(),
             "stage",
             "Convention de stage - " + request.getTitle(),
@@ -213,9 +213,9 @@ public class StageService {
     /**
      * Récupérer tous les stages supervisés par un enseignant
      */
-    public List<StageResponse> getStagesBySupervisor(Long supervisorId) {
-        log.info("Retrieving stages for supervisor ID: {}", supervisorId);
-        List<Stage> stages = stageRepository.findBySupervisorIdWithFiles(supervisorId);
+    public List<StageResponse> getStagesBySupervisor(Long authId) {
+        log.info("Retrieving stages for supervisor auth ID: {}", authId);
+        List<Stage> stages = stageRepository.findBySupervisorAuthIdWithFiles(authId);
         return stages.stream()
                 .map(this::mapToStageResponse)
                 .collect(Collectors.toList());
@@ -225,8 +225,8 @@ public class StageService {
      * Assigner un superviseur (enseignant) à un stage
      */
     @Transactional
-    public StageResponse assignSupervisor(Long stageId, Long supervisorId) {
-        log.info("Assigning supervisor {} to stage {}", supervisorId, stageId);
+    public StageResponse assignSupervisor(Long stageId, Long authId) {
+        log.info("Assigning supervisor {} to stage {}", authId, stageId);
 
         // Vérifier que le stage existe
         Stage stage = stageRepository.findById(stageId)
@@ -237,19 +237,19 @@ public class StageService {
 
         // Récupérer les informations de l'enseignant depuis le user-service
         try {
-            var response = userServiceClient.getTeacherById(supervisorId);
+            var response = userServiceClient.getTeacherByAuthId(String.valueOf(authId));
             if (response == null || response.getData() == null) {
-                log.error("Teacher not found with ID: {}", supervisorId);
-                throw new RuntimeException("Enseignant non trouvé avec l'ID: " + supervisorId);
+                log.error("Teacher not found with auth ID: {}", authId);
+                throw new RuntimeException("Enseignant non trouvé avec l'auth ID: " + authId);
             }
             var teacher = response.getData();
 
             // Assigner le superviseur au stage
-            stage.setSupervisorId(supervisorId);
+            stage.setSupervisorAuthId(authId);
             stage.setSupervisorName(teacher.getNom() + " " + teacher.getPrenom());
 
             Stage updatedStage = stageRepository.save(stage);
-            log.info("Successfully assigned supervisor {} to stage {}", supervisorId, stageId);
+            log.info("Successfully assigned supervisor {} to stage {}", authId, stageId);
 
             return mapToStageResponse(updatedStage);
 
@@ -281,11 +281,11 @@ public class StageService {
     }
 
     @Transactional
-    public StageResponse closeStageBySupervisor(Long stageId, Long supervisorId) {
+    public StageResponse closeStageBySupervisor(Long stageId, Long authId) {
         Stage stage = stageRepository.findById(stageId)
                 .orElseThrow(() -> new RuntimeException("Stage non trouvé avec l'ID: " + stageId));
 
-        if (stage.getSupervisorId() == null || !stage.getSupervisorId().equals(supervisorId)) {
+        if (stage.getSupervisorAuthId() == null || !stage.getSupervisorAuthId().equals(authId)) {
             throw new RuntimeException("Vous n'êtes pas autorisé à clôturer ce stage");
         }
 
@@ -296,11 +296,11 @@ public class StageService {
     }
 
     @Transactional
-    public StageResponse openStageBySupervisor(Long stageId, Long supervisorId) {
+    public StageResponse openStageBySupervisor(Long stageId, Long authId) {
         Stage stage = stageRepository.findById(stageId)
                 .orElseThrow(() -> new RuntimeException("Stage non trouvé avec l'ID: " + stageId));
 
-        if (stage.getSupervisorId() == null || !stage.getSupervisorId().equals(supervisorId)) {
+        if (stage.getSupervisorAuthId() == null || !stage.getSupervisorAuthId().equals(authId)) {
             throw new RuntimeException("Vous n'êtes pas autorisé à rouvrir ce stage");
         }
 
@@ -340,7 +340,7 @@ public class StageService {
             fileService.deleteFile(stage.getConventionFileId());
         }
         StageCreationAutorisation autorisation = stageCreationAutorisationRepository
-                .findByStudentIdAndTypeStage(stage.getStudentId(), stage.getTypeStage())
+                .findByStudentAuthIdAndTypeStage(stage.getStudentAuthId(), stage.getTypeStage())
                 .orElse(null);
         if (autorisation != null) {
             stageCreationAutorisationRepository.delete(autorisation);
@@ -349,11 +349,11 @@ public class StageService {
     }
 
     @Transactional
-    public StageResponse updateStageMetadataByStudent(Long stageId, Long studentId, StudentUpdateStageMetadataRequest request) {
+    public StageResponse updateStageMetadataByStudent(Long stageId, Long authId, StudentUpdateStageMetadataRequest request) {
         Stage stage = stageRepository.findById(stageId)
                 .orElseThrow(() -> new RuntimeException("Stage non trouvé avec l'ID: " + stageId));
 
-        if (!stage.getStudentId().equals(studentId)) {
+        if (!stage.getStudentAuthId().equals(authId)) {
             throw new RuntimeException("Vous n'êtes pas autorisé à modifier ce stage");
         }
 
@@ -391,10 +391,10 @@ public class StageService {
                 .typeStage(stage.getTypeStage())
                 .year(stage.getYear())
                 .durationMonths(stage.getDurationMonths())
-                .studentId(stage.getStudentId())
+                .studentAuthId(stage.getStudentAuthId())
                 .studentName(stage.getStudentName())
                 .studentEmail(stage.getStudentEmail())
-                .supervisorId(stage.getSupervisorId())
+                .supervisorAuthId(stage.getSupervisorAuthId())
                 .supervisorName(stage.getSupervisorName())
                 .supervisorFeedback(stage.getSupervisorFeedback())
                 .cloture(stage.getCloture())
@@ -449,9 +449,9 @@ public class StageService {
     /**
      * Get all stages for a specific student
      */
-    public List<StageResponse> getStagesByStudentId(Long studentId) {
-        log.info("Retrieving stages for student ID: {}", studentId);
-        List<Stage> stages = stageRepository.findByStudentIdWithFiles(studentId);
+    public List<StageResponse> getStagesByStudentAuthId(Long authId) {
+        log.info("Retrieving stages for student auth ID: {}", authId);
+        List<Stage> stages = stageRepository.findByStudentAuthIdWithFiles(authId);
         return stages.stream()
                 .map(this::mapToStageResponse)
                 .collect(Collectors.toList());
@@ -460,9 +460,9 @@ public class StageService {
     /**
      * Get all stage authorizations for a student
      */
-    public List<StageCreationAutorisation> getStudentAuthorizations(Long studentId) {
-        log.info("Checking authorizations for student ID: {}", studentId);
-        return stageCreationAutorisationRepository.findByStudentId(studentId);
+    public List<StageCreationAutorisation> getStudentAuthorizations(Long authId) {
+        log.info("Checking authorizations for student auth ID: {}", authId);
+        return stageCreationAutorisationRepository.findByStudentAuthId(authId);
     }
 }
 

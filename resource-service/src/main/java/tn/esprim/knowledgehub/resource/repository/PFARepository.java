@@ -12,13 +12,13 @@ import java.util.Optional;
 @Repository
 public interface PFARepository extends JpaRepository<PFA, Long> {
 
-    List<PFA> findByStudentId(Long studentId);
+    List<PFA> findByStudentAuthId(Long studentAuthId);
 
-    List<PFA> findBySupervisorId(Long supervisorId);
+    List<PFA> findBySupervisorAuthId(Long supervisorAuthId);
 
     List<PFA> findByStatus(SubmissionStatus status);
 
-    List<PFA> findBySupervisorIdAndStatus(Long supervisorId, SubmissionStatus status);
+    List<PFA> findBySupervisorAuthIdAndStatus(Long supervisorAuthId, SubmissionStatus status);
 
 
     List<PFA> findByYear(Integer year);

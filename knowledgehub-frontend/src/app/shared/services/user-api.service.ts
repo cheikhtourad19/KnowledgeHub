@@ -15,13 +15,13 @@ import { BulkUserCreationResponse } from '../../shared/models/user-service/respo
 })
 export class UserApiService {
   bulkAssignStudentsToClass(arg0: {
-    studentIds: number[];
+    authIds: number[];
     classId: number;
   }): Observable<ApiResponse<Student[]>> {
     return this.http.post<ApiResponse<Student[]>>(
       `${this.baseUrl}/api/admin/add-students-classes`,
       {
-        studentId: arg0.studentIds,
+        authIds: arg0.authIds,
         classId: arg0.classId,
       },
     );
@@ -121,9 +121,9 @@ export class UserApiService {
     );
   }
 
-  deleteUser(id: number): Observable<ApiResponse<void>> {
+  deleteUser(authId: number): Observable<ApiResponse<void>> {
     return this.http.delete<ApiResponse<void>>(
-      `${this.authBaseUrl}/api/delete/${id}`,
+      `${this.authBaseUrl}/api/delete/${authId}`,
     );
   }
 

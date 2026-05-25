@@ -25,7 +25,7 @@ public class FileUploadResponse {
     private String storagePath;
     private FileType fileType;
     private Date uploadDate;
-    private Long uploadedByUserId;
+    private Long uploadedByAuthId;
     private String uploadedByUserName;
     private Integer pageCount;
     private Boolean isPublished;

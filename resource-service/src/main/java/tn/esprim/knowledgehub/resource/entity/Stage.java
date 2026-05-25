@@ -35,15 +35,16 @@ public class Stage {
     private Integer durationMonths;
 
 
-    @Column(nullable = false)
-    private Long studentId;
+    @Column(name = "student_id", nullable = false)
+    private Long studentAuthId;
 
     private String studentName;
 
     private String studentEmail;
 
-    // supervisorId sera assigné par l'admin plus tard
-    private Long supervisorId;
+    // supervisorAuthId sera assigné par l'admin plus tard
+    @Column(name = "supervisor_id")
+    private Long supervisorAuthId;
 
     private String supervisorName;
 

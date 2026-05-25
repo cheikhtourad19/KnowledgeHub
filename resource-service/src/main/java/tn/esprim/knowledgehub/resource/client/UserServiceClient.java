@@ -22,12 +22,12 @@ public interface UserServiceClient {
     @GetMapping("/api/admin/classe/{id}")
     ApiResponse<ClasseDTO> getClasseById(@PathVariable Long id);
 
-    @GetMapping("/api/students/by-id/{id}")
-    ApiResponse<StudentDTO> getStudentById(@PathVariable Long id);
+    @GetMapping("/api/students/by-auth-id/{authId}")
+    ApiResponse<StudentDTO> getStudentByAuthId(@PathVariable String authId);
 
     @GetMapping("/api/admin/classe/{classId}/students")
     ApiResponse<List<StudentDTO>> getStudentsByClassId(@PathVariable Long classId);
 
-    @GetMapping("/api/teachers/by-id/{id}")
-    ApiResponse<TeacherDTO> getTeacherById(@PathVariable Long id);
+    @GetMapping("/api/teachers/by-auth-id/{authId}")
+    ApiResponse<TeacherDTO> getTeacherByAuthId(@PathVariable String authId);
 }

@@ -407,7 +407,7 @@
               ID Étudiant
             </p>
             <p class="text-sm text-gray-900 dark:text-white font-mono">
-              {{ pfe_details.studentId }}
+              {{ pfe_details.studentAuthId }}
             </p>
           </div>
         </div>
@@ -668,10 +668,10 @@
         Chef de Jury <span class="text-[#C60C30]">*</span>
       </label>
       <p-select
-        [(ngModel)]="selectedJuryId"
+        [(ngModel)]="selectedJuryAuthId"
         [options]="list_teachers"
         optionLabel="fullName"
-        optionValue="id"
+        optionValue="authId"
         placeholder="Sélectionner un enseignant…"
         [filter]="true"
         filterBy="fullName"
@@ -697,7 +697,7 @@
         icon="pi pi-check"
         (click)="confirmJury()"
         [loading]="actionLoading"
-        [disabled]="!selectedJuryId"
+        [disabled]="!selectedJuryAuthId"
         class="!bg-[#333333] !border-[#333333] !text-white hover:!bg-black"
       ></button>
     </div>
@@ -724,10 +724,10 @@
         Rapporteur <span class="text-[#C60C30]">*</span>
       </label>
       <p-select
-        [(ngModel)]="selectedRapporteurId"
+        [(ngModel)]="selectedRapporteurAuthId"
         [options]="list_teachers"
         optionLabel="fullName"
-        optionValue="id"
+        optionValue="authId"
         placeholder="Sélectionner un enseignant…"
         [filter]="true"
         filterBy="fullName"
@@ -753,7 +753,7 @@
         icon="pi pi-check"
         (click)="confirmRapporteur()"
         [loading]="actionLoading"
-        [disabled]="!selectedRapporteurId"
+        [disabled]="!selectedRapporteurAuthId"
         class="!bg-[#C60C30] !border-[#C60C30] !text-white hover:!bg-[#a00828]"
       ></button>
     </div>

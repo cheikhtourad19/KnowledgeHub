@@ -11,15 +11,15 @@ import java.util.Optional;
 
 public interface StageCreationAutorisationRepository extends JpaRepository<StageCreationAutorisation, Long> {
 
-    List<StageCreationAutorisation> findByStudentId(Long studentId);
+    List<StageCreationAutorisation> findByStudentAuthId(Long studentAuthId);
 
-    Optional<StageCreationAutorisation> findByStudentIdAndTypeStage(Long studentId, TypeStage typeStage);
+    Optional<StageCreationAutorisation> findByStudentAuthIdAndTypeStage(Long studentAuthId, TypeStage typeStage);
 
-    @Query("SELECT s FROM StageCreationAutorisation s WHERE s.studentId = :studentId " +
+    @Query("SELECT s FROM StageCreationAutorisation s WHERE s.studentAuthId = :studentAuthId " +
            "AND s.typeStage = :typeStage " +
            "AND YEAR(s.createdAt) = :year")
-    Optional<StageCreationAutorisation> findByStudentIdAndTypeStageAndYear(
-            @Param("studentId") Long studentId,
+    Optional<StageCreationAutorisation> findByStudentAuthIdAndTypeStageAndYear(
+            @Param("studentAuthId") Long studentAuthId,
             @Param("typeStage") TypeStage typeStage,
             @Param("year") Integer year
     );

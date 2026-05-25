@@ -76,7 +76,7 @@ public class FileService {
      *
      * @param multipartFile The file to upload
      * @param fileType The type of file (REPORT, EDUCATIONAL_MATERIAL, etc.)
-     * @param uploadedByUserId The ID of the user uploading the file
+     * @param uploadedByAuthId The auth ID of the user uploading the file
      * @param uploadedByUserName The name of the user uploading the file
      * @param bucketType The bucket type (documents, pfa, pfe, stage)
      * @param title The title of the file
@@ -87,7 +87,7 @@ public class FileService {
     public FileUploadResponse uploadFile(
             MultipartFile multipartFile,
             FileType fileType,
-            Long uploadedByUserId,
+            Long uploadedByAuthId,
             String uploadedByUserName,
             String bucketType,
             String title,
@@ -97,7 +97,7 @@ public class FileService {
         return uploadFile(
                 multipartFile,
                 fileType,
-                uploadedByUserId,
+                uploadedByAuthId,
                 uploadedByUserName,
                 bucketType,
                 title,
@@ -112,7 +112,7 @@ public class FileService {
     public FileUploadResponse uploadFile(
             MultipartFile multipartFile,
             FileType fileType,
-            Long uploadedByUserId,
+            Long uploadedByAuthId,
             String uploadedByUserName,
             String bucketType,
             String title,
@@ -173,7 +173,7 @@ public class FileService {
                     .storagePath(bucketName + "/" + uniqueFileName)
                     .coverImagePath(coverUploadResult != null ? coverUploadResult.storagePath() : null)
                     .coverOriginalFileName(coverUploadResult != null ? coverUploadResult.originalFileName() : null)
-                    .uploadedByUserId(uploadedByUserId)
+                    .uploadedByAuthId(uploadedByAuthId)
                     .uploadedByUserName(uploadedByUserName)
                     .pageCount(pageCount)
                     .isPublished(published)
@@ -192,7 +192,7 @@ public class FileService {
                     .storagePath(file.getStoragePath())
                     .fileType(fileType)
                     .uploadDate(file.getUploadDate())
-                    .uploadedByUserId(uploadedByUserId)
+                    .uploadedByAuthId(uploadedByAuthId)
                     .uploadedByUserName(uploadedByUserName)
                     .pageCount(pageCount)
                     .isPublished(published)
@@ -271,8 +271,8 @@ public class FileService {
         }
     }
 
-    public List<File> getFilesByUserId(Long userId) {
-        return fileRepository.findByUploadedByUserId(userId);
+    public List<File> getFilesByAuthId(Long authId) {
+        return fileRepository.findByUploadedByAuthId(authId);
     }
 
 
@@ -336,8 +336,8 @@ public class FileService {
     }
 
 
-    public List<File> getFilesByUploader(Long userId) {
-        return fileRepository.findByUploadedByUserId(userId);
+    public List<File> getFilesByUploader(Long authId) {
+        return fileRepository.findByUploadedByAuthId(authId);
     }
 
 

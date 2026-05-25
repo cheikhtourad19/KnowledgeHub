@@ -49,15 +49,15 @@ public class StudentPFAController {
                     ApiResponse.error("Forbidden", "Only admins and teachers can create PFA")
             );
         }
-        StudentDTO student = userServiceClient.getStudentById(request.getStudentId()).getData();
-        TeacherDTO teacher= userServiceClient.getTeacherById(request.getSupervisorId()).getData();
+        StudentDTO student = userServiceClient.getStudentByAuthId(String.valueOf(request.getStudentAuthId())).getData();
+        TeacherDTO teacher= userServiceClient.getTeacherByAuthId(String.valueOf(request.getSupervisorAuthId())).getData();
         PFA pfa = PFA.builder()
-                .studentId(request.getStudentId())
+                .studentAuthId(Long.valueOf(student.getAuthId()))
                 .title(request.getTitle())
                 .year(request.getYear())
                 .status(SubmissionStatus.CREATED)
                 .build();
-        pfa.setSupervisorId(teacher.getTeacherId());
+        pfa.setSupervisorAuthId(Long.valueOf(teacher.getAuthId()));
         pfa.setSupervisorName(teacher.getNom()+" "+teacher.getPrenom());
         pfa.setStudentEmail(student.getEmail());
         pfa.setStudentName(student.getNom()+" "+student.getPrenom());
@@ -70,7 +70,7 @@ public class StudentPFAController {
                         .subject("Vous avez été assigner un PFA")
                         .content("Vous avez été assigner un PFA veillez consulter votre espace pour plus de détails" +
                                 "C'est dans cette espace que vous aurez a deposer vos document demandés")
-                        .userId(student.getStudentId().toString())
+                        .userId(student.getAuthId())
                         .build()
         );
         return ResponseEntity.ok(
@@ -88,11 +88,11 @@ public class StudentPFAController {
             @RequestParam(value = "title", required = false) String title,
             @RequestParam(value = "description", required = false) String description,
             @RequestParam("file") MultipartFile file,
-            @RequestHeader(value="X-User-Id") String userId
+            @RequestHeader(value="X-Auth-Id") Long authId
     ){
         PFA pfa = pfaService.getPFAById(idPFA);
-        StudentDTO student = userServiceClient.getStudentById(pfa.getStudentId()).getData();
-        if (!pfa.getStudentId().toString().equals(userId)){
+        StudentDTO student = userServiceClient.getStudentByAuthId(String.valueOf(pfa.getStudentAuthId())).getData();
+        if (!pfa.getStudentAuthId().equals(authId)){
             return ResponseEntity.status(HttpStatus.FORBIDDEN).body(
                     ApiResponse.error("Forbidden", "You are not allowed to upload files for this PFA")
             );
@@ -105,7 +105,7 @@ public class StudentPFAController {
         FileUploadResponse response = fileService.uploadFile(
                 file,
                 FileType.PFA_REPORT,
-                Long.parseLong(userId),
+                authId,
                 student.getEmail(),
                 "pfa",
                 title,
@@ -116,7 +116,7 @@ public class StudentPFAController {
         pfa.setReportFile(uploaded_file);
         pfa.setStatus(SubmissionStatus.SUBMITTED);
         pfaService.savePFA(pfa);
-        TeacherDTO teacherDTO=userServiceClient.getTeacherById(pfa.getSupervisorId()).getData();
+        TeacherDTO teacherDTO=userServiceClient.getTeacherByAuthId(String.valueOf(pfa.getSupervisorAuthId())).getData();
         notificationClient.sendNotificationAsync(
                 NotificationRequest.builder()
                         .type(NotificationType.EMAIL)
@@ -135,19 +135,19 @@ public class StudentPFAController {
     @GetMapping("/student-PFA")
     public ResponseEntity<ApiResponse> getStudentPFA(
             @RequestHeader(value="X-User-Role") String role
-            ,@RequestHeader(value="X-User-Id") Long userId
-            ,@RequestParam(required = false) Long studentId
+            ,@RequestHeader(value="X-Auth-Id") Long authId
+            ,@RequestParam(required = false) Long studentAuthId
     ){
-        if (!role.equals("STUDENT")) {
+        if (role.equals("STUDENT")) {
             return ResponseEntity.ok(
                     ApiResponse.success(
-                            pfaService.getPFAByStudent(userId),"pfa for student id: "+userId
+                            pfaService.getPFAByStudent(authId),"pfa for student auth: "+authId
                     )
             );
         }
         return ResponseEntity.ok(
                 ApiResponse.success(
-                        pfaService.getPFAByStudent(studentId),"pfa for student id: "+studentId
+                        pfaService.getPFAByStudent(studentAuthId),"pfa for student auth: "+studentAuthId
                 )
         );
 
@@ -155,7 +155,7 @@ public class StudentPFAController {
     @GetMapping("/teacher-PFA")
     public ResponseEntity<ApiResponse> getTeacherPFA(
             @RequestHeader(value="X-User-Role") String role,
-            @RequestHeader(value="X-User-Id") Long userId
+            @RequestHeader(value="X-Auth-Id") Long authId
     ){
         if (!role.equals("TEACHER") && !role.equals("ADMIN")) {
             return ResponseEntity.status(403).body(
@@ -163,7 +163,7 @@ public class StudentPFAController {
             );
         }
         return ResponseEntity.ok(
-                ApiResponse.success(pfaService.getPFABySupervisor(userId),"All PFA")
+                ApiResponse.success(pfaService.getPFABySupervisor(authId),"All PFA")
         );
     }
 
@@ -184,15 +184,15 @@ public class StudentPFAController {
     public ResponseEntity<ApiResponse> getPFAById(
             @PathVariable  Long id,
             @RequestHeader(value = "X-User-role") String role,
-            @RequestHeader(value = "X-User-Id") Long userId
+            @RequestHeader(value = "X-Auth-Id") Long authId
     ){
         PFA pfa=pfaService.getPFAById(id);
-        if (role.equals("STUDENT") && !pfa.getStudentId().equals(userId) ){
+        if (role.equals("STUDENT") && !pfa.getStudentAuthId().equals(authId) ){
             return ResponseEntity.status(403).body(
                     ApiResponse.error("Forbidden", "You are not allowed to access this PFA")
             );
         }
-        if (role.equals("TEACHER") && !pfa.getSupervisorId().equals(userId)){
+        if (role.equals("TEACHER") && !pfa.getSupervisorAuthId().equals(authId)){
             return ResponseEntity.status(403).body(
                     ApiResponse.error("Forbidden", "You are not allowed to access this PFA")
             );

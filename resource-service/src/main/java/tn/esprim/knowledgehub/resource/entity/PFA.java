@@ -32,15 +32,15 @@ public class PFA {
     private SubmissionStatus status;
 
     // User Service references
-    @Column(nullable = false)
-    private Long studentId;
+    @Column(name = "student_id", nullable = false)
+    private Long studentAuthId;
 
     private String studentName;
 
     private String studentEmail;
 
-    @Column(nullable = false)
-    private Long supervisorId;
+    @Column(name = "supervisor_id", nullable = false)
+    private Long supervisorAuthId;
 
     private String supervisorName;
 

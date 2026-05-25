@@ -54,11 +54,11 @@ public class PFEService {
 
 
 
-    public List<PFE> getPFEByJury(Long juryId){
-        return this.pfeRepository.findByChefDeJuryId(juryId);
+    public List<PFE> getPFEByJury(Long juryAuthId){
+        return this.pfeRepository.findByChefDeJuryAuthId(juryAuthId);
     }
-    public DemandePFE getDemandePFEByStudentId(Long studentId) {
-        return this.demandePFERepository.findByStudentId(studentId);
+    public DemandePFE getDemandePFEByStudentAuthId(Long studentAuthId) {
+        return this.demandePFERepository.findByStudentAuthId(studentAuthId);
     }
 
 
@@ -67,7 +67,7 @@ public class PFEService {
         PFE pfe = pfeRepository.findById(pfeId)
                 .orElseThrow(() -> new EntityNotFoundException("PFE not found: " + pfeId));
 
-        DemandePFE demande = demandePFERepository.findByStudentId(pfe.getStudentId());
+        DemandePFE demande = demandePFERepository.findByStudentAuthId(pfe.getStudentAuthId());
         if (demande != null) {
             if (demande.getAttestationFile() != null)
                 fileService.deleteFile(demande.getAttestationFile().getId());
@@ -82,8 +82,8 @@ public class PFEService {
         pfeRepository.delete(pfe);
     }
 
-    public List<PFE> getPFEByRapporteur(Long rapporteurId){
-        return this.pfeRepository.findByRapporteurId(rapporteurId);
+    public List<PFE> getPFEByRapporteur(Long rapporteurAuthId){
+        return this.pfeRepository.findByRapporteurAuthId(rapporteurAuthId);
     }
 
 
@@ -95,14 +95,14 @@ public class PFEService {
             return pfeRepository.save(pfe);
         }
         
-        TeacherDTO teacher = userServiceClient.getTeacherById(pfe.getSupervisorId()).getData();
+        TeacherDTO teacher = userServiceClient.getTeacherByAuthId(String.valueOf(pfe.getSupervisorAuthId())).getData();
         notificationClient.sendNotificationAsync(
                 NotificationRequest.builder()
                         .recipientEmail(teacher.getEmail())
                         .type(NotificationType.EMAIL)
                         .subject("Un PFE vous a été assigné")
                         .content("Un PFE vous a été assigné en tant qu'encadrant, vous pouvez suivre son avancement et consulter les depots de rapport de PFE")
-                        .userId(pfe.getStudentId().toString())
+                        .userId(pfe.getStudentAuthId().toString())
                         .build()
         );
         notificationClient.sendNotificationAsync(
@@ -111,7 +111,7 @@ public class PFEService {
                         .type(NotificationType.EMAIL)
                         .subject("Creation d'un depot de PFE")
                         .content("Apres examination de votre demande un espace de depot de PFE vous a été créé, vous pouvez y deposer votre rapport de PFE et suivre son avancement")
-                        .userId(pfe.getStudentId().toString())
+                        .userId(pfe.getStudentAuthId().toString())
                         .build()
         );
 
@@ -128,19 +128,20 @@ public class PFEService {
 
     }
     public void removeAllDemandes(){
-        demandePFERepository.deleteAll();
+        List<DemandePFE> demandes = this.demandePFERepository.findByStatus(DemandStatus.REJECTED);
+        demandePFERepository.deleteAll(demandes);
     }
 
     public PFE getPFEById(Long id) {
         return pfeRepository.findById(id).orElseThrow();
     }
 
-    public List<PFE> getPFEByStudent(Long studentId) {
-        return pfeRepository.findByStudentId(studentId);
+    public List<PFE> getPFEByStudent(Long authId) {
+        return pfeRepository.findByStudentAuthId(authId);
     }
 
-    public List<PFE> getPFEBySupervisor(Long supervisorId) {
-        return pfeRepository.findBySupervisorId(supervisorId);
+    public List<PFE> getPFEBySupervisor(Long authId) {
+        return pfeRepository.findBySupervisorAuthId(authId);
     }
 
     public List<PFE> getAllPFE() {
@@ -151,16 +152,16 @@ public class PFEService {
      * Create a DemandePFE with file upload
      * @param request The demand request data (only fields student needs to provide)
      * @param file The file to upload (convention de stage, etc.)
-     * @param userId The user ID from X-User-Id header (JWT token)
+     * @param authId The auth ID from X-Auth-Id header (JWT token)
      * @return The created DemandePFE
      */
-    public DemandePFE createDemandePFE(CreateDemandePFERequest request, MultipartFile file, Long userId) {
-        log.info("Creating DemandePFE for user ID: {}", userId);
+    public DemandePFE createDemandePFE(CreateDemandePFERequest request, MultipartFile file, Long authId) {
+        log.info("Creating DemandePFE for auth ID: {}", authId);
 
-        // Fetch student details from UserService using X-User-Id from JWT
-        StudentDTO student = userServiceClient.getStudentById(userId).getData();
+        // Fetch student details from UserService using X-Auth-Id from JWT
+        StudentDTO student = userServiceClient.getStudentByAuthId(String.valueOf(authId)).getData();
         if (student == null) {
-            throw new RuntimeException("Student not found with ID: " + userId);
+            throw new RuntimeException("Student not found with auth ID: " + authId);
         }
 
         // Build student name from UserService data
@@ -171,7 +172,7 @@ public class PFEService {
         FileUploadResponse fileUploadResponse = fileService.uploadFile(
                 file,
                 FileType.DEMANDE,
-                userId,
+                authId,
                 studentName,
                 "pfe",
                 request.getPfeTitle(),
@@ -186,8 +187,8 @@ public class PFEService {
 
         // Build DemandePFE entity with data from UserService (JWT) and form request
         DemandePFE demande = DemandePFE.builder()
-                // Student info from UserService (extracted via X-User-Id)
-                .studentId(student.getStudentId())
+                // Student info from UserService (extracted via X-Auth-Id)
+                .studentAuthId(student.getAuthId() != null ? Long.valueOf(student.getAuthId()) : authId)
                 .studentName(studentName)
                 .studentEmail(student.getEmail())
                 .studentClasse(studentClasse)
@@ -217,8 +218,8 @@ public class PFEService {
         return saved;
     }
 
-    public DemandePFE getDemandePFEByStudent(Long studentId) {
-        return demandePFERepository.findByStudentId(studentId);
+    public DemandePFE getDemandePFEByStudent(Long studentAuthId) {
+        return demandePFERepository.findByStudentAuthId(studentAuthId);
     }
 
     public List<DemandePFE> getAllDemandePFE() {
@@ -231,8 +232,8 @@ public class PFEService {
     }
 
 
-    public DemandePFE updateDemandStatus(Long demandId, UpdateDemandStatusRequest request, Long adminId) {
-        log.info("Updating demand {} status to {} by admin {}", demandId, request.getStatus(), adminId);
+    public DemandePFE updateDemandStatus(Long demandId, UpdateDemandStatusRequest request, Long adminAuthId) {
+        log.info("Updating demand {} status to {} by admin {}", demandId, request.getStatus(), adminAuthId);
 
         DemandePFE demande = getDemandePFEById(demandId);
 
@@ -255,7 +256,7 @@ public class PFEService {
                             .type(NotificationType.EMAIL)
                             .content("Votre demande de PFE a été rejetée. Veuillez consulter votre espace pour voir la raison et rectifier le plus vite possible")
                             .subject("Demande de PFE Rejetée")
-                            .userId(demande.getStudentId().toString())
+                            .userId(demande.getStudentAuthId().toString())
                             .build()
             );
         }
@@ -263,7 +264,7 @@ public class PFEService {
         // Update demand with status and admin review information
         demande.setStatus(request.getStatus());
         demande.setAdminFeedback(request.getAdminFeedback());
-        demande.setReviewedByAdminId(adminId);
+        demande.setReviewedByAdminAuthId(adminAuthId);
         // Note: reviewedByAdminName should be fetched from UserService if needed
         demande.setReviewedAt(new Date());
 
@@ -279,7 +280,7 @@ public class PFEService {
     }
 
 
-    public PFE updatePFEStatus(PFE pfe, UpdatePFEStatusRequest request, Long teacherId) {
+    public PFE updatePFEStatus(PFE pfe, UpdatePFEStatusRequest request, Long teacherAuthId) {
 
         if (request.getStatus() == tn.esprim.knowledgehub.resource.enums.SubmissionStatus.CREATED) {
             throw new IllegalArgumentException("Cannot change status back to CREATED");
@@ -328,10 +329,10 @@ public class PFEService {
                             .type(NotificationType.EMAIL)
                             .content(notificationContent)
                             .subject(subject)
-                            .userId(pfe.getStudentId().toString())
+                            .userId(pfe.getStudentAuthId().toString())
                             .build()
             );
-            log.info("Notification sent to student {} about PFE status change", pfe.getStudentId());
+            log.info("Notification sent to student {} about PFE status change", pfe.getStudentAuthId());
         } catch (Exception e) {
             log.error("Failed to send notification to student: {}", e.getMessage());
             // Don't fail the status update if notification fails
@@ -341,7 +342,7 @@ public class PFEService {
     }
 
     public PFE addRapporteurFeedback(PFE pfe, String feedback) {
-        if (pfe.getRapporteurId() == null) {
+        if (pfe.getRapporteurAuthId() == null) {
             throw new IllegalStateException("No rapporteur assigned to this PFE");
         }
 

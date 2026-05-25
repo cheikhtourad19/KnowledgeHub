@@ -211,18 +211,18 @@ public class LibraryController {
 
     @GetMapping("/getDocumentsByUser")
     public ResponseEntity<ApiResponse> getUserDocument(
-            @RequestHeader(value = "X-User-Id") Long userId
+            @RequestHeader(value = "X-Auth-Id") Long authId
     ){
-        if (userId == null) {
+        if (authId == null) {
             return ResponseEntity.badRequest().body(
                     ApiResponse.builder()
                             .success(false)
-                            .message("User ID is required")
+                            .message("Auth ID is required")
                             .data(null)
                             .build()
             );
         }
-        List<File> files = fileService.getFilesByUserId(userId);
+        List<File> files = fileService.getFilesByAuthId(authId);
         return ResponseEntity.ok(
                 ApiResponse.builder()
                         .success(true)

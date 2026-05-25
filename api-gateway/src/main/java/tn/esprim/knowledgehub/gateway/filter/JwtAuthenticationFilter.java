@@ -51,7 +51,6 @@ public class JwtAuthenticationFilter extends AbstractGatewayFilterFactory<JwtAut
                 System.out.println("Claims: " + claims);
 
                 String authId = claims.get("authId", String.class);
-                String userId = claims.get("userId", String.class);
                 String role = claims.get("role", String.class);
 
                 if (authId == null || role == null) {
@@ -61,7 +60,6 @@ public class JwtAuthenticationFilter extends AbstractGatewayFilterFactory<JwtAut
 
                 ServerHttpRequest modifiedRequest = exchange.getRequest().mutate()
                         .header("X-Auth-Id", authId)
-                        .header("X-User-Id", userId != null ? userId : "")
                         .header("X-User-Name", claims.getSubject())
                         .header("X-User-Role", role)
                         .build();

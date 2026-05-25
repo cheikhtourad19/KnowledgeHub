@@ -25,7 +25,7 @@ export class EnseignantComponent implements OnInit {
   notCreatedUsers: BulkUserCreationResult[] = [];
   displayBulkResultsModal: boolean = false;
   activeResultTab: 'created' | 'notCreated' = 'created';
-  selectedTeacherId: number | null = null;
+  selectedAuthId: number | null = null;
   constructor(
     private userService: UserApiService,
     private fb: FormBuilder,
@@ -135,8 +135,8 @@ export class EnseignantComponent implements OnInit {
   deleteTeacher(event: Event, id: number): void {
     event.stopPropagation();
 
-    this.selectedTeacherId = id;
-    console.log('Selected teacher ID for deletion:', this.selectedTeacherId); // Now this should show correctly
+    this.selectedAuthId = id;
+    console.log('Selected auth ID for deletion:', this.selectedAuthId);
 
     this.confirmationService.confirm({
       target: event.target as EventTarget,
@@ -146,12 +146,12 @@ export class EnseignantComponent implements OnInit {
       rejectLabel: 'Non, annuler',
       acceptButtonStyleClass: 'p-button-danger',
       accept: () => {
-        const teacherIdToDelete = this.selectedTeacherId;
-        console.log('Accept - Deleting teacher ID:', teacherIdToDelete);
+        const authIdToDelete = this.selectedAuthId;
+        console.log('Accept - Deleting auth ID:', authIdToDelete);
 
-        if (teacherIdToDelete) {
+        if (authIdToDelete) {
           this.actionLoading = true;
-          this.userService.deleteUser(teacherIdToDelete).subscribe({
+          this.userService.deleteUser(authIdToDelete).subscribe({
             next: (response) => {
               this.messageService.add({
                 severity: 'success',
@@ -160,8 +160,8 @@ export class EnseignantComponent implements OnInit {
               });
               this.actionLoading = false;
               this.fetchteachers();
-              this.selectedTeacherId = null;
-              console.log('Delete successful for teacher ID:', response);
+              this.selectedAuthId = null;
+              console.log('Delete successful for auth ID:', response);
             },
             error: (err) => {
               console.error('Delete error:', err);
@@ -171,16 +171,16 @@ export class EnseignantComponent implements OnInit {
                 detail: "Impossible de supprimer l'enseignant.",
               });
               this.actionLoading = false;
-              this.selectedTeacherId = null;
+              this.selectedAuthId = null;
             },
           });
         } else {
-          console.error('No teacher ID found for deletion');
+          console.error('No auth ID found for deletion');
         }
       },
       reject: () => {
-        console.log('Delete rejected for teacher ID:', this.selectedTeacherId); // Debug log
-        this.selectedTeacherId = null;
+        console.log('Delete rejected for auth ID:', this.selectedAuthId);
+        this.selectedAuthId = null;
       },
     });
   }

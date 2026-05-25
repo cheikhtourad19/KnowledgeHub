@@ -5,7 +5,7 @@ import { NotificationType } from '../enums/notification-type.enum';
  */
 export interface Notification {
   id: string;
-  userId: string;
+  authId: string;
   content: string;
   type: NotificationType;
   subject?: string;

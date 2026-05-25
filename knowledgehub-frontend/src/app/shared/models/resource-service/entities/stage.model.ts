@@ -13,10 +13,10 @@ export interface Stage {
   typeStage?: TypeStage;
   year?: number;
   durationMonths?: number;
-  studentId: number;
+  studentAuthId: number;
   studentName?: string;
   studentEmail?: string;
-  supervisorId?: number;
+  supervisorAuthId?: number;
   supervisorName?: string;
   reportFile?: File;
   reportFileId?: number;

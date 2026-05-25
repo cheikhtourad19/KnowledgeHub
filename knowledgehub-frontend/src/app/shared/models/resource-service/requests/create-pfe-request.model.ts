@@ -4,14 +4,14 @@
 export interface CreatePFERequest {
   title: string;
   year?: number;
-  studentId: number;
+  studentAuthId: number;
   studentName?: string;
   studentEmail?: string;
-  supervisorId: number;
+  supervisorAuthId: number;
   supervisorName?: string;
-  chefDeJuryId?: number;
+  chefDeJuryAuthId?: number;
   chefDeJuryName?: string;
-  rapporteurId?: number;
+  rapporteurAuthId?: number;
   rapporteurName?: string;
   entrepriseName?: string;
   dateDebut?: Date;

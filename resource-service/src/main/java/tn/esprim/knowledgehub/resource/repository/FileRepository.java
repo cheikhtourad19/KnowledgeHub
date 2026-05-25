@@ -13,7 +13,7 @@ public interface FileRepository extends JpaRepository<File, Long> {
 
     Optional<File> findByFileName(String fileName);
 
-    List<File> findByUploadedByUserId(Long userId);
+    List<File> findByUploadedByAuthId(Long authId);
 
     List<File> findByIsPublishedTrue();
 

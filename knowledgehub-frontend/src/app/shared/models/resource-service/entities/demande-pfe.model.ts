@@ -6,7 +6,7 @@ import { File } from './file.model';
  */
 export interface DemandePFE {
   id: number;
-  studentId: number;
+  studentAuthId: number;
   studentName?: string;
   studentEmail?: string;
   studentClasse?: string;
@@ -24,7 +24,7 @@ export interface DemandePFE {
   dateFin: Date;
   status: DemandStatus;
   adminFeedback?: string;
-  reviewedByAdminId?: number;
+  reviewedByAdminAuthId?: number;
   reviewedByAdminName?: string;
   reviewedAt?: Date;
   attestationFile?: File;

@@ -26,6 +26,9 @@ spring:
           writetimeout: 5000
     default-encoding: UTF-8
 
+admin:
+  email: admin@esprim.tn
+
 notification:
   email:
     from: elghothvadel@gmail.com
@@ -79,6 +82,9 @@ spring:
 
 server:
   port: ${NOTIFICATION_SERVICE_PORT}
+
+admin:
+  email: ${ADMIN_EMAIL}
 
 notification:
   email:

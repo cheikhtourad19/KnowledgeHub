@@ -236,10 +236,14 @@ export class ResourceApiService {
   updateDemandStatus(
     id: number,
     request: UpdateDemandStatusRequest,
-    teacherId?: number,
+    teacherAuthId?: number,
   ): Observable<ApiResponse<DemandePFE>> {
+    let params = '';
+    if (teacherAuthId != null) {
+      params = `?teacherAuthId=${teacherAuthId}`;
+    }
     return this.http.put<ApiResponse<DemandePFE>>(
-      `${this.baseUrl}/api/admin/pfe/demande/${id}/status?teacherId=${teacherId}`,
+      `${this.baseUrl}/api/admin/pfe/demande/${id}/status${params}`,
       request,
     );
   }
@@ -269,12 +273,12 @@ export class ResourceApiService {
 
   /**
    * Get PFE for a student
-   * GET /api/student/pfe/student-PFE?studentId={studentId}
+   * GET /api/student/pfe/student-PFE?authId={authId}
    */
-  getStudentPFE(studentId?: number): Observable<ApiResponse<PFE[]>> {
+  getStudentPFE(authId?: number): Observable<ApiResponse<PFE[]>> {
     let params = new HttpParams();
-    if (studentId) {
-      params = params.set('studentId', studentId.toString());
+    if (authId) {
+      params = params.set('authId', authId.toString());
     }
     return this.http.get<ApiResponse<PFE[]>>(
       `${this.baseUrl}/api/student/pfe/student-PFE`,
@@ -293,12 +297,12 @@ export class ResourceApiService {
   }
   assignJury(
     pfeId: number,
-    jury?: number,
-    reporteur?: number,
+    juryAuthId?: number,
+    reporteurAuthId?: number,
   ): Observable<ApiResponse<void>> {
     return this.http.post<ApiResponse<void>>(
       `${this.baseUrl}/api/admin/pfe/assign-jury/${pfeId}`,
-      { juryId: jury, reporteur_id: reporteur },
+      { juryAuthId, reporteurAuthId },
     );
   }
   /**
@@ -361,9 +365,9 @@ export class ResourceApiService {
     );
   }
 
-  getPFAsBySupervisorId(supervisorId: number): Observable<ApiResponse<PFA[]>> {
+  getPFAsByAuthId(authId: number): Observable<ApiResponse<PFA[]>> {
     return this.http.get<ApiResponse<PFA[]>>(
-      `${this.baseUrl}/api/teacher/pfa/supervisor/${supervisorId}`,
+      `${this.baseUrl}/api/teacher/pfa/supervisor/${authId}`,
     );
   }
 
@@ -411,9 +415,9 @@ export class ResourceApiService {
     );
   }
 
-  getStagesByStudentId(studentId: number): Observable<ApiResponse<Stage[]>> {
+  getStagesByAuthId(authId: number): Observable<ApiResponse<Stage[]>> {
     return this.http.get<ApiResponse<Stage[]>>(
-      `${this.baseUrl}/api/student/stage/student/${studentId}`,
+      `${this.baseUrl}/api/student/stage/student/${authId}`,
     );
   }
   uploadStageReport(
@@ -500,11 +504,11 @@ export class ResourceApiService {
     );
   }
 
-  getStagesBySupervisorId(
-    supervisorId: number,
+  getStagesBySupervisorAuthId(
+    authId: number,
   ): Observable<ApiResponse<Stage[]>> {
     return this.http.get<ApiResponse<Stage[]>>(
-      `${this.baseUrl}/api/teacher/stage/supervisor/${supervisorId}`,
+      `${this.baseUrl}/api/teacher/stage/supervisor/${authId}`,
     );
   }
 
@@ -548,14 +552,14 @@ export class ResourceApiService {
 
   /**
    * Authorize a student to create a stage
-   * POST /api/admin/stage/authorize/student/{studentId}?typeStage=TECHNICIEN
+   * POST /api/admin/stage/authorize/student/{authId}?typeStage=TECHNICIEN
    */
   authorizeStudent(
-    studentId: number,
+    authId: number,
     typeStage: string,
   ): Observable<ApiResponse<string>> {
     return this.http.post<ApiResponse<string>>(
-      `${this.baseUrl}/api/admin/stage/authorize/student/${studentId}`,
+      `${this.baseUrl}/api/admin/stage/authorize/student/${authId}`,
       null,
       { params: { typeStage } },
     );
@@ -592,10 +596,10 @@ export class ResourceApiService {
    */
   assignStageSupervisor(
     stageId: number,
-    supervisorId: number,
+    authId: number,
   ): Observable<ApiResponse<Stage>> {
     return this.http.post<ApiResponse<Stage>>(
-      `${this.baseUrl}/api/admin/stage/${stageId}/assign-supervisor/${supervisorId}`,
+      `${this.baseUrl}/api/admin/stage/${stageId}/assign-supervisor/${authId}`,
       null,
     );
   }

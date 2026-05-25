@@ -12,5 +12,5 @@ import java.util.List;
 @AllArgsConstructor
 public class StudentsToClassRequest {
     private Long classId;
-    private List<Long> studentId;
+    private List<Long> authIds;
 }

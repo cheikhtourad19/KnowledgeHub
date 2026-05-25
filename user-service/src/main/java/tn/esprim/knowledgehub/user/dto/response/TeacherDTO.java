@@ -12,7 +12,6 @@ import tn.esprim.knowledgehub.user.entity.Teacher;
 @NoArgsConstructor
 @AllArgsConstructor
 public class TeacherDTO {
-    private Long teacherId;
     private String authId;
     private String email;
     private String nom;
@@ -20,7 +19,6 @@ public class TeacherDTO {
 
     public static TeacherDTO fromEntity(Teacher teacher) {
         return TeacherDTO.builder()
-                .teacherId(teacher.getTeacherId())
                 .authId(teacher.getAuthId())
                 .email(teacher.getEmail())
                 .nom(teacher.getNom())

@@ -37,26 +37,26 @@ public class StudentStageController {
     @PostMapping(consumes = MediaType.MULTIPART_FORM_DATA_VALUE)
     public ResponseEntity<ApiResponse<StageResponse>> createStage(
             @Valid @ModelAttribute StudentCreateStageRequest request,
-            @RequestHeader(value = "X-User-Id") Long userId
+            @RequestHeader(value = "X-Auth-Id") Long authId
     ) {
-        log.info("Student {} attempting to create a stage", userId);
+        log.info("Student {} attempting to create a stage", authId);
 
         try {
-            StageResponse stageResponse = stageService.createStageForStudent(userId, request);
+            StageResponse stageResponse = stageService.createStageForStudent(authId, request);
             return ResponseEntity.status(HttpStatus.CREATED)
                     .body(ApiResponse.success(
                             stageResponse,
                             "Stage créé avec succès. En attente de l'assignation d'un superviseur par l'admin."
                     ));
         } catch (RuntimeException e) {
-            log.error("Error creating stage for student {}: {}", userId, e.getMessage());
+            log.error("Error creating stage for student {}: {}", authId, e.getMessage());
             return ResponseEntity.status(HttpStatus.BAD_REQUEST)
                     .body(ApiResponse.error(
                             "Erreur lors de la création du stage",
                             e.getMessage()
                     ));
         } catch (Exception e) {
-            log.error("Unexpected error creating stage for student {}: {}", userId, e.getMessage(), e);
+            log.error("Unexpected error creating stage for student {}: {}", authId, e.getMessage(), e);
             return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR)
                     .body(ApiResponse.error(
                             "Erreur interne du serveur",
@@ -69,12 +69,12 @@ public class StudentStageController {
     public ResponseEntity<ApiResponse<StageResponse>> updateStageMetadata(
             @PathVariable Long stageId,
             @Valid @RequestBody StudentUpdateStageMetadataRequest request,
-            @RequestHeader(value = "X-User-Id") Long userId
+            @RequestHeader(value = "X-Auth-Id") Long authId
     ) {
-        log.info("Student {} attempting to update stage metadata for stage {}", userId, stageId);
+        log.info("Student {} attempting to update stage metadata for stage {}", authId, stageId);
 
         try {
-            StageResponse stageResponse = stageService.updateStageMetadataByStudent(stageId, userId, request);
+            StageResponse stageResponse = stageService.updateStageMetadataByStudent(stageId, authId, request);
             return ResponseEntity.ok(
                     ApiResponse.success(stageResponse, "Métadonnées du stage mises à jour avec succès")
             );
@@ -99,7 +99,7 @@ public class StudentStageController {
     public ResponseEntity<ApiResponse<StageResponse>> getStageById(
             @PathVariable Long id,
             @RequestHeader(value = "X-User-Role") String role,
-            @RequestHeader(value = "X-User-Id") Long userId
+            @RequestHeader(value = "X-Auth-Id") Long authId
     ) {
         Stage stage = stageService.getStageById(id);
 
@@ -110,10 +110,10 @@ public class StudentStageController {
 
         boolean isAdmin = role.equals("ADMIN");
         boolean isSupervisor = false;
-        if (stage.getSupervisorId() != null) {
-            isSupervisor = stage.getSupervisorId().equals(userId);
+        if (stage.getSupervisorAuthId() != null) {
+            isSupervisor = stage.getSupervisorAuthId().equals(authId);
         }
-        boolean isOwner = stage.getStudentId().equals(userId);
+        boolean isOwner = stage.getStudentAuthId().equals(authId);
 
         if (isAdmin || isOwner || isSupervisor) {
             // Convert entity to DTO to avoid Hibernate lazy loading serialization issues
@@ -133,16 +133,16 @@ public class StudentStageController {
 
     @GetMapping("/my-stage")
     public ResponseEntity<ApiResponse<Object>> getMyStage(
-            @RequestHeader(value = "X-User-Id") Long userId
+            @RequestHeader(value = "X-Auth-Id") Long authId
     ) {
-        log.info("Student {} requesting their stages", userId);
+        log.info("Student {} requesting their stages", authId);
         try {
-            var stages = stageService.getStagesByStudentId(userId);
+            var stages = stageService.getStagesByStudentAuthId(authId);
             return ResponseEntity.ok(
                     ApiResponse.success(stages, "Stages retrieved successfully")
             );
         } catch (Exception e) {
-            log.error("Error retrieving stages for student {}: {}", userId, e.getMessage(), e);
+            log.error("Error retrieving stages for student {}: {}", authId, e.getMessage(), e);
             return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR)
                     .body(ApiResponse.error(
                             "Erreur interne du serveur",
@@ -153,16 +153,16 @@ public class StudentStageController {
 
     @GetMapping("/check-authorization")
     public ResponseEntity<ApiResponse<Object>> checkAuthorization(
-            @RequestHeader(value = "X-User-Id") Long userId
+            @RequestHeader(value = "X-Auth-Id") Long authId
     ) {
-        log.info("Student {} checking stage authorizations", userId);
+        log.info("Student {} checking stage authorizations", authId);
         try {
-            var authorizations = stageService.getStudentAuthorizations(userId);
+            var authorizations = stageService.getStudentAuthorizations(authId);
             return ResponseEntity.ok(
                     ApiResponse.success(authorizations, authorizations.size() + " autorisation(s) trouvée(s)")
             );
         } catch (Exception e) {
-            log.error("Error checking authorizations for student {}: {}", userId, e.getMessage(), e);
+            log.error("Error checking authorizations for student {}: {}", authId, e.getMessage(), e);
             return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR)
                     .body(ApiResponse.error(
                             "Erreur interne du serveur",
@@ -177,9 +177,9 @@ public class StudentStageController {
             @RequestParam(value = "title", required = false) String title,
             @RequestParam(value = "description", required = false) String description,
             @RequestParam("file") MultipartFile file,
-            @RequestHeader(value = "X-User-Id") Long userId
+            @RequestHeader(value = "X-Auth-Id") Long authId
     ) {
-        log.info("Student {} attempting to upload report for stage {}", userId, stageId);
+        log.info("Student {} attempting to upload report for stage {}", authId, stageId);
 
         try {
             Stage stage = stageService.getStageById(stageId);
@@ -189,7 +189,7 @@ public class StudentStageController {
                 );
             }
 
-            if (!stage.getStudentId().equals(userId)) {
+            if (!stage.getStudentAuthId().equals(authId)) {
                 return ResponseEntity.status(HttpStatus.FORBIDDEN).body(
                         ApiResponse.error("Forbidden", "Vous n'êtes pas autorisé à uploader des fichiers pour ce stage")
                 );
@@ -209,7 +209,7 @@ public class StudentStageController {
                 );
             }
 
-            StudentDTO student = userServiceClient.getStudentById(stage.getStudentId()).getData();
+            StudentDTO student = userServiceClient.getStudentByAuthId(String.valueOf(stage.getStudentAuthId())).getData();
             if (student == null) {
                 return ResponseEntity.status(HttpStatus.NOT_FOUND).body(
                         ApiResponse.error("Not Found", "Étudiant non trouvé")
@@ -219,7 +219,7 @@ public class StudentStageController {
             FileUploadResponse response = fileService.uploadFile(
                     file,
                     FileType.STAGE_REPORT,
-                    userId,
+                    authId,
                     student.getEmail(),
                     "stage",
                     title != null ? title : "Rapport de stage - " + stage.getTitle(),
@@ -253,9 +253,9 @@ public class StudentStageController {
             @RequestParam(value = "title", required = false) String title,
             @RequestParam(value = "description", required = false) String description,
             @RequestParam("file") MultipartFile file,
-            @RequestHeader(value = "X-User-Id") Long userId
+            @RequestHeader(value = "X-Auth-Id") Long authId
     ) {
-        log.info("Student {} attempting to upload journal for stage {}", userId, stageId);
+        log.info("Student {} attempting to upload journal for stage {}", authId, stageId);
 
         try {
             Stage stage = stageService.getStageById(stageId);
@@ -265,7 +265,7 @@ public class StudentStageController {
                 );
             }
 
-            if (!stage.getStudentId().equals(userId)) {
+            if (!stage.getStudentAuthId().equals(authId)) {
                 return ResponseEntity.status(HttpStatus.FORBIDDEN).body(
                         ApiResponse.error("Forbidden", "Vous n'êtes pas autorisé à uploader des fichiers pour ce stage")
                 );
@@ -285,7 +285,7 @@ public class StudentStageController {
                 );
             }
 
-            StudentDTO student = userServiceClient.getStudentById(stage.getStudentId()).getData();
+            StudentDTO student = userServiceClient.getStudentByAuthId(String.valueOf(stage.getStudentAuthId())).getData();
             if (student == null) {
                 return ResponseEntity.status(HttpStatus.NOT_FOUND).body(
                         ApiResponse.error("Not Found", "Étudiant non trouvé")
@@ -295,7 +295,7 @@ public class StudentStageController {
             FileUploadResponse response = fileService.uploadFile(
                     file,
                     FileType.JOURNAL,
-                    userId,
+                    authId,
                     student.getEmail(),
                     "journal",
                     title != null ? title : "Journal de stage - " + stage.getTitle(),
@@ -329,9 +329,9 @@ public class StudentStageController {
             @RequestParam(value = "title", required = false) String title,
             @RequestParam(value = "description", required = false) String description,
             @RequestParam("file") MultipartFile file,
-            @RequestHeader(value = "X-User-Id") Long userId
+            @RequestHeader(value = "X-Auth-Id") Long authId
     ) {
-        log.info("Student {} attempting to upload attestation for stage {}", userId, stageId);
+        log.info("Student {} attempting to upload attestation for stage {}", authId, stageId);
 
         try {
             Stage stage = stageService.getStageById(stageId);
@@ -341,7 +341,7 @@ public class StudentStageController {
                 );
             }
 
-            if (!stage.getStudentId().equals(userId)) {
+            if (!stage.getStudentAuthId().equals(authId)) {
                 return ResponseEntity.status(HttpStatus.FORBIDDEN).body(
                         ApiResponse.error("Forbidden", "Vous n'êtes pas autorisé à uploader des fichiers pour ce stage")
                 );
@@ -361,7 +361,7 @@ public class StudentStageController {
                 );
             }
 
-            StudentDTO student = userServiceClient.getStudentById(stage.getStudentId()).getData();
+            StudentDTO student = userServiceClient.getStudentByAuthId(String.valueOf(stage.getStudentAuthId())).getData();
             if (student == null) {
                 return ResponseEntity.status(HttpStatus.NOT_FOUND).body(
                         ApiResponse.error("Not Found", "Étudiant non trouvé")
@@ -371,7 +371,7 @@ public class StudentStageController {
             FileUploadResponse response = fileService.uploadFile(
                     file,
                     FileType.ATTESTATION,
-                    userId,
+                    authId,
                     student.getEmail(),
                     "attestation",
                     title != null ? title : "Attestation de stage - " + stage.getTitle(),
@@ -405,9 +405,9 @@ public class StudentStageController {
             @RequestParam(value = "title", required = false) String title,
             @RequestParam(value = "description", required = false) String description,
             @RequestParam("file") MultipartFile file,
-            @RequestHeader(value = "X-User-Id") Long userId
+            @RequestHeader(value = "X-Auth-Id") Long authId
     ) {
-        log.info("Student {} attempting to upload convention for stage {}", userId, stageId);
+        log.info("Student {} attempting to upload convention for stage {}", authId, stageId);
 
         try {
             Stage stage = stageService.getStageById(stageId);
@@ -417,7 +417,7 @@ public class StudentStageController {
                 );
             }
 
-            if (!stage.getStudentId().equals(userId)) {
+            if (!stage.getStudentAuthId().equals(authId)) {
                 return ResponseEntity.status(HttpStatus.FORBIDDEN).body(
                         ApiResponse.error("Forbidden", "Vous n'êtes pas autorisé à uploader des fichiers pour ce stage")
                 );
@@ -436,7 +436,7 @@ public class StudentStageController {
                 );
             }
 
-            StudentDTO student = userServiceClient.getStudentById(stage.getStudentId()).getData();
+            StudentDTO student = userServiceClient.getStudentByAuthId(String.valueOf(stage.getStudentAuthId())).getData();
             if (student == null) {
                 return ResponseEntity.status(HttpStatus.NOT_FOUND).body(
                         ApiResponse.error("Not Found", "Étudiant non trouvé")
@@ -446,7 +446,7 @@ public class StudentStageController {
             FileUploadResponse response = fileService.uploadFile(
                     file,
                     FileType.CONVENTION_STAGE,
-                    userId,
+                    authId,
                     student.getEmail(),
                     "stage",
                     title != null ? title : "Convention de stage - " + stage.getTitle(),

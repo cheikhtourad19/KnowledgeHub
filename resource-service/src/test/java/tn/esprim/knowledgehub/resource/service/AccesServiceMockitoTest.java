@@ -39,7 +39,7 @@ class AccesServiceMockitoTest {
     void setUp() {
         mockFile = new File();
         mockFile.setId(1L);
-        mockFile.setUploadedByUserId(99L);
+        mockFile.setUploadedByAuthId(99L);
     }
 
     @Test
@@ -56,10 +56,10 @@ class AccesServiceMockitoTest {
     @Test
     void shouldIncludeAllMembers() {
         PFE pfe = new PFE();
-        pfe.setStudentId(10L);
-        pfe.setSupervisorId(20L);
-        pfe.setChefDeJuryId(30L);
-        pfe.setRapporteurId(40L);
+        pfe.setStudentAuthId(10L);
+        pfe.setSupervisorAuthId(20L);
+        pfe.setChefDeJuryAuthId(30L);
+        pfe.setRapporteurAuthId(40L);
 
         when(fileService.getFileById(1L)).thenReturn(mockFile);
         when(pfeRepository.findByAnyFileId(1L)).thenReturn(Optional.of(pfe));
@@ -73,8 +73,8 @@ class AccesServiceMockitoTest {
     @Test
     void shouldIncludeStageMembers() {
         Stage stage = new Stage();
-        stage.setStudentId(50L);
-        stage.setSupervisorId(60L);
+        stage.setStudentAuthId(50L);
+        stage.setSupervisorAuthId(60L);
 
         when(fileService.getFileById(1L)).thenReturn(mockFile);
         when(pfeRepository.findByAnyFileId(1L)).thenReturn(Optional.empty());

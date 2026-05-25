@@ -5,6 +5,6 @@ import { Classe } from './classe.model';
  * Student Entity
  */
 export interface Student extends UserBase {
-  studentId: number;
+  authId: string;
   classe?: Classe;
 }

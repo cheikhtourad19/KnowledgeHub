@@ -12,12 +12,12 @@ import java.util.Optional;
 @Repository
 public interface StageRepository extends JpaRepository<Stage, Long> {
 
-    List<Stage> findByStudentId(Long studentId);
+    List<Stage> findByStudentAuthId(Long studentAuthId);
 
        @Query("SELECT s FROM Stage s WHERE s.reportFile.id = :fileId OR s.journalFile.id = :fileId OR s.attestationFile.id = :fileId OR s.conventionFile.id = :fileId")
     Optional<Stage> findByAnyFileId(@Param("fileId") Long fileId);
 
-    List<Stage> findBySupervisorId(Long supervisorId);
+    List<Stage> findBySupervisorAuthId(Long supervisorAuthId);
 
     List<Stage> findByYear(Integer year);
 
@@ -50,8 +50,8 @@ public interface StageRepository extends JpaRepository<Stage, Long> {
            "LEFT JOIN FETCH s.journalFile " +
            "LEFT JOIN FETCH s.attestationFile " +
            "LEFT JOIN FETCH s.conventionFile " +
-           "WHERE s.supervisorId = :supervisorId")
-    List<Stage> findBySupervisorIdWithFiles(@Param("supervisorId") Long supervisorId);
+            "WHERE s.supervisorAuthId = :supervisorAuthId")
+    List<Stage> findBySupervisorAuthIdWithFiles(@Param("supervisorAuthId") Long supervisorAuthId);
 
     /**
      * Fetch Stages by student with all File associations eagerly loaded
@@ -61,8 +61,8 @@ public interface StageRepository extends JpaRepository<Stage, Long> {
            "LEFT JOIN FETCH s.journalFile " +
            "LEFT JOIN FETCH s.attestationFile " +
            "LEFT JOIN FETCH s.conventionFile " +
-           "WHERE s.studentId = :studentId")
-    List<Stage> findByStudentIdWithFiles(@Param("studentId") Long studentId);
+            "WHERE s.studentAuthId = :studentAuthId")
+    List<Stage> findByStudentAuthIdWithFiles(@Param("studentAuthId") Long studentAuthId);
 
 
 }

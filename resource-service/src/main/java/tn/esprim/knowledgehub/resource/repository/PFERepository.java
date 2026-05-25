@@ -15,17 +15,17 @@ import java.util.Optional;
 @Repository
 public interface PFERepository extends JpaRepository<PFE, Long> {
 
-    List<PFE> findByStudentId(Long studentId);
+    List<PFE> findByStudentAuthId(Long studentAuthId);
 
-    List<PFE> findBySupervisorId(Long supervisorId);
+    List<PFE> findBySupervisorAuthId(Long supervisorAuthId);
 
-    List<PFE> findByChefDeJuryId(Long juryId);
+    List<PFE> findByChefDeJuryAuthId(Long juryAuthId);
 
-    List<PFE> findByRapporteurId(Long repporteurId);
+    List<PFE> findByRapporteurAuthId(Long rapporteurAuthId);
 
     List<PFE> findByStatus(SubmissionStatus status);
 
-    List<PFE> findBySupervisorIdAndStatus(Long supervisorId, SubmissionStatus status);
+    List<PFE> findBySupervisorAuthIdAndStatus(Long supervisorAuthId, SubmissionStatus status);
 
 
     List<PFE> findByYear(Integer year);

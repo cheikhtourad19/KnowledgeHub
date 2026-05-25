@@ -13,6 +13,6 @@ import lombok.*;
 @AllArgsConstructor
 public class StudentToClassRequest {
     private Long classId;
-    private Long studentId;
+    private Long authId;
 }
 

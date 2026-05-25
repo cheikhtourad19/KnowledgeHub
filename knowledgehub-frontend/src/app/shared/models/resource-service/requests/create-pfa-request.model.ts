@@ -4,6 +4,6 @@
 export interface CreatePFARequest {
   title: string;
   year?: number;
-  studentId: number;
-  supervisorId: number;
+  studentAuthId: number;
+  supervisorAuthId: number;
 }

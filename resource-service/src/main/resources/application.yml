@@ -76,6 +76,9 @@ minio:
     cover-pages: knowledgehub-cover-pages
     annonces: annonces
 
+admin:
+  email: admin@esprim.tn
+
 # CORS Configuration
 cors:
   allowed-origins: http://localhost:*,http://127.0.0.1:*,http://localhost:8080
@@ -159,6 +162,9 @@ minio:
     journal: ${MINIO_BUCKET_JOURNAL}
     attestation: ${MINIO_BUCKET_ATTESTATION}
     cover-pages: ${MINIO_BUCKET_COVER_PAGES}
+
+admin:
+  email: ${ADMIN_EMAIL}
 
 cors:
   allowed-origins: ${CORS_ALLOWED_ORIGINS:http://localhost:*,http://127.0.0.1:*,http://localhost:8080}

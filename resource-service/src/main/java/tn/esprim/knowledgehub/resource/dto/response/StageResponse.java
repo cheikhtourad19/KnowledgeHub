@@ -18,10 +18,10 @@ public class StageResponse {
     private TypeStage typeStage;
     private Integer year;
     private Integer durationMonths;
-    private Long studentId;
+    private Long studentAuthId;
     private String studentName;
     private String studentEmail;
-    private Long supervisorId;
+    private Long supervisorAuthId;
     private String supervisorName;
     private String supervisorFeedback;
     private Boolean cloture;

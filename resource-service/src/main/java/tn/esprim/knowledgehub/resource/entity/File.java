@@ -56,8 +56,8 @@ public class File {
     @Column(nullable = false, updatable = false)
     private Date uploadDate;
 
-    @Column(nullable = false)
-    private Long uploadedByUserId;
+    @Column(name = "uploaded_by_user_id", nullable = false)
+    private Long uploadedByAuthId;
 
     private String uploadedByUserName;
 

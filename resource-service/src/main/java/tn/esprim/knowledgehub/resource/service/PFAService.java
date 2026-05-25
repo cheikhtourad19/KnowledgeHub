@@ -24,11 +24,11 @@ public class PFAService {
     public PFA getPFAById(Long id){
         return pfaRepository.findById(id).orElseThrow();
     }
-    public List<PFA> getPFAByStudent(Long studentId){
-        return pfaRepository.findByStudentId(studentId);
+    public List<PFA> getPFAByStudent(Long authId){
+        return pfaRepository.findByStudentAuthId(authId);
     }
-    public List<PFA> getPFABySupervisor(Long supervisorId){
-        return pfaRepository.findBySupervisorId(supervisorId);
+    public List<PFA> getPFABySupervisor(Long authId){
+        return pfaRepository.findBySupervisorAuthId(authId);
     }
     public List<PFA> getAllPFA(){
         return pfaRepository.findAll();
@@ -40,8 +40,8 @@ public class PFAService {
         if (pfa == null) return List.of();
         
         List<Long> userIds = new ArrayList<>();
-        if (pfa.getSupervisorId() != null) userIds.add(pfa.getSupervisorId());
-        if (pfa.getStudentId() != null) userIds.add(pfa.getStudentId());
+        if (pfa.getSupervisorAuthId() != null) userIds.add(pfa.getSupervisorAuthId());
+        if (pfa.getStudentAuthId() != null) userIds.add(pfa.getStudentAuthId());
         
         return userIds;
     }

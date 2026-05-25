@@ -15,6 +15,5 @@ export interface AuthResponse<T> {
   username?: string;
   email?: string;
   role?: UserRole;
-  authId?: number;  // ID from auth-service
-  userId?: number;  // ID from user-service (studentId or teacherId)
+  authId?: number;
 }

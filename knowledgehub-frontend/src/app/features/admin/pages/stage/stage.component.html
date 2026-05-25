@@ -528,10 +528,10 @@
         Étudiant <span class="text-[#C60C30]">*</span>
       </label>
       <p-select
-        [(ngModel)]="selectedStudentId"
+        [(ngModel)]="selectedStudentAuthId"
         [options]="students"
         optionLabel="nom"
-        optionValue="studentId"
+        optionValue="authId"
         placeholder="Sélectionner un étudiant…"
         [filter]="true"
         filterBy="nom,prenom"
@@ -608,7 +608,7 @@
         (click)="confirmAuthorization()"
         [disabled]="
           !selectedTypeStage ||
-          (authorizationType === 'student' && !selectedStudentId) ||
+          (authorizationType === 'student' && !selectedStudentAuthId) ||
           (authorizationType === 'class' && !selectedClassId)
         "
         class="!bg-[#C60C30] !border-[#C60C30] !text-white hover:!bg-[#a00828]"

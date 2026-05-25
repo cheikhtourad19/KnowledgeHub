@@ -26,18 +26,18 @@ public class AccesService {
     public List<Long> fileAccess(Long fileId) {
         File file = fileService.getFileById(fileId);
         List<Long> usersWithAccess = new ArrayList<>();
-        usersWithAccess.add(file.getUploadedByUserId());
+        usersWithAccess.add(file.getUploadedByAuthId());
 
         pfeRepository.findByAnyFileId(fileId).ifPresent(pfe -> {
-            addIfNotNull(usersWithAccess, pfe.getStudentId());
-            addIfNotNull(usersWithAccess, pfe.getSupervisorId());
-            addIfNotNull(usersWithAccess, pfe.getChefDeJuryId());
-            addIfNotNull(usersWithAccess, pfe.getRapporteurId());
+            addIfNotNull(usersWithAccess, pfe.getStudentAuthId());
+            addIfNotNull(usersWithAccess, pfe.getSupervisorAuthId());
+            addIfNotNull(usersWithAccess, pfe.getChefDeJuryAuthId());
+            addIfNotNull(usersWithAccess, pfe.getRapporteurAuthId());
         });
 
         stageRepository.findByAnyFileId(fileId).ifPresent(stage -> {
-            addIfNotNull(usersWithAccess, stage.getStudentId());
-            addIfNotNull(usersWithAccess, stage.getSupervisorId());
+            addIfNotNull(usersWithAccess, stage.getStudentAuthId());
+            addIfNotNull(usersWithAccess, stage.getSupervisorAuthId());
         });
 
         return usersWithAccess;

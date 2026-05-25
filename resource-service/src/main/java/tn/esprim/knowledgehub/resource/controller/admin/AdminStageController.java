@@ -21,13 +21,13 @@ public class AdminStageController {
     private final StageService stageService;
 
 
-    @PostMapping("/authorize/student/{studentId}")
+    @PostMapping("/authorize/student/{authId}")
     public ResponseEntity<ApiResponse<String>> authorize(
-            @PathVariable Long studentId,
+            @PathVariable Long authId,
             @RequestParam TypeStage typeStage,
             @RequestHeader(value = "X-User-Role") String role
     ){
-        log.info("Admin authorizing student {} for stage type {}", studentId, typeStage);
+        log.info("Admin authorizing student {} for stage type {}", authId, typeStage);
 
         if (!role.equals("ADMIN")) {
             return ResponseEntity.status(403).body(
@@ -36,7 +36,7 @@ public class AdminStageController {
         }
 
         try {
-            stageService.authorizeStudent(studentId, typeStage);
+            stageService.authorizeStudent(authId, typeStage);
             return ResponseEntity.ok(
                     ApiResponse.success(
                             null,
@@ -44,7 +44,7 @@ public class AdminStageController {
                     )
             );
         } catch (Exception e) {
-            log.error("Error authorizing student {}: {}", studentId, e.getMessage(), e);
+            log.error("Error authorizing student {}: {}", authId, e.getMessage(), e);
             return ResponseEntity.status(500).body(
                     ApiResponse.error("Erreur interne du serveur", e.getMessage())
             );
@@ -116,13 +116,13 @@ public class AdminStageController {
     /**
      * Assigner un superviseur (enseignant) à un stage
      */
-    @PostMapping("/{stageId}/assign-supervisor/{supervisorId}")
+    @PostMapping("/{stageId}/assign-supervisor/{authId}")
     public ResponseEntity<ApiResponse<StageResponse>> assignSupervisor(
             @PathVariable Long stageId,
-            @PathVariable Long supervisorId,
+            @PathVariable Long authId,
             @RequestHeader(value = "X-User-Role") String role
     ) {
-        log.info("Admin assigning supervisor {} to stage {}", supervisorId, stageId);
+        log.info("Admin assigning supervisor {} to stage {}", authId, stageId);
 
         if (!role.equals("ADMIN")) {
             return ResponseEntity.status(403).body(
@@ -131,7 +131,7 @@ public class AdminStageController {
         }
 
         try {
-            StageResponse updatedStage = stageService.assignSupervisor(stageId, supervisorId);
+            StageResponse updatedStage = stageService.assignSupervisor(stageId, authId);
             return ResponseEntity.ok(
                     ApiResponse.success(
                             updatedStage,

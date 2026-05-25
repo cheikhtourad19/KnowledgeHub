@@ -13,7 +13,6 @@ public class TokenValidationResponse {
     private boolean valid;
     private String username;
     private String authId;  // ID from auth-service
-    private String userId;  // ID from user-service (studentId or teacherId)
     private String role;
 
 }

@@ -26,7 +26,7 @@ export class StageDetailsComponent implements OnInit {
 
   // Jury modal
   showSupervisorModal = false;
-  selectedSupervisorId: number | null = null;
+  selectedSupervisorAuthId: number | null = null;
 
   // Confirmation modals
   showStatusConfirmModal = false;
@@ -66,7 +66,7 @@ export class StageDetailsComponent implements OnInit {
       next: (response) => {
         this.list_teachers = (response.data ?? []).map((t: Teacher) => ({
           ...t,
-          id: Number(t.teacherId),
+          id: Number(t.authId),
           fullName:
             `${t.prenom ?? ''} ${t.nom ?? ''}`.trim() || t.email || 'Sans nom',
         }));
@@ -157,17 +157,17 @@ export class StageDetailsComponent implements OnInit {
 
   // ── Jury Modal ──
   openSupervisorModal(): void {
-    this.selectedSupervisorId = this.stage_details?.supervisorId ?? null;
+    this.selectedSupervisorAuthId = this.stage_details?.supervisorAuthId ?? null;
     this.showSupervisorModal = true;
   }
 
   closeSupervisorModal(): void {
     this.showSupervisorModal = false;
-    this.selectedSupervisorId = null;
+    this.selectedSupervisorAuthId = null;
   }
 
   confirmSupervisor(): void {
-    if (!this.selectedSupervisorId) {
+    if (!this.selectedSupervisorAuthId) {
       this.messageService.add({
         severity: 'warn',
         summary: 'Attention',
@@ -179,17 +179,17 @@ export class StageDetailsComponent implements OnInit {
 
     this.actionLoading = true;
     this.resourceApiService
-      .assignStageSupervisor(this.stage_id, this.selectedSupervisorId)
+      .assignStageSupervisor(this.stage_id, this.selectedSupervisorAuthId)
       .subscribe({
         next: () => {
           // Update locally
           if (this.stage_details) {
             const teacher = this.list_teachers.find(
-              (t) => t.teacherId === this.selectedSupervisorId,
+              (t) => Number(t.authId) === this.selectedSupervisorAuthId,
             );
             this.stage_details = {
               ...this.stage_details,
-              supervisorId: this.selectedSupervisorId!,
+              supervisorAuthId: this.selectedSupervisorAuthId!,
               supervisorName: teacher?.fullName ?? '',
             };
           }

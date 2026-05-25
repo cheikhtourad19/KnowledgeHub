@@ -62,7 +62,6 @@ export class LoginComponent {
         this.authService.setAuthState({
           token: response.token ?? null,
           authId: response.authId ?? null,
-          userId: response.userId ?? null,
           email: response.email ?? null,
           role: response.role ?? null,
           username: response.username ?? null,

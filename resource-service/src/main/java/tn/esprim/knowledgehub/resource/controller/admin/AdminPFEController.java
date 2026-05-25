@@ -113,9 +113,9 @@ public class AdminPFEController {
     @PutMapping("/demande/{id}/status")
     public ResponseEntity<ApiResponse<DemandePFE>> updateDemandStatus(
             @PathVariable Long id,
-            @RequestParam(value = "teacherId") Long teacherId,
+            @RequestParam(value = "teacherAuthId", required = false) Long teacherAuthId,
             @RequestBody @Valid UpdateDemandStatusRequest request,
-            @RequestHeader(value = "X-User-Id") Long adminId,
+            @RequestHeader(value = "X-Auth-Id") Long adminAuthId,
             @RequestHeader(value = "X-User-Role") String role
     ) {
         if (!role.equals("ADMIN")) {
@@ -125,19 +125,24 @@ public class AdminPFEController {
         }
 
         try {
-            DemandePFE updated = pfeService.updateDemandStatus(id, request, adminId);
+            DemandePFE updated = pfeService.updateDemandStatus(id, request, adminAuthId);
             if (request.getStatus().equals(DemandStatus.ACCEPTED)){
-                TeacherDTO teacherDTO = userServiceClient.getTeacherById(teacherId).getData();
+                if (teacherAuthId == null) {
+                    return ResponseEntity.status(HttpStatus.BAD_REQUEST).body(
+                            ApiResponse.error("Bad Request", "teacherAuthId is required when accepting a demand")
+                    );
+                }
+                TeacherDTO teacherDTO = userServiceClient.getTeacherByAuthId(String.valueOf(teacherAuthId)).getData();
                 PFE pfe = PFE.builder()
                         .date_debut(updated.getDateDebut())
                         .date_fin(updated.getDateFin())
-                        .studentId(updated.getStudentId())
+                        .studentAuthId(updated.getStudentAuthId())
                         .studentEmail(updated.getStudentEmail())
                         .studentName(updated.getStudentName())
                         .entreprise_name(updated.getEntrepriseName())
                         .title(updated.getPfeTitle())
                         .year(Year.now().getValue())
-                        .supervisorId(teacherId)
+                        .supervisorAuthId(teacherAuthId)
                         .supervisorName(teacherDTO.getNom())
                         .status(SubmissionStatus.CREATED)
                         .createdDate(new Date())
@@ -196,15 +201,15 @@ public class AdminPFEController {
         PFE pfe = pfeService.getPFEById(id);
 
         log.info("request : {}",request);
-        if (request.getJuryId() !=null){
-            TeacherDTO chef_jury = userServiceClient.getTeacherById(request.getJuryId()).getData();
-            pfe.setChefDeJuryId(chef_jury.getTeacherId());
+        if (request.getJuryAuthId() !=null){
+            TeacherDTO chef_jury = userServiceClient.getTeacherByAuthId(String.valueOf(request.getJuryAuthId())).getData();
+            pfe.setChefDeJuryAuthId(chef_jury.getAuthId() != null ? Long.valueOf(chef_jury.getAuthId()) : request.getJuryAuthId());
             pfe.setChefDeJuryName(chef_jury.getNom()+" "+chef_jury.getPrenom());
         }
 
-        if (request.getReporteur_id()!=null){
-            TeacherDTO reporteur = userServiceClient.getTeacherById(request.getReporteur_id()).getData();
-            pfe.setRapporteurId(reporteur.getTeacherId());
+        if (request.getReporteurAuthId()!=null){
+            TeacherDTO reporteur = userServiceClient.getTeacherByAuthId(String.valueOf(request.getReporteurAuthId())).getData();
+            pfe.setRapporteurAuthId(reporteur.getAuthId() != null ? Long.valueOf(reporteur.getAuthId()) : request.getReporteurAuthId());
             pfe.setRapporteurName(reporteur.getNom()+" "+reporteur.getPrenom());
         }
 

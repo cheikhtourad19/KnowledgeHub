@@ -31,19 +31,21 @@ public class PFE {
     private SubmissionStatus status;
 
 
-    @Column(nullable = false)
-    private Long studentId;
+    @Column(name = "student_id", nullable = false)
+    private Long studentAuthId;
 
     private String studentName;
 
     private String studentEmail;
 
-    @Column(nullable = false)
-    private Long supervisorId;
+    @Column(name = "supervisor_id", nullable = false)
+    private Long supervisorAuthId;
     private String supervisorName;
-    private Long chefDeJuryId;
+    @Column(name = "chef_de_jury_id")
+    private Long chefDeJuryAuthId;
     private String chefDeJuryName;
-    private Long rapporteurId;
+    @Column(name = "rapporteur_id")
+    private Long rapporteurAuthId;
     private String rapporteurName;
     private String entreprise_name;
     private Date date_debut;

@@ -1,14 +1,12 @@
 package tn.esprim.knowledgehub.user.entity;
 
 
-import jakarta.persistence.Entity;
-import jakarta.persistence.GeneratedValue;
-import jakarta.persistence.GenerationType;
-import jakarta.persistence.Id;
+import jakarta.persistence.*;
 import lombok.*;
 import lombok.experimental.SuperBuilder;
 
 @Entity
+@Table(indexes = @Index(name = "idx_teacher_auth_id", columnList = "authId"))
 @Getter
 @Setter
 @NoArgsConstructor

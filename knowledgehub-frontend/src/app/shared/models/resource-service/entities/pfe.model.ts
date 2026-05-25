@@ -10,14 +10,14 @@ export interface PFE {
   year?: number;
   status: SubmissionStatus;
   cloture?: boolean;
-  studentId: number;
+  studentAuthId: number;
   studentName?: string;
   studentEmail?: string;
-  supervisorId: number;
+  supervisorAuthId: number;
   supervisorName?: string;
-  chefDeJuryId?: number;
+  chefDeJuryAuthId?: number;
   chefDeJuryName?: string;
-  rapporteurId?: number;
+  rapporteurAuthId?: number;
   rapporteurName?: string;
   entreprise_name?: string;
   date_debut?: Date;

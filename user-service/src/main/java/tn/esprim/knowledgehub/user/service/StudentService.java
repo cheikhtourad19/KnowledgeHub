@@ -45,9 +45,9 @@ public class StudentService {
     public Classe createClasse(Classe classe){
         return classeRepository.save(classe);
     }
-    public Student addStudentToClasse(Long studentId, Long classeId){
-        Student student = studentRepository.findById(studentId).orElseThrow(()->new RuntimeException("Student not found with id: "+studentId));
-        Classe classe = classeRepository.findById(classeId).orElseThrow(()->new RuntimeException("could not add student "+studentId +" because Classe not found with id: "+classeId));
+    public Student addStudentToClasse(Long authId, Long classeId){
+        Student student = studentRepository.findByAuthId(String.valueOf(authId)).orElseThrow(()->new RuntimeException("Student not found with authId: "+authId));
+        Classe classe = classeRepository.findById(classeId).orElseThrow(()->new RuntimeException("could not add student "+authId +" because Classe not found with id: "+classeId));
         student.setClasse(classe);
         classe.getStudents().add(student);
         classeRepository.save(classe);

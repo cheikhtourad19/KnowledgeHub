@@ -8,7 +8,6 @@ import { ApiResponse } from '../../shared/models/common/api-response.model';
 export interface AuthState {
   token: string | null;
   authId: number | null;
-  userId: number | null;
   email: string | null;
   role: UserRole | null;
   username: string | null;
@@ -98,7 +97,6 @@ export class AuthService {
     this.authStateSubject.next({
       token: null,
       authId: null,
-      userId: null,
       email: null,
       role: null,
       username: null
@@ -132,18 +130,10 @@ export class AuthService {
     return {
       token: null,
       authId: null,
-      userId: null,
       email: null,
       role: null,
       username: null
     };
-  }
-
-  /**
-   * Get user ID based on role
-   */
-  getUserId(): number | null {
-    return this.currentAuthState.userId;
   }
 
   getUser():any | null {

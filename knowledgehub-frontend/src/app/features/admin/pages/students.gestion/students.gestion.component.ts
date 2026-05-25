@@ -52,7 +52,7 @@ export class StudentsGestionComponent implements OnInit {
     private confirmationService: ConfirmationService,
     private userService: UserApiService,
   ) {}
-  selectedTeacherId: number | null = null;
+  selectedAuthId: number | null = null;
   ngOnInit(): void {
     this.loadStudents();
     this.loadClasses();
@@ -117,7 +117,7 @@ export class StudentsGestionComponent implements OnInit {
     if (this.isAllSelected()) {
       this.selectedStudents = [];
     } else {
-      this.selectedStudents = this.filteredStudents.map((s) => s.studentId);
+      this.selectedStudents = this.filteredStudents.map((s) => Number(s.authId));
     }
   }
 
@@ -126,7 +126,7 @@ export class StudentsGestionComponent implements OnInit {
       this.filteredStudents.length > 0 &&
       this.selectedStudents.length === this.filteredStudents.length &&
       this.filteredStudents.every((s) =>
-        this.selectedStudents.includes(s.studentId),
+        this.selectedStudents.includes(Number(s.authId)),
       )
     );
   }
@@ -193,20 +193,20 @@ export class StudentsGestionComponent implements OnInit {
   }
 
   assignToClass(): void {
-    const studentId = this.selectedStudent?.studentId;
+    const authId = this.selectedStudent?.authId;
     const classId = this.selectedClass;
 
-    console.log('Selected Student ID:', studentId);
+    console.log('Selected Student auth ID:', authId);
     console.log('Selected Class ID:', classId);
 
-    if (studentId && classId) {
+    if (authId && classId) {
       // Close modal first
       this.displayAssignClassModal = false;
       this.actionLoading = true;
 
       this.userApiService
         .assignStudentToClass({
-          studentId: studentId,
+          authId: Number(authId),
           classId: classId,
         })
         .subscribe({
@@ -284,18 +284,18 @@ export class StudentsGestionComponent implements OnInit {
   displayBulkAssignModal: boolean = false;
 
   // Toggle single student selection
-  toggleStudentSelection(studentId: number): void {
-    const index = this.selectedStudents.indexOf(studentId);
+  toggleStudentSelection(authId: number): void {
+    const index = this.selectedStudents.indexOf(authId);
     if (index > -1) {
       this.selectedStudents.splice(index, 1);
     } else {
-      this.selectedStudents.push(studentId);
+      this.selectedStudents.push(authId);
     }
   }
 
   // Check if student is selected
-  isStudentSelected(studentId: number): boolean {
-    return this.selectedStudents.includes(studentId);
+  isStudentSelected(authId: number): boolean {
+    return this.selectedStudents.includes(authId);
   }
 
   // Clear selection
@@ -307,7 +307,7 @@ export class StudentsGestionComponent implements OnInit {
   selectStudentsWithoutClass(): void {
     this.selectedStudents = this.students
       .filter((s) => !s.classe)
-      .map((s) => s.studentId);
+      .map((s) => Number(s.authId));
 
     if (this.selectedStudents.length === 0) {
       this.messageService.add({
@@ -326,10 +326,10 @@ export class StudentsGestionComponent implements OnInit {
 
   // Bulk assign students to class
   bulkAssignToClass(): void {
-    const studentIds = [...this.selectedStudents];
+    const authIds = [...this.selectedStudents];
     const classId = this.selectedClass;
 
-    if (studentIds.length === 0 || !classId) {
+    if (authIds.length === 0 || !classId) {
       return;
     }
 
@@ -339,7 +339,7 @@ export class StudentsGestionComponent implements OnInit {
 
     this.userApiService
       .bulkAssignStudentsToClass({
-        studentIds: studentIds,
+        authIds: authIds,
         classId: classId,
       })
       .subscribe({
@@ -347,7 +347,7 @@ export class StudentsGestionComponent implements OnInit {
           this.messageService.add({
             severity: 'success',
             summary: 'Succès',
-            detail: `${studentIds.length} étudiant(s) assigné(s) à la classe avec succès`,
+            detail: `${authIds.length} étudiant(s) assigné(s) à la classe avec succès`,
           });
           this.actionLoading = false;
           this.clearSelection();
@@ -371,55 +371,55 @@ export class StudentsGestionComponent implements OnInit {
     this.activeResultTab = 'created';
   }
 
-  deleteTeacher(event: Event, id: String): void {
+  deleteTeacher(event: Event, id: string): void {
     event.stopPropagation();
 
-    this.selectedTeacherId = Number(id);
-    console.log('Selected teacher ID for deletion:', this.selectedTeacherId); // Now this should show correctly
+    this.selectedAuthId = Number(id);
+    console.log('Selected auth ID for deletion:', this.selectedAuthId);
 
     this.confirmationService.confirm({
       target: event.target as EventTarget,
-      message: 'Êtes-vous sûr de vouloir supprimer cet etudiant ?',
+      message: 'Êtes-vous sûr de vouloir supprimer cet utilisateur ?',
       icon: 'pi pi-exclamation-triangle',
       acceptLabel: 'Oui, supprimer',
       rejectLabel: 'Non, annuler',
       acceptButtonStyleClass: 'p-button-danger',
       accept: () => {
-        const teacherIdToDelete = this.selectedTeacherId;
-        console.log('Accept - Deleting teacher ID:', teacherIdToDelete);
+        const authIdToDelete = this.selectedAuthId;
+        console.log('Accept - Deleting auth ID:', authIdToDelete);
 
-        if (teacherIdToDelete) {
+        if (authIdToDelete) {
           this.actionLoading = true;
-          this.userService.deleteUser(teacherIdToDelete).subscribe({
+          this.userService.deleteUser(authIdToDelete).subscribe({
             next: (response) => {
               this.messageService.add({
                 severity: 'success',
                 summary: 'Succès',
-                detail: 'Enseignant supprimé avec succès',
+                detail: 'Utilisateur supprimé avec succès',
               });
               this.actionLoading = false;
               this.loadStudents();
-              this.selectedTeacherId = null;
-              console.log('Delete successful for teacher ID:', response);
+              this.selectedAuthId = null;
+              console.log('Delete successful for auth ID:', response);
             },
             error: (err) => {
               console.error('Delete error:', err);
               this.messageService.add({
                 severity: 'error',
                 summary: 'Erreur',
-                detail: "Impossible de supprimer l'enseignant.",
+                detail: "Impossible de supprimer l'utilisateur.",
               });
               this.actionLoading = false;
-              this.selectedTeacherId = null;
+              this.selectedAuthId = null;
             },
           });
         } else {
-          console.error('No teacher ID found for deletion');
+          console.error('No auth ID found for deletion');
         }
       },
       reject: () => {
-        console.log('Delete rejected for teacher ID:', this.selectedTeacherId); // Debug log
-        this.selectedTeacherId = null;
+        console.log('Delete rejected for auth ID:', this.selectedAuthId);
+        this.selectedAuthId = null;
       },
     });
   }

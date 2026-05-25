@@ -63,7 +63,7 @@ public class AdminDocumentController {
             @Parameter(description = "File title") @RequestParam(value = "title", required = false) String title,
             @Parameter(description = "File description") @RequestParam(value = "description", required = false) String description,
             @Parameter(description = "Admins can set true to publish directly to library") @RequestParam(value = "isPublished", required = false) Boolean isPublished,
-            @RequestHeader(value = "X-User-Id", required = false) String userId,
+            @RequestHeader(value = "X-Auth-Id", required = false) String authId,
             @RequestHeader(value = "X-User-Role") String role,
             @RequestHeader(value = "X-User-Name", required = false) String userEmail
     ) {
@@ -75,13 +75,13 @@ public class AdminDocumentController {
                 log.info("No coverPage provided in request.");
             }
 
-            // Parse userId, default to 0 if empty or null (for admin uploads)
-            Long uploadedByUserId = 0L;
-            if (userId != null && !userId.trim().isEmpty()) {
+            // Parse authId, default to 0 if empty or null (for admin uploads)
+            Long uploadedByAuthId = 0L;
+            if (authId != null && !authId.trim().isEmpty()) {
                 try {
-                    uploadedByUserId = Long.parseLong(userId.trim());
+                    uploadedByAuthId = Long.parseLong(authId.trim());
                 } catch (NumberFormatException e) {
-                    log.warn("Invalid userId format: {}, using default 0", userId);
+                    log.warn("Invalid authId format: {}, using default 0", authId);
                 }
             }
 
@@ -103,7 +103,7 @@ public class AdminDocumentController {
             FileUploadResponse response = fileService.uploadFile(
                     file,
                     fileType,
-                    uploadedByUserId,
+                    uploadedByAuthId,
                     uploaderEmail,
                     bucketType,
                     title,
@@ -137,17 +137,17 @@ public class AdminDocumentController {
     public ResponseEntity<?> getFileForView(
             @PathVariable Long fileId,
             @RequestHeader(value = "X-User-Role") String role,
-            @RequestHeader(value = "X-User-Id", required = false) String userId
+            @RequestHeader(value = "X-Auth-Id", required = false) String authIdStr
     ) {
         try {
             boolean isAdmin = role.equals("ADMIN");
 
-            Long userIdLong = null;
-            if (userId != null && !userId.trim().isEmpty()) {
+            Long authId = null;
+            if (authIdStr != null && !authIdStr.trim().isEmpty()) {
                 try {
-                    userIdLong = Long.parseLong(userId.trim());
+                    authId = Long.parseLong(authIdStr.trim());
                 } catch (NumberFormatException e) {
-                    log.warn("Invalid userId format: {}", userId);
+                    log.warn("Invalid authId format: {}", authIdStr);
                 }
             }
 
@@ -157,7 +157,7 @@ public class AdminDocumentController {
                 List<Long> usersWithAccess = accesService.fileAccess(fileId);
                 log.debug("Users with access to file {}: {}", fileId, usersWithAccess);
 
-                if (userIdLong == null || !usersWithAccess.contains(userIdLong)) {
+                if (authId == null || !usersWithAccess.contains(authId)) {
                     return ResponseEntity.status(403).body(
                             ApiResponse.error("Forbidden", "This file is not yet published.")
                     );
@@ -199,22 +199,22 @@ public class AdminDocumentController {
     public ResponseEntity<tn.esprim.knowledgehub.resource.dto.response.ApiResponse<Void>> deleteFile(
             @Parameter(description = "File ID") @PathVariable Long fileId,
             @RequestHeader(value = "X-User-Role") String role,
-            @RequestHeader(value = "X-User-Id", required = false) String userId
+            @RequestHeader(value = "X-Auth-Id", required = false) String authIdStr
     ) {
         try {
             File file = fileService.getFileById(fileId);
 
-            // Parse userId safely
-            Long userIdLong = null;
-            if (userId != null && !userId.trim().isEmpty()) {
+            // Parse authId safely
+            Long authId = null;
+            if (authIdStr != null && !authIdStr.trim().isEmpty()) {
                 try {
-                    userIdLong = Long.parseLong(userId.trim());
+                    authId = Long.parseLong(authIdStr.trim());
                 } catch (NumberFormatException e) {
-                    log.warn("Invalid userId format: {}", userId);
+                    log.warn("Invalid authId format: {}", authIdStr);
                 }
             }
 
-            if (!role.equals("ADMIN") && (userIdLong == null || !file.getUploadedByUserId().equals(userIdLong))) {
+            if (!role.equals("ADMIN") && (authId == null || !file.getUploadedByAuthId().equals(authId))) {
                 return ResponseEntity.status(403).body(
                         tn.esprim.knowledgehub.resource.dto.response.ApiResponse.error("Forbidden", "Only admins and file owners can delete files")
                 );
@@ -244,13 +244,13 @@ public class AdminDocumentController {
             @PathVariable Long fileId,
             @RequestParam Boolean isPublished,
             @RequestHeader(value = "X-User-Role") String role,
-            @RequestHeader(value = "X-User-Id", required = false) Long userId
+            @RequestHeader(value = "X-Auth-Id", required = false) Long authId
     ) {
         try {
             boolean isAdmin = role.equals("ADMIN");
             boolean isTeacherAndOwner = role.equals("TEACHER")
-                    && userId != null
-                    && fileService.getFileById(fileId).getUploadedByUserId().equals(userId);
+                    && authId != null
+                    && fileService.getFileById(fileId).getUploadedByAuthId().equals(authId);
 
             if (!isAdmin && !isTeacherAndOwner) {
                 return ResponseEntity.status(403).body(
@@ -315,7 +315,7 @@ public class AdminDocumentController {
                 }
             }
 
-            boolean isOwner = authIdLong != null && file.getUploadedByUserId().equals(authIdLong);
+            boolean isOwner = authIdLong != null && file.getUploadedByAuthId().equals(authIdLong);
 
             if (!isStaff && !isOwner) {
                 return ResponseEntity.status(403).body(

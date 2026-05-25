@@ -127,8 +127,8 @@ export class JuryComponent implements OnInit {
       : 'bg-orange-100 text-orange-700 dark:bg-orange-900/30 dark:text-orange-400';
   }
 
-  getStudentName(studentId: number): string {
-    const student = this.students.find((s) => s.studentId === studentId);
+  getStudentName(authId: number): string {
+    const student = this.students.find((s) => Number(s.authId) === authId);
     return student ? `${student.nom} ${student.prenom}` : 'N/A';
   }
 

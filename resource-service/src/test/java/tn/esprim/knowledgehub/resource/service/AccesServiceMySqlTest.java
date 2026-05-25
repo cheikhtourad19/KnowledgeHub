@@ -42,7 +42,7 @@ class AccesServiceMySqlTest {
     @BeforeEach
     void setUp() {
         File file = File.builder()
-                .uploadedByUserId(99L)
+                .uploadedByAuthId(99L)
                 .fileName("test-file.pdf")
                 .originalFileName("test-file.pdf")
                 .fileSize(1024L)
@@ -65,10 +65,10 @@ class AccesServiceMySqlTest {
     void shouldReturnAllPFEMembers() {
         PFE pfe = new PFE();
         pfe.setReportFile(savedFile);
-        pfe.setStudentId(10L);
-        pfe.setSupervisorId(20L);
-        pfe.setChefDeJuryId(30L);
-        pfe.setRapporteurId(40L);
+        pfe.setStudentAuthId(10L);
+        pfe.setSupervisorAuthId(20L);
+        pfe.setChefDeJuryAuthId(30L);
+        pfe.setRapporteurAuthId(40L);
         pfe.setTitle("Test PFE");
         pfe.setYear(2026);
         pfe.setStatus(SubmissionStatus.APPROVED);
@@ -83,8 +83,8 @@ class AccesServiceMySqlTest {
     void shouldReturnStageMembers() {
         Stage stage = new Stage();
         stage.setReportFile(savedFile);
-        stage.setStudentId(50L);
-        stage.setSupervisorId(60L);
+        stage.setStudentAuthId(50L);
+        stage.setSupervisorAuthId(60L);
         stage.setTitle("Test Stage");
         stage.setYear(2026);
 

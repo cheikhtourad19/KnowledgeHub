@@ -111,6 +111,7 @@ services:
       LOG_LEVEL_GATEWAY: ${LOG_LEVEL_GATEWAY:-DEBUG}
       LOG_LEVEL_NETTY: ${LOG_LEVEL_NETTY:-DEBUG}
       JAVA_OPTS: ${JAVA_OPTS:--Xms512m -Xmx1024m}
+      ADMIN_EMAIL: ${ADMIN_EMAIL}
     depends_on:
       mysql:
         condition: service_healthy
@@ -150,6 +151,8 @@ services:
       LOGGING_LEVEL_ROOT: ${LOG_LEVEL_ROOT:-WARN}
       LOGGING_LEVEL_TN_ESPRIM: ${LOG_LEVEL_KNOWLEDGEHUB:-INFO}
       JAVA_OPTS: ${JAVA_OPTS:--Xms512m -Xmx1024m}
+      ADMIN_EMAIL: ${ADMIN_EMAIL}
+      ADMIN_PASSWORD: ${ADMIN_PASSWORD}
     depends_on:
       mysql:
         condition: service_healthy
@@ -187,6 +190,7 @@ services:
       LOGGING_LEVEL_ROOT: ${LOG_LEVEL_ROOT:-WARN}
       LOGGING_LEVEL_TN_ESPRIM: ${LOG_LEVEL_KNOWLEDGEHUB:-INFO}
       JAVA_OPTS: ${JAVA_OPTS:--Xms512m -Xmx1024m}
+      ADMIN_EMAIL: ${ADMIN_EMAIL}
     depends_on:
       mysql:
         condition: service_healthy
@@ -239,6 +243,7 @@ services:
       LOGGING_LEVEL_ROOT: ${LOG_LEVEL_ROOT:-WARN}
       LOGGING_LEVEL_TN_ESPRIM: ${LOG_LEVEL_KNOWLEDGEHUB:-INFO}
       JAVA_OPTS: ${JAVA_OPTS:--Xms512m -Xmx1024m}
+      ADMIN_EMAIL: ${ADMIN_EMAIL}
     depends_on:
       mysql:
         condition: service_healthy
@@ -283,6 +288,7 @@ services:
       LOGGING_LEVEL_TN_ESPRIM: ${LOG_LEVEL_KNOWLEDGEHUB:-INFO}
       LOG_LEVEL_MONGODB: ${LOG_LEVEL_MONGODB:-INFO}
       JAVA_OPTS: ${JAVA_OPTS:--Xms512m -Xmx1024m}
+      ADMIN_EMAIL: ${ADMIN_EMAIL}
     depends_on:
       mongodb:
         condition: service_healthy

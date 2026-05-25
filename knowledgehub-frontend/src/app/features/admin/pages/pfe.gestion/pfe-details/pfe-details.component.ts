@@ -19,11 +19,11 @@ export class PfeDetailsComponent implements OnInit {
 
   // Jury modal
   showJuryModal = false;
-  selectedJuryId: number | null = null;
+  selectedJuryAuthId: number | null = null;
 
   // Rapporteur modal
   showRapporteurModal = false;
-  selectedRapporteurId: number | null = null;
+  selectedRapporteurAuthId: number | null = null;
 
   // Confirmation modals
   showClotureConfirmModal = false;
@@ -75,7 +75,7 @@ export class PfeDetailsComponent implements OnInit {
         this.loading = false;
         this.list_teachers = (response.data ?? []).map((t: Teacher) => ({
           ...t,
-          id: Number(t.teacherId),
+          id: Number(t.authId),
           fullName:
             `${t.prenom ?? ''} ${t.nom ?? ''}`.trim() || t.email || 'Sans nom',
         }));
@@ -187,19 +187,19 @@ export class PfeDetailsComponent implements OnInit {
 
   // ── Jury Modal ──
   openJuryModal(): void {
-    this.selectedJuryId = this.pfe_details?.chefDeJuryId ?? null;
+    this.selectedJuryAuthId = this.pfe_details?.chefDeJuryAuthId ?? null;
     this.showJuryModal = true;
   }
   closeJuryModal(): void {
     this.showJuryModal = false;
-    this.selectedJuryId = null;
+    this.selectedJuryAuthId = null;
   }
   confirmJury(): void {
-    if (!this.selectedJuryId) return;
+    if (!this.selectedJuryAuthId) return;
 
     this.actionLoading = true;
     this.ressourceApi
-      .assignJury(this.pfe_id, this.selectedJuryId, undefined)
+      .assignJury(this.pfe_id, this.selectedJuryAuthId, undefined)
       .subscribe({
         next: () => {
           this.actionLoading = false;
@@ -207,10 +207,10 @@ export class PfeDetailsComponent implements OnInit {
           if (this.pfe_details) {
             this.pfe_details = {
               ...this.pfe_details,
-              chefDeJuryId: this.selectedJuryId!,
+              chefDeJuryAuthId: this.selectedJuryAuthId!,
               chefDeJuryName:
                 this.list_teachers.find(
-                  (t) => t.teacherId === this.selectedJuryId,
+                  (t) => Number(t.authId) === this.selectedJuryAuthId,
                 )?.fullName ?? '',
             };
           }
@@ -234,29 +234,29 @@ export class PfeDetailsComponent implements OnInit {
 
   // ── Rapporteur Modal ──
   openRapporteurModal(): void {
-    this.selectedRapporteurId = this.pfe_details?.rapporteurId ?? null;
+    this.selectedRapporteurAuthId = this.pfe_details?.rapporteurAuthId ?? null;
     this.showRapporteurModal = true;
   }
   closeRapporteurModal(): void {
     this.showRapporteurModal = false;
-    this.selectedRapporteurId = null;
+    this.selectedRapporteurAuthId = null;
   }
   confirmRapporteur(): void {
-    if (!this.selectedRapporteurId) return;
+    if (!this.selectedRapporteurAuthId) return;
 
     this.actionLoading = true;
     this.ressourceApi
-      .assignJury(this.pfe_id, undefined, this.selectedRapporteurId)
+      .assignJury(this.pfe_id, undefined, this.selectedRapporteurAuthId)
       .subscribe({
         next: () => {
           this.actionLoading = false;
           if (this.pfe_details) {
             this.pfe_details = {
               ...this.pfe_details,
-              rapporteurId: this.selectedRapporteurId!,
+              rapporteurAuthId: this.selectedRapporteurAuthId!,
               rapporteurName:
                 this.list_teachers.find(
-                  (t) => t.teacherId === this.selectedRapporteurId,
+                  (t) => Number(t.authId) === this.selectedRapporteurAuthId,
                 )?.fullName ?? '',
             };
           }

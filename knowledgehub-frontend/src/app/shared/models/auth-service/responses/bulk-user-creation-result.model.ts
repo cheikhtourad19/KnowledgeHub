@@ -9,6 +9,6 @@ export interface BulkUserCreationResult {
   createdUsers: Array<{
     email: string;
     role: string;
-    userId: number;
+    authId: number;
   }>;
 }

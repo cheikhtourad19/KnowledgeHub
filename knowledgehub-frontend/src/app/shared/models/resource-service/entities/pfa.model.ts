@@ -9,10 +9,10 @@ export interface PFA {
   title: string;
   year?: number;
   status: SubmissionStatus;
-  studentId: number;
+  studentAuthId: number;
   studentName?: string;
   studentEmail?: string;
-  supervisorId: number;
+  supervisorAuthId: number;
   supervisorName?: string;
   reportFile?: File;
   submissionDate?: Date;

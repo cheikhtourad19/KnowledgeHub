@@ -12,7 +12,7 @@ import lombok.NoArgsConstructor;
 @AllArgsConstructor
 public class TeacherDTO {
 
-    private Long teacherId;
+    private String authId;
     private String email;
     private String nom;
     private String prenom;

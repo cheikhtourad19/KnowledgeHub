@@ -21,16 +21,16 @@ public class CreatePFARequest {
     @Max(value = 2100, message = "Year must be before 2100")
     private Integer year;
 
-    @NotNull(message = "Student ID is required")
-    @Min(value = 1, message = "Student ID must be positive")
-    private Long studentId;
+    @NotNull(message = "Student auth ID is required")
+    @Min(value = 1, message = "Student auth ID must be positive")
+    private Long studentAuthId;
 
     private String studentName;
     private String studentEmail;
 
-    @NotNull(message = "Supervisor ID is required")
-    @Min(value = 1, message = "Supervisor ID must be positive")
-    private Long supervisorId;
+    @NotNull(message = "Supervisor auth ID is required")
+    @Min(value = 1, message = "Supervisor auth ID must be positive")
+    private Long supervisorAuthId;
 
     private String supervisorName;
 }
