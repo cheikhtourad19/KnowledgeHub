@@ -29,8 +29,6 @@ import { TypeAnnonceStage } from '../models/resource-service/enums/type-annonce-
 })
 export class ResourceApiService {
   private readonly baseUrl = `${environment.apiUrl}/ressource-service`;
-  private readonly conventionExtractionBaseUrl =
-    environment.conventionExtractionApiUrl;
 
   constructor(private http: HttpClient) {}
 
@@ -71,7 +69,7 @@ export class ResourceApiService {
     formData.append('file', file);
 
     return this.http.post<InternshipConventionExtractionResponse>(
-      `${this.conventionExtractionBaseUrl}/api/internship/extract-convention`,
+      `${environment.apiUrl}/api/internship/extract-convention`,
       formData,
     );
   }
@@ -312,6 +310,27 @@ export class ResourceApiService {
   getAllPFE(): Observable<ApiResponse<PFE[]>> {
     return this.http.get<ApiResponse<PFE[]>>(
       `${this.baseUrl}/api/student/pfe/all-PFE`,
+    );
+  }
+
+  /**
+   * Get teachers with their assigned PFE count (Admin only)
+   * GET /api/admin/pfe/teachersAvailable
+   */
+  getTeachersPfeCount(): Observable<ApiResponse<Record<string, number>>> {
+    return this.http.get<ApiResponse<Record<string, number>>>(
+      `${this.baseUrl}/api/admin/pfe/teachersAvailable`,
+    );
+  }
+
+  /**
+   * Search matching teachers by CV embeddings via AI service
+   * POST /ai-service/api/v1/search-teachers
+   */
+  searchTeachersByCv(pfeData: any[]): Observable<any> {
+    return this.http.post(
+      `${environment.apiUrl}/ai-service/api/v1/search-teachers`,
+      pfeData,
     );
   }
 

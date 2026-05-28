@@ -2,8 +2,12 @@ import { Component, OnInit } from '@angular/core';
 import { ActivatedRoute, Router } from '@angular/router';
 import { ResourceApiService } from '../../../../../shared/services/resource-api.service';
 import { Stage } from '../../../../../shared/models/resource-service/entities/stage.model';
+import { InternshipConventionExtractionResponse } from '../../../../../shared/models/resource-service/responses/internship-convention-extraction-response.model';
 import { MessageService } from 'primeng/api';
-
+import {
+  generateLettreAffectationPdf,
+  LettreAffectationData,
+} from './lettre-affectation-pdf.builder';
 @Component({
   selector: 'app-student-stage-details',
   standalone: false,
@@ -36,6 +40,22 @@ export class StudentStageDetailsComponent implements OnInit {
     companyName: '',
     durationMonths: null as number | null,
   };
+
+  // Lettre d'affectation modal
+  showLettreAffectationModal = false;
+  extractionLoading = false;
+  conventionData: InternshipConventionExtractionResponse | null = null;
+  lettreForm = {
+    studentName: '',
+    filiere: '',
+    companyName: '',
+    companyAddress: '',
+    companyEmail: '',
+    companyPhone: '',
+    dateDebut: '',
+    dateFin: '',
+  };
+  downloadLoading = false;
 
   // PDF Viewer Modal
   showPdfModal = false;
@@ -398,5 +418,117 @@ export class StudentStageDetailsComponent implements OnInit {
     this.showPdfModal = false;
     this.currentPdfUrl = '';
     this.currentPdfTitle = '';
+  }
+
+  // ── Lettre d'affectation ──
+  openLettreAffectationModal(): void {
+    this.lettreForm = {
+      studentName: this.stage?.studentName ?? '',
+      filiere: '',
+      companyName: '',
+      companyAddress: '',
+      companyEmail: '',
+      companyPhone: '',
+      dateDebut: '',
+      dateFin: '',
+    };
+    this.conventionData = null;
+    this.showLettreAffectationModal = true;
+    this.extractFromConvention();
+  }
+
+  closeLettreAffectationModal(): void {
+    this.showLettreAffectationModal = false;
+    this.lettreForm = {
+      studentName: '',
+      filiere: '',
+      companyName: '',
+      companyAddress: '',
+      companyEmail: '',
+      companyPhone: '',
+      dateDebut: '',
+      dateFin: '',
+    };
+    this.conventionData = null;
+  }
+
+  downloadLettreAffectation(): void {
+    this.downloadLoading = true;
+
+    const year = this.stage?.year ?? new Date().getFullYear();
+    const studentName = this.lettreForm.studentName || '—';
+
+    const data: LettreAffectationData = {
+      studentName,
+      filiere: this.lettreForm.filiere || '—',
+      companyName: this.lettreForm.companyName || '—',
+      companyAddress: this.lettreForm.companyAddress || '—',
+      dateDebut: this.lettreForm.dateDebut
+        ? new Date(this.lettreForm.dateDebut).toLocaleDateString('fr-FR')
+        : '—',
+      dateFin: this.lettreForm.dateFin
+        ? new Date(this.lettreForm.dateFin).toLocaleDateString('fr-FR')
+        : '—',
+      anneeAcademique: `${year}/${year - 1}`,
+      today: new Date().toLocaleDateString('fr-FR', {
+        day: 'numeric',
+        month: 'long',
+        year: 'numeric',
+      }),
+    };
+
+    const filename = `lettre-affectation-${studentName.replace(/\s+/g, '-')}.pdf`;
+
+    generateLettreAffectationPdf(data, filename)
+      .catch(() => {
+        this.messageService.add({
+          severity: 'error',
+          summary: 'Erreur',
+          detail: 'Erreur lors de la génération du PDF',
+          life: 5000,
+        });
+      })
+      .finally(() => {
+        this.downloadLoading = false;
+      });
+  }
+
+  extractFromConvention(): void {
+    if (!this.conventionFileUrl) {
+      this.extractionLoading = false;
+      return;
+    }
+
+    this.extractionLoading = true;
+
+    fetch(this.conventionFileUrl)
+      .then((response) => response.blob())
+      .then((blob) => {
+        const file = new File([blob], 'convention.pdf', {
+          type: 'application/pdf',
+        });
+        this.resourceApiService.extractConventionData(file).subscribe({
+          next: (res) => {
+            this.conventionData = res;
+            this.lettreForm = {
+              studentName: this.lettreForm.studentName,
+              filiere: res.studentFiliere ?? '',
+              companyName: res.entrepriseName ?? '',
+              companyAddress: res.entrepriseAddress ?? '',
+              companyEmail: res.entrepriseEmail ?? '',
+              companyPhone: res.entreprisePhone ?? '',
+              dateDebut: res.dateDebut ?? '',
+              dateFin: res.dateFin ?? '',
+            };
+            this.extractionLoading = false;
+          },
+          error: () => {
+            this.extractionLoading = false;
+          },
+        });
+      })
+      .catch(() => {
+        this.extractionLoading = false;
+      });
   }
 }

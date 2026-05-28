@@ -22,6 +22,7 @@
     "@primeng/themes": "^21.0.4",
     "@primeuix/themes": "^2.0.3",
     "flowbite": "^4.0.1",
+    "html2pdf.js": "^0.14.0",
     "marked": "^17.0.4",
     "ng2-pdf-viewer": "^10.4.0",
     "ngx-extended-pdf-viewer": "^25.6.4",

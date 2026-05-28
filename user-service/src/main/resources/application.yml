@@ -35,6 +35,18 @@ notification:
   service:
     url: http://localhost:8084
 
+minio:
+  endpoint: http://localhost:9000
+  external-endpoint: http://localhost:9000
+  access-key: minioadmin
+  secret-key: IM0i7/Sb3/tGGxWQdtxBtMRWov3fZ3qf
+  buckets:
+    teacher-cv: knowledgehub-teacher-cv
+
+ai-search:
+  service:
+    url: http://localhost:8000
+
 management:
   endpoints:
     web:
@@ -82,6 +94,18 @@ admin:
 notification:
   service:
     url: ${NOTIFICATION_SERVICE_URL:http://notification-service:8084}
+
+minio:
+  endpoint: ${MINIO_ENDPOINT:http://minio:9000}
+  external-endpoint: ${MINIO_EXTERNAL_ENDPOINT}
+  access-key: ${MINIO_ACCESS_KEY:minioadmin}
+  secret-key: ${MINIO_SECRET_KEY}
+  buckets:
+    teacher-cv: ${MINIO_BUCKET_TEACHER_CV:knowledgehub-teacher-cv}
+
+ai-search:
+  service:
+    url: ${AI_SEARCH_SERVICE_URL:http://ai-search-service:8000}
 
 logging:
   level:

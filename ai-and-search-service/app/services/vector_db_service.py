@@ -1,5 +1,5 @@
 """Vector database service using ChromaDB with persistent storage"""
-from typing import List, Dict, Any
+from typing import List, Dict, Any, Optional
 import chromadb
 from chromadb.config import Settings as ChromaSettings
 from sentence_transformers import SentenceTransformer
@@ -117,6 +117,59 @@ class VectorDBService:
 
         except Exception as e:
             logger.error(f"Error indexing document: {e}")
+            raise
+
+    async def index_text(
+        self,
+        text_id: str,
+        chunks: List[str],
+        metadata: Optional[Dict[str, Any]] = None
+    ) -> int:
+        """
+        Index arbitrary text chunks with custom metadata (no MinIO required).
+
+        Useful for indexing CV summaries, teacher profiles, or any text
+        that doesn't come from a PDF document.
+
+        Args:
+            text_id: Unique identifier string (e.g. \"cv_summary_teacher_42\")
+            chunks: List of text chunks
+            metadata: Arbitrary metadata to store with vectors (e.g. teacher_id, teacher_name)
+
+        Returns:
+            int: Number of chunks indexed
+        """
+        try:
+            logger.info(f"Generating embeddings for {len(chunks)} chunks (text_id={text_id})")
+            embeddings = self.generate_embeddings(chunks)
+
+            base_metadata = dict(metadata) if metadata else {}
+
+            ids = [f"{text_id}_chunk_{i}" for i in range(len(chunks))]
+            metadatas = [
+                {
+                    **base_metadata,
+                    "chunk_index": i,
+                    "text": chunk[:500]
+                }
+                for i, chunk in enumerate(chunks)
+            ]
+
+            self.collection.upsert(
+                ids=ids,
+                embeddings=embeddings,
+                documents=chunks,
+                metadatas=metadatas
+            )
+
+            logger.info(
+                f"Successfully indexed {len(chunks)} chunks for text_id={text_id}"
+            )
+
+            return len(chunks)
+
+        except Exception as e:
+            logger.error(f"Error indexing text: {e}")
             raise
 
     async def search(
@@ -237,6 +290,79 @@ class VectorDBService:
             logger.error(f"Error during search: {e}")
             raise
 
+    async def search_summaries(
+        self,
+        query: str,
+        top_k: int = 10
+    ) -> List[Dict[str, Any]]:
+        """
+        Search only CV summary vectors and return teacher matches.
+
+        Queries ChromaDB filtered by document_type=cv_summary,
+        groups chunks by teacher_id, and returns teacher metadata + similarity.
+
+        Args:
+            query: Search query string
+            top_k: Number of teacher results to return
+
+        Returns:
+            List[Dict]: List of {"teacher_id": int, "teacher_name": str, "score": float}
+        """
+        try:
+            query_embedding = self.generate_embedding(query)
+
+            results = self.collection.query(
+                query_embeddings=[query_embedding],
+                n_results=top_k * 5,
+                where={"document_type": "cv_summary"}
+            )
+
+            teacher_chunks: Dict[int, List[float]] = {}
+            teacher_meta: Dict[int, str] = {}
+
+            if results['metadatas'] and results['distances']:
+                for metadata, distance in zip(
+                    results['metadatas'][0],
+                    results['distances'][0]
+                ):
+                    score = 1.0 - distance
+                    if score < 0.05:
+                        continue
+
+                    teacher_id = int(metadata.get("teacher_id", 0))
+                    if teacher_id not in teacher_chunks:
+                        teacher_chunks[teacher_id] = []
+                        teacher_meta[teacher_id] = metadata.get("teacher_name", f"teacher_{teacher_id}")
+
+                    teacher_chunks[teacher_id].append(score)
+
+            matches = []
+            for teacher_id, chunk_scores in teacher_chunks.items():
+                best_score = max(chunk_scores)
+                chunk_count = len(chunk_scores)
+                if chunk_count > 1:
+                    best_score *= (1.0 / math.log(chunk_count + 1))
+                final_score = min(1.0, best_score)
+
+                matches.append({
+                    "teacher_id": teacher_id,
+                    "teacher_name": teacher_meta[teacher_id],
+                    "score": float(final_score),
+                })
+
+            matches.sort(key=lambda x: x['score'], reverse=True)
+            matches = matches[:top_k]
+
+            logger.info(
+                f"Summary search returned {len(matches)} teachers for query: '{query[:50]}...'"
+            )
+
+            return matches
+
+        except Exception as e:
+            logger.error(f"Error during summary search: {e}")
+            raise
+
     async def delete_by_file_id(self, file_id: int) -> int:
         """
         Delete all vectors associated with a file_id.
@@ -267,6 +393,38 @@ class VectorDBService:
 
         except Exception as e:
             logger.error(f"Error deleting vectors for file_id={file_id}: {e}")
+            raise
+
+    async def delete_by_metadata(self, metadata_filter: Dict[str, Any]) -> int:
+        """
+        Delete all vectors matching the given metadata filter.
+
+        Args:
+            metadata_filter: Dict of metadata key-value pairs to match (AND condition)
+
+        Returns:
+            int: Number of chunks deleted
+        """
+        try:
+            results = self.collection.get(
+                where=metadata_filter
+            )
+
+            if not results['ids']:
+                logger.info(f"No vectors found for metadata filter: {metadata_filter}")
+                return 0
+
+            self.collection.delete(ids=results['ids'])
+
+            deleted_count = len(results['ids'])
+            logger.info(
+                f"Deleted {deleted_count} chunks for metadata filter: {metadata_filter}"
+            )
+
+            return deleted_count
+
+        except Exception as e:
+            logger.error(f"Error deleting by metadata: {e}")
             raise
 
     def get_stats(self) -> Dict[str, Any]:

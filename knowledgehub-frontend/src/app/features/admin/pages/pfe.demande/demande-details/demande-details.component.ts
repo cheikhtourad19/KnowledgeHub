@@ -7,6 +7,16 @@ import { DemandStatus } from '../../../../../shared/models/resource-service/enum
 import { UpdateDemandStatusRequest } from '../../../../../shared/models/resource-service/requests/update-demand-status-request.model';
 import { Teacher } from '../../../../../shared/models/user-service/entities/teacher.model';
 import { UserApiService } from '../../../../../shared/services/user-api.service';
+
+interface TeacherWithMatch {
+  authId: string;
+  teacherId?: number;
+  fullName: string;
+  email: string;
+  pfeCount: number;
+  matchScore?: number;
+}
+
 @Component({
   selector: 'app-demande-details',
   templateUrl: './demande-details.component.html',
@@ -24,9 +34,14 @@ export class DemandeDetailsComponent implements OnInit {
   displayApproveDialog: boolean = false;
   displayRejectDialog: boolean = false;
   adminFeedback: string = '';
-  teachers: Teacher[] = [];
-  selectedTeacherAuthId: string | null = null;
   showPdfModal: boolean = false;
+  displayDeleteDialog: boolean = false;
+
+  teachersWithMatch: TeacherWithMatch[] = [];
+  selectedTeacherAuthId: string | null = null;
+  isAiSearching = false;
+  aiSearchDone = false;
+
   constructor(
     private route: ActivatedRoute,
     private router: Router,
@@ -42,9 +57,133 @@ export class DemandeDetailsComponent implements OnInit {
         this.loadDemandeDetails();
       }
     });
-    this.fetchteachers();
+    this.fetchTeachersWithCount();
   }
-  displayDeleteDialog: boolean = false;
+
+  fetchTeachersWithCount() {
+    this.loading = true;
+    this.userService.getAllTeachers().subscribe({
+      next: (teachersRes) => {
+        this.resourceApiService.getTeachersPfeCount().subscribe({
+          next: (countRes) => {
+            this.loading = false;
+            const countMap: Record<string, number> = countRes.data ?? {};
+            this.teachersWithMatch = (teachersRes.data ?? []).map((t: Teacher) => ({
+              authId: t.authId,
+              teacherId: t.teacherId,
+              fullName: `${t.prenom ?? ''} ${t.nom ?? ''}`.trim() || t.email || 'Sans nom',
+              email: t.email,
+              pfeCount: countMap[t.authId] ?? 0,
+            }));
+          },
+          error: () => {
+            this.loading = false;
+            this.teachersWithMatch = (teachersRes.data ?? []).map((t: Teacher) => ({
+              authId: t.authId,
+              teacherId: t.teacherId,
+              fullName: `${t.prenom ?? ''} ${t.nom ?? ''}`.trim() || t.email || 'Sans nom',
+              email: t.email,
+              pfeCount: 0,
+            }));
+          },
+        });
+      },
+      error: () => {
+        this.loading = false;
+        this.messageService.add({
+          severity: 'error',
+          summary: 'Erreur',
+          detail: 'Impossible de charger les enseignants.',
+        });
+      },
+    });
+  }
+
+  searchMatchingTeachers() {
+    if (!this.demande) return;
+
+    this.isAiSearching = true;
+    this.aiSearchDone = false;
+    this.teachersWithMatch = this.teachersWithMatch.map((t) => ({ ...t, matchScore: undefined }));
+
+    const pfePayload = [{
+      pfe_title: this.demande.pfeTitle,
+      pfe_description: this.demande.pfeDescription,
+      mot_cles: this.demande.motCles,
+      entreprise_domaine: this.demande.entrepriseDomaine,
+      entreprise_name: this.demande.entrepriseName,
+    }];
+
+    this.resourceApiService.searchTeachersByCv(pfePayload).subscribe({
+      next: (response) => {
+        this.isAiSearching = false;
+        this.aiSearchDone = true;
+
+        const teacherIdToAuthId = new Map<number, string>();
+        for (const t of this.teachersWithMatch) {
+          if (t.teacherId != null) {
+            teacherIdToAuthId.set(t.teacherId, t.authId);
+          }
+        }
+
+        const scoreByAuthId = new Map<string, number>();
+        for (const m of response.matches) {
+          const authId = teacherIdToAuthId.get(m.teacher_id);
+          if (authId) {
+            scoreByAuthId.set(authId, m.score);
+          }
+        }
+
+        this.teachersWithMatch = this.teachersWithMatch.map((t) => ({
+          ...t,
+          matchScore: scoreByAuthId.get(t.authId),
+        }));
+
+        this.teachersWithMatch.sort((a, b) => {
+          const scoreA = a.matchScore ?? 0;
+          const scoreB = b.matchScore ?? 0;
+          return scoreB - scoreA;
+        });
+
+        this.messageService.add({
+          severity: 'success',
+          summary: 'Suggestion IA',
+          detail: `${response.matches.length} enseignant(s) trouvé(s) par similarité de CV`,
+        });
+      },
+      error: () => {
+        this.isAiSearching = false;
+        this.messageService.add({
+          severity: 'error',
+          summary: 'Erreur IA',
+          detail: 'Échec de la recherche par CV embeddings.',
+        });
+      },
+    });
+  }
+
+  selectTeacher(authId: string): void {
+    this.selectedTeacherAuthId = authId;
+  }
+
+  get selectedTeacher(): TeacherWithMatch | undefined {
+    return this.teachersWithMatch.find((t) => t.authId === this.selectedTeacherAuthId);
+  }
+
+  get sortedTeachers(): TeacherWithMatch[] {
+    if (this.aiSearchDone) {
+      return this.teachersWithMatch;
+    }
+    return [...this.teachersWithMatch].sort((a, b) => a.fullName.localeCompare(b.fullName));
+  }
+
+  getScoreColor(score: number | undefined): string {
+    if (score == null) return '';
+    if (score >= 0.7) return 'green';
+    if (score >= 0.5) return 'yellow';
+    if (score >= 0.3) return 'orange';
+    return 'red';
+  }
 
   showDeleteDialog(): void {
     this.displayDeleteDialog = true;
@@ -77,28 +216,6 @@ export class DemandeDetailsComponent implements OnInit {
           severity: 'error',
           summary: 'Erreur',
           detail: 'Erreur lors de la suppression de la demande',
-        });
-      },
-    });
-  }
-
-  fetchteachers() {
-    this.loading = true;
-    this.userService.getAllTeachers().subscribe({
-      next: (response) => {
-        this.loading = false;
-        this.teachers = (response.data ?? []).map((t: Teacher) => ({
-          ...t,
-          fullName:
-            `${t.prenom ?? ''} ${t.nom ?? ''}`.trim() || t.email || 'Sans nom',
-        }));
-      },
-      error: () => {
-        this.loading = false;
-        this.messageService.add({
-          severity: 'error',
-          summary: 'Erreur',
-          detail: 'Impossible de charger les enseignants.',
         });
       },
     });

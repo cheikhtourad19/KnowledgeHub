@@ -29,6 +29,7 @@ class Settings(BaseSettings):
     # Vector database configuration
     CHROMA_PERSIST_DIRECTORY: str = "./chroma_db"
     CHROMA_COLLECTION_NAME: str = "documents"
+    CHROMA_CV_COLLECTION_NAME: str = "cv_summaries"
 
     # Embedding model configuration (Local execution as per specification)
     EMBEDDING_MODEL: str = "sentence-transformers/paraphrase-multilingual-MiniLM-L12-v2"

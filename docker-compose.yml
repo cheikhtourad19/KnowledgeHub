@@ -189,10 +189,18 @@ services:
       SWAGGER_ENABLED: ${SWAGGER_ENABLED:-true}
       LOGGING_LEVEL_ROOT: ${LOG_LEVEL_ROOT:-WARN}
       LOGGING_LEVEL_TN_ESPRIM: ${LOG_LEVEL_KNOWLEDGEHUB:-INFO}
+      MINIO_ENDPOINT: ${MINIO_ENDPOINT}
+      MINIO_EXTERNAL_ENDPOINT: ${MINIO_EXTERNAL_ENDPOINT}
+      MINIO_ACCESS_KEY: ${MINIO_ACCESS_KEY}
+      MINIO_SECRET_KEY: ${MINIO_SECRET_KEY}
+      MINIO_BUCKET_TEACHER_CV: ${MINIO_BUCKET_TEACHER_CV}
+      AI_SEARCH_SERVICE_URL: ${AI_SEARCH_SERVICE_URL}
       JAVA_OPTS: ${JAVA_OPTS:--Xms512m -Xmx1024m}
       ADMIN_EMAIL: ${ADMIN_EMAIL}
     depends_on:
       mysql:
+        condition: service_healthy
+      minio:
         condition: service_healthy
     networks:
       - knowledgehub-network

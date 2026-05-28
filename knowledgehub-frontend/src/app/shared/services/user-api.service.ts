@@ -9,6 +9,7 @@ import { Classe } from '../../shared/models/user-service/entities/classe.model';
 import { CreateStudentRequest } from '../../shared/models/user-service/requests/create-student-request.model';
 import { StudentToClassRequest } from '../../shared/models/user-service/requests/student-to-class-request.model';
 import { BulkUserCreationResponse } from '../../shared/models/user-service/responses/bulk-user-creation-response.model';
+import { TeacherCVResponse } from '../../shared/models/user-service/responses/teacher-cv-response.model';
 
 @Injectable({
   providedIn: 'root',
@@ -160,6 +161,27 @@ export class UserApiService {
     return this.http.put<ApiResponse<Classe>>(
       `${this.baseUrl}/api/classes/${id}`,
       { classeName: className },
+    );
+  }
+
+  getActiveTeacherCV(): Observable<ApiResponse<TeacherCVResponse>> {
+    return this.http.get<ApiResponse<TeacherCVResponse>>(
+      `${this.baseUrl}/api/teachers/cv/active`,
+    );
+  }
+
+  uploadTeacherCV(file: File): Observable<ApiResponse<TeacherCVResponse>> {
+    const formData = new FormData();
+    formData.append('file', file);
+    return this.http.post<ApiResponse<TeacherCVResponse>>(
+      `${this.baseUrl}/api/teachers/cv/upload`,
+      formData,
+    );
+  }
+
+  getActiveCVPresignedUrl(): Observable<ApiResponse<string>> {
+    return this.http.get<ApiResponse<string>>(
+      `${this.baseUrl}/api/teachers/cv/active/presigned-url`,
     );
   }
 }

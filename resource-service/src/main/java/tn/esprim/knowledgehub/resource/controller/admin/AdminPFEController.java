@@ -19,8 +19,11 @@ import tn.esprim.knowledgehub.resource.service.FileService;
 import tn.esprim.knowledgehub.resource.service.PFEService;
 
 import java.time.Year;
+import java.util.ArrayList;
 import java.util.Date;
 import java.util.List;
+import java.util.Map;
+import java.util.stream.Collectors;
 
 @Slf4j
 @RestController
@@ -302,7 +305,17 @@ public class AdminPFEController {
         pfeService.deletePFEWithDemande(id);
         return ResponseEntity.ok(ApiResponse.success(null, "PFE deleted successfully"));
     }
+    @GetMapping("/teachersAvailable")
+    public ResponseEntity<ApiResponse<Map<Long, Long>>> getAvailableTeachers() {
+        Map<Long, Long> pfeCountByTeacher = pfeService.getAllPFE().stream()
+                .filter(pfe -> pfe.getSupervisorAuthId() != null && pfe.getCloture()==false)
+                .collect(Collectors.groupingBy(
+                        PFE::getSupervisorAuthId,
+                        Collectors.counting()
+                ));
 
+        return ResponseEntity.ok(ApiResponse.success(pfeCountByTeacher, "Available teachers with their PFE count retrieved successfully"));
+    }
 
 }
 

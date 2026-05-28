@@ -16,8 +16,18 @@ export class PdfViewerModalComponent {
   @Input() title: string = 'Document PDF';
   @Output() visibleChange = new EventEmitter<boolean>();
 
+  pdfLoading = true;
+
   closeModal() {
     this.visible = false;
     this.visibleChange.emit(false);
+  }
+
+  onLoadComplete(): void {
+    this.pdfLoading = false;
+  }
+
+  onError(): void {
+    this.pdfLoading = false;
   }
 }

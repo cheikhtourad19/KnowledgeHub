@@ -50,6 +50,13 @@ spring:
             - RewritePath=/ai-service/(?<segment>.*), /$\{segment}
             - name: JwtAuthenticationFilter
 
+        - id: ai-search-internship
+          uri: http://localhost:8000
+          predicates:
+            - Path=/api/internship/**
+          filters:
+            - name: JwtAuthenticationFilter
+
 admin:
   email: admin@esprim.tn
 
@@ -149,6 +156,13 @@ spring:
             - Path=/ai-service/**
           filters:
             - RewritePath=/ai-service/(?<segment>.*), /$\{segment}
+            - name: JwtAuthenticationFilter
+
+        - id: ai-search-internship
+          uri: ${AI_SEARCH_SERVICE_URL}
+          predicates:
+            - Path=/api/internship/**
+          filters:
             - name: JwtAuthenticationFilter
 
 jwt:
