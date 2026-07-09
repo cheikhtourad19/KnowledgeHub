@@ -12,10 +12,6 @@ RUN apt-get update && apt-get install -y --no-install-recommends \
 
 COPY requirements.txt .
 
-# Install CPU-only torch first to prevent sentence-transformers
-# from pulling full CUDA wheels (~1.5GB saved on aarch64)
-RUN --mount=type=cache,target=/root/.cache/pip \
-    pip install torch --index-url https://download.pytorch.org/whl/cpu
 
 RUN --mount=type=cache,target=/root/.cache/pip \
     pip install --timeout=300 -r requirements.txt
